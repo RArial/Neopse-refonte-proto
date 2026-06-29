@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
+/* ===== Neopse — Design tokens ===================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --navy-900: oklch(0.20 0.028 258);
+  --navy-800: oklch(0.24 0.030 258);
+  --navy-700: oklch(0.30 0.030 258);
+  --navy-600: oklch(0.40 0.028 258);
+
+  --amber:      oklch(0.82 0.14 85);
+  --amber-soft: oklch(0.94 0.06 85);
+  --amber-deep: oklch(0.70 0.14 75);
+
+  --teal:      oklch(0.62 0.09 190);
+  --teal-soft: oklch(0.94 0.03 190);
+  --teal-deep: oklch(0.52 0.09 190);
+
+  --coral:      oklch(0.68 0.15 20);
+  --coral-soft: oklch(0.95 0.04 20);
+
+  --mint:      oklch(0.72 0.11 160);
+  --mint-soft: oklch(0.95 0.04 160);
+
+  --lilac:      oklch(0.68 0.11 290);
+  --lilac-soft: oklch(0.95 0.03 290);
+
+  --bg:            oklch(0.985 0.003 95);
+  --surface:       #ffffff;
+  --surface-2:     oklch(0.975 0.004 95);
+  --border:        oklch(0.92 0.005 95);
+  --border-strong: oklch(0.86 0.006 95);
+  --ink:           oklch(0.22 0.01 258);
+  --ink-soft:      oklch(0.45 0.01 258);
+  --ink-mute:      oklch(0.62 0.008 258);
+
+  --accent:      var(--teal);
+  --accent-soft: var(--teal-soft);
+  --accent-deep: var(--teal-deep);
+
+  --card-pad:    20px;
+  --card-radius: 14px;
+  --gap:         16px;
+
+  --sidebar-w:        72px;
+  --sidebar-expanded: 252px;
+
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.04);
+  --shadow-md: 0 2px 8px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --shadow-lg: 0 10px 30px -12px rgba(15,23,42,.18), 0 4px 10px -4px rgba(15,23,42,.08);
+}
+
+[data-theme="dark"] {
+  --bg:            oklch(0.18 0.015 258);
+  --surface:       oklch(0.22 0.020 258);
+  --surface-2:     oklch(0.20 0.020 258);
+  --border:        oklch(0.28 0.020 258);
+  --border-strong: oklch(0.34 0.022 258);
+  --ink:           oklch(0.96 0.005 95);
+  --ink-soft:      oklch(0.78 0.008 95);
+  --ink-mute:      oklch(0.62 0.008 95);
+}
+
+[data-density="compact"] {
+  --card-pad:    14px;
+  --card-radius: 12px;
+  --gap:         12px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv02","cv03","cv04","cv11";
 }
+
+button { font-family: inherit; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-track { background: transparent; }
