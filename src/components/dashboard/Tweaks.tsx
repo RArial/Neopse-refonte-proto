@@ -1,18 +1,33 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
+import ButtonBase from '@mui/material/ButtonBase';
+import Grow from '@mui/material/Grow';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { Icons } from '@/components/ui/Icons';
 
 type Theme = 'light' | 'dark';
 type Density = 'default' | 'compact';
 type Accent = 'teal' | 'coral' | 'amber' | 'lilac';
 
-const ACCENTS: Array<{ id: Accent; label: string; color: string }> = [
-  { id: 'teal',  label: 'Sarcelle',  color: 'var(--teal-deep)' },
-  { id: 'coral', label: 'Corail',    color: 'var(--coral)' },
-  { id: 'amber', label: 'Ambre',     color: 'var(--amber)' },
-  { id: 'lilac', label: 'Lilas',     color: 'var(--lilac)' },
+const ACCENTS: Array<{ id: Accent; label: string }> = [
+  { id: 'teal',  label: 'Sarcelle' },
+  { id: 'coral', label: 'Corail' },
+  { id: 'amber', label: 'Ambre' },
+  { id: 'lilac', label: 'Lilas' },
 ];
+
+const ACCENT_SWATCH_COLOR: Record<Accent, string> = {
+  teal: 'primary.main',
+  coral: 'error.main',
+  amber: 'warning.main',
+  lilac: 'secondary.main',
+};
 
 const ACCENT_CSS: Record<Accent, Record<string, string>> = {
   teal:  { '--accent': 'var(--teal-deep)', '--accent-soft': 'var(--teal-soft)', '--accent-deep': 'oklch(0.30 0.08 185)' },
@@ -79,11 +94,13 @@ export function Tweaks() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  function handleTheme(t: Theme) {
+  function handleTheme(t: Theme | null) {
+    if (!t) return;
     setTheme(t);
     applyTheme(t);
   }
-  function handleDensity(d: Density) {
+  function handleDensity(d: Density | null) {
+    if (!d) return;
     setDensity(d);
     applyDensity(d);
   }
@@ -95,97 +112,120 @@ export function Tweaks() {
   return (
     <>
       {open && (
-        <div
-          className="tweaks-overlay"
+        <Box
           onClick={() => setOpen(false)}
           aria-hidden="true"
+          sx={{ position: 'fixed', inset: 0, zIndex: 39 }}
         />
       )}
-      <div
-        className={`tweaks${open ? ' open' : ''}`}
-        role="dialog"
-        aria-label="Personnalisation de l'interface"
-        aria-modal="false"
-      >
-        <div className="tweaks-head">
-          <div className="tweaks-head-left">
-            <Icons.Sliders size={15} />
-            <span>Personnalisation</span>
-          </div>
-          <button
-            type="button"
-            className="tweaks-close"
-            onClick={() => setOpen(false)}
-            aria-label="Fermer le panneau de personnalisation"
-          >
-            <Icons.X size={16} />
-          </button>
-        </div>
+      <Grow in={open} unmountOnExit>
+        <Paper
+          role="dialog"
+          aria-label="Personnalisation de l'interface"
+          aria-modal="false"
+          elevation={0}
+          sx={{
+            position: 'fixed',
+            right: 20,
+            top: 78,
+            width: 280,
+            border: '1px solid',
+            borderColor: 'grey.300',
+            borderRadius: '14px',
+            p: 2,
+            boxShadow: 6,
+            zIndex: 40,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.75,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'text.secondary' }}>
+              <Icons.Sliders size={15} />
+              <span>Personnalisation</span>
+            </Box>
+            <IconButton
+              size="small"
+              onClick={() => setOpen(false)}
+              aria-label="Fermer le panneau de personnalisation"
+              sx={{ color: 'text.disabled', minWidth: 28, minHeight: 28 }}
+            >
+              <Icons.X size={16} />
+            </IconButton>
+          </Box>
 
-        <div className="tweaks-body">
-          <div className="tweaks-group">
-            <div className="tweaks-label">Apparence</div>
-            <div className="seg" role="group" aria-label="Thème">
-              <button
-                type="button"
-                className={theme === 'light' ? 'on' : ''}
-                onClick={() => handleTheme('light')}
-                aria-pressed={theme === 'light'}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>Apparence</Typography>
+              <ToggleButtonGroup
+                exclusive
+                fullWidth
+                value={theme}
+                onChange={(_e, v: Theme | null) => handleTheme(v)}
+                aria-label="Thème"
+                size="small"
+                sx={{ bgcolor: 'action.hover', border: '1px solid', borderColor: 'divider', borderRadius: '10px', p: 0.375, gap: 0.375 }}
               >
-                <Icons.Sun size={13} /> Clair
-              </button>
-              <button
-                type="button"
-                className={theme === 'dark' ? 'on' : ''}
-                onClick={() => handleTheme('dark')}
-                aria-pressed={theme === 'dark'}
-              >
-                <Icons.Moon size={13} /> Sombre
-              </button>
-            </div>
-          </div>
+                <ToggleButton value="light" sx={{ border: 0, borderRadius: '7px !important', textTransform: 'none', fontSize: 12, gap: 0.5 }}>
+                  <Icons.Sun size={13} /> Clair
+                </ToggleButton>
+                <ToggleButton value="dark" sx={{ border: 0, borderRadius: '7px !important', textTransform: 'none', fontSize: 12, gap: 0.5 }}>
+                  <Icons.Moon size={13} /> Sombre
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
 
-          <div className="tweaks-group">
-            <div className="tweaks-label">Densité</div>
-            <div className="seg" role="group" aria-label="Densité">
-              <button
-                type="button"
-                className={density === 'default' ? 'on' : ''}
-                onClick={() => handleDensity('default')}
-                aria-pressed={density === 'default'}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>Densité</Typography>
+              <ToggleButtonGroup
+                exclusive
+                fullWidth
+                value={density}
+                onChange={(_e, v: Density | null) => handleDensity(v)}
+                aria-label="Densité"
+                size="small"
+                sx={{ bgcolor: 'action.hover', border: '1px solid', borderColor: 'divider', borderRadius: '10px', p: 0.375, gap: 0.375 }}
               >
-                <Icons.LayoutGrid size={13} /> Confortable
-              </button>
-              <button
-                type="button"
-                className={density === 'compact' ? 'on' : ''}
-                onClick={() => handleDensity('compact')}
-                aria-pressed={density === 'compact'}
-              >
-                <Icons.AlignJustify size={13} /> Compacte
-              </button>
-            </div>
-          </div>
+                <ToggleButton value="default" sx={{ border: 0, borderRadius: '7px !important', textTransform: 'none', fontSize: 12, gap: 0.5 }}>
+                  <Icons.LayoutGrid size={13} /> Confortable
+                </ToggleButton>
+                <ToggleButton value="compact" sx={{ border: 0, borderRadius: '7px !important', textTransform: 'none', fontSize: 12, gap: 0.5 }}>
+                  <Icons.AlignJustify size={13} /> Compacte
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
 
-          <div className="tweaks-group">
-            <div className="tweaks-label">Couleur d&apos;accent</div>
-            <div className="swatches" role="group" aria-label="Couleur d'accent">
-              {ACCENTS.map(a => (
-                <button
-                  key={a.id}
-                  type="button"
-                  className={`swatch${accent === a.id ? ' on' : ''}`}
-                  style={{ '--sw': a.color } as React.CSSProperties}
-                  onClick={() => handleAccent(a.id)}
-                  aria-pressed={accent === a.id}
-                  aria-label={a.label}
-                  title={a.label}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>Couleur d&apos;accent</Typography>
+              <Box role="group" aria-label="Couleur d'accent" sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {ACCENTS.map(a => {
+                  const isOn = accent === a.id;
+                  return (
+                    <ButtonBase
+                      key={a.id}
+                      onClick={() => handleAccent(a.id)}
+                      aria-pressed={isOn}
+                      aria-label={a.label}
+                      title={a.label}
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: '8px',
+                        bgcolor: ACCENT_SWATCH_COLOR[a.id],
+                        border: '2px solid',
+                        borderColor: isOn ? 'text.primary' : 'transparent',
+                        transition: 'transform .15s',
+                        '&:hover': { transform: 'scale(1.08)' },
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+      </Grow>
     </>
   );
 }

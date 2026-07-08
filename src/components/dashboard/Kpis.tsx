@@ -1,6 +1,10 @@
-import React from 'react';
+'use client';
+
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
 import { Icons, type IconName } from '@/components/ui/Icons';
-import { Sparkline } from './Sparkline';
+import { Sparkline, type SparklineColor } from './Sparkline';
 
 type Trend = 'up' | 'down' | 'flat';
 type KpiColor = 'teal' | 'coral' | 'amber' | 'lilac';
@@ -15,11 +19,11 @@ interface KpiData {
   data: number[];
 }
 
-const COLOR_MAP: Record<KpiColor, { c: string; s: string }> = {
-  teal:  { c: 'var(--teal-deep)',  s: 'var(--teal-soft)'  },
-  coral: { c: 'var(--coral)',      s: 'var(--coral-soft)' },
-  amber: { c: 'var(--amber-deep)', s: 'var(--amber-soft)' },
-  lilac: { c: 'var(--lilac)',      s: 'var(--lilac-soft)' },
+const COLOR_MAP: Record<KpiColor, SparklineColor> = {
+  teal: 'primary',
+  coral: 'error',
+  amber: 'warning',
+  lilac: 'secondary',
 };
 
 const KPIS: KpiData[] = [
@@ -61,77 +65,198 @@ const KPIS: KpiData[] = [
   },
 ];
 
+const DELTA_TEXT_COLOR: Record<Trend, string> = {
+  up: 'success.main',
+  down: 'error.main',
+  flat: 'text.secondary',
+};
+
 function KpiCard({ icon, label, value, delta, trend, color, data }: KpiData) {
   const IconEl = Icons[icon];
-  const p = COLOR_MAP[color];
   return (
-    <article
-      className="kpi"
-      style={{ '--k-color': p.c, '--k-soft': p.s } as React.CSSProperties}
+    <Box
+      component="article"
       aria-label={`${label} : ${value}`}
+      sx={{
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: '14px',
+        p: 2.5,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.5,
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'transform .18s, box-shadow .18s, border-color .18s',
+        '&:hover': { transform: 'translateY(-2px)', boxShadow: 2, borderColor: 'grey.300' },
+      }}
     >
-      <div className="kpi-top">
-        <span className="ico" aria-hidden="true">
-          <IconEl size={18} />
-        </span>
-        <span
-          className={`delta ${trend}`}
-          aria-label={`Tendance : ${delta}`}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.25 }}>
+        <Box
+          aria-hidden="true"
+          sx={{
+            width: 32,
+            height: 32,
+            borderRadius: '10px',
+            display: 'grid',
+            placeItems: 'center',
+            bgcolor: 'secondary.main',
+            color: 'common.white',
+            flexShrink: 0,
+          }}
         >
-          {trend === 'up'   && <Icons.TrendUp size={11} />}
+          <IconEl size={18} />
+        </Box>
+        <Box
+          aria-label={`Tendance : ${delta}`}
+          sx={{
+            fontSize: 11,
+            fontWeight: 600,
+            px: 0.875,
+            py: 0.375,
+            borderRadius: '999px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.375,
+            color: DELTA_TEXT_COLOR[trend],
+            bgcolor: (theme) =>
+              trend === 'flat' ? theme.palette.action.hover : alpha(theme.palette[trend === 'up' ? 'success' : 'error'].main, 0.12),
+          }}
+        >
+          {trend === 'up' && <Icons.TrendUp size={11} />}
           {trend === 'down' && <Icons.TrendDown size={11} />}
           {delta}
-        </span>
-      </div>
-      <div>
-        <div className="kpi-value">{value}</div>
-        <div className="kpi-label">{label}</div>
-      </div>
-      <Sparkline data={data} />
-    </article>
+        </Box>
+      </Box>
+      <Box>
+        <Typography
+          sx={{
+            fontSize: 30,
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+            color: 'text.primary',
+          }}
+        >
+          {value}
+        </Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: -0.5 }}>{label}</Typography>
+      </Box>
+      <Sparkline data={data} color={COLOR_MAP[color]} />
+    </Box>
   );
 }
 
 export function Kpis() {
   return (
-    <section className="section" aria-labelledby="kpis-heading">
-      <div className="section-head">
-        <h2 id="kpis-heading">Mon tableau de bord</h2>
-      </div>
-      <div className="grid-kpi">
+    <Box component="section" sx={{ mb: 4.5 }} aria-labelledby="kpis-heading">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.75 }}>
+        <Typography id="kpis-heading" component="h2" variant="h6" sx={{ fontSize: 16, fontWeight: 600, color: 'text.primary' }}>
+          Mon tableau de bord
+        </Typography>
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
         {KPIS.map((k, i) => (
           <KpiCard key={i} {...k} />
         ))}
 
-        <div
-          className="storage-card storage-card--wide"
+        <Box
           aria-labelledby="storage-heading"
+          sx={{
+            gridColumn: 'span 4',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '14px',
+            p: 2.5,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.25,
+            transition: 'transform .18s, box-shadow .18s',
+            background: (theme) =>
+              `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.16)}, ${theme.palette.background.paper})`,
+            '&:hover': { transform: 'translateY(-2px)', boxShadow: 2 },
+          }}
         >
-          <div className="storage-head">
-            <span id="storage-heading" className="ttl">Stockage du site</span>
-            <span className="pill">0,86 % utilisé</span>
-          </div>
-          <div className="storage-value">
-            0,06<span className="of"> / 7 Go</span>
-          </div>
-          <div
-            className="storage-bar"
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography id="storage-heading" component="span" sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 500 }}>
+              Stockage du site
+            </Typography>
+            <Box
+              component="span"
+              sx={{
+                fontSize: 11,
+                fontWeight: 600,
+                px: 1,
+                py: 0.375,
+                borderRadius: '999px',
+                bgcolor: (theme) => alpha(theme.palette.success.main, 0.12),
+                color: 'success.dark',
+              }}
+            >
+              0,86 % utilisé
+            </Box>
+          </Box>
+          <Typography
+            sx={{
+              fontSize: 32,
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              fontVariantNumeric: 'tabular-nums',
+              color: 'text.primary',
+            }}
+          >
+            0,06
+            <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: 'text.disabled', ml: 0.5 }}>
+              {' '}/ 7 Go
+            </Box>
+          </Typography>
+          <Box
             role="progressbar"
             aria-valuenow={0.86}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="0,86 % du stockage utilisé"
+            sx={{
+              height: 8,
+              borderRadius: '999px',
+              bgcolor: (theme) => alpha(theme.palette.success.main, 0.14),
+              overflow: 'hidden',
+            }}
           >
-            <div className="fill" />
-          </div>
-          <div className="storage-foot">
+            <Box
+              sx={{
+                height: '100%',
+                width: '0.86%',
+                background: (theme) => `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`,
+                borderRadius: '999px',
+              }}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'text.secondary' }}>
             <span>Beaucoup d&apos;espace disponible</span>
-            <a href="#">
+            <Box
+              component="a"
+              href="#"
+              sx={{
+                color: 'success.dark',
+                textDecoration: 'none',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
               Augmenter <Icons.ArrowUpRight size={12} />
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

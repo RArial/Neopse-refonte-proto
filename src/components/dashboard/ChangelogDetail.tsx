@@ -1,26 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import React from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
 import { Icons, type IconName } from '@/components/ui/Icons';
+import { CHANGELOG_META as TYPE_META, changelogColor, type ChangelogEntry, type ChangelogType } from './changelogPalette';
 
-export type ChangelogType = 'evolution' | 'fix' | 'security' | 'comm';
-
-export interface ChangelogEntry {
-  type: ChangelogType;
-  time: string;
-  title: string;
-  body: string;
-  day: string;
-}
-
-const PALETTE: Record<ChangelogType, { color: string; soft: string; label: string; icon: IconName }> = {
-  evolution: { color: 'var(--lilac)',      soft: 'var(--lilac-soft)', label: 'Évolution',     icon: 'Sparkles'  },
-  fix:       { color: 'var(--coral)',      soft: 'var(--coral-soft)', label: 'Correctif',     icon: 'Bug'       },
-  security:  { color: 'var(--amber-deep)', soft: 'var(--amber-soft)', label: 'Sécurité',      icon: 'Shield'    },
-  comm:      { color: 'var(--teal-deep)',  soft: 'var(--teal-soft)',  label: 'Communication', icon: 'Megaphone' },
-};
+export type { ChangelogEntry, ChangelogType };
 
 interface HighlightItem { icon: IconName; title: string; desc: string; }
 type Section =
@@ -94,148 +83,277 @@ interface Props {
 }
 
 export function ChangelogDetail({ entry, onClose }: Props) {
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [onClose]);
-
-  if (typeof document === 'undefined') return null;
-
   const detail = DETAILS[entry.title] ?? defaultDetail(entry);
-  const p = PALETTE[detail.type];
-  const TypeIcon = Icons[p.icon];
+  const meta = TYPE_META[detail.type];
+  const TypeIcon = Icons[meta.icon];
 
-  const panel = (
-    <div
-      className="cd-overlay"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={entry.title}
+  return (
+    <Drawer
+      anchor="right"
+      open
+      onClose={onClose}
+      transitionDuration={320}
+      slotProps={{
+        paper: { sx: { width: 'min(720px, 96vw)', boxShadow: '-20px 0 60px -20px rgba(0,0,0,.25)' } },
+        backdrop: {
+          sx: { bgcolor: (theme) => alpha(theme.palette.text.primary, 0.35), backdropFilter: 'blur(4px)' },
+        },
+      }}
     >
-      <article
-        className="cd-panel"
-        onClick={e => e.stopPropagation()}
-        style={{ '--t-color': p.color, '--t-soft': p.soft } as React.CSSProperties}
+      <Box
+        component="header"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          p: '16px 28px',
+          position: 'sticky',
+          top: 0,
+          bgcolor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          zIndex: 2,
+        }}
       >
-        <header className="cd-head">
-          <button className="cd-back" onClick={onClose} type="button">
-            <Icons.ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />
-            Retour au journal
-          </button>
-          <button className="cd-close" onClick={onClose} type="button" aria-label="Fermer le panneau">
-            <Icons.X size={18} />
-          </button>
-        </header>
+        <Button
+          onClick={onClose}
+          startIcon={<Icons.ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
+          sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 13 }}
+        >
+          Retour au journal
+        </Button>
+        <IconButton onClick={onClose} aria-label="Fermer le panneau" sx={{ bgcolor: 'action.hover', color: 'text.secondary', borderRadius: '10px' }}>
+          <Icons.X size={18} />
+        </IconButton>
+      </Box>
 
-        <div className="cd-hero">
-          <div className="cd-hero-bg" aria-hidden="true" />
-          <div className="cd-hero-content">
-            <div className="cd-type-pill">
-              <TypeIcon size={12} />
-              {p.label}
-            </div>
-            <h1 className="cd-title">{entry.title}</h1>
-            <div className="cd-meta">
-              <span className="cd-meta-item"><Icons.Clock size={12} />{detail.date}</span>
-              <span className="cd-dot" aria-hidden="true" />
-              <span className="cd-meta-item"><Icons.User size={12} />{detail.author}</span>
-              <span className="cd-dot" aria-hidden="true" />
-              <span className="cd-meta-item">{detail.readTime}</span>
-              <span className="cd-version">{detail.version}</span>
-            </div>
-          </div>
-        </div>
+      <Box sx={{ position: 'relative', p: '36px 36px 28px', overflow: 'hidden' }}>
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            background: (theme) =>
+              `radial-gradient(60% 80% at 90% 10%, ${alpha(changelogColor(theme, detail.type), 0.22)}, transparent 60%), linear-gradient(180deg, ${alpha(changelogColor(theme, detail.type), 0.12)}, transparent 75%)`,
+          }}
+        />
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.625,
+              bgcolor: (theme) => changelogColor(theme, detail.type),
+              color: 'common.white',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '.06em',
+              textTransform: 'uppercase',
+              px: 1.25,
+              py: 0.625,
+              borderRadius: '999px',
+              mb: 1.75,
+            }}
+          >
+            <TypeIcon size={12} />
+            {meta.label}
+          </Box>
+          <Typography component="h1" sx={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15, m: '0 0 14px', color: 'text.primary' }}>
+            {entry.title}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, fontSize: 12, color: 'text.secondary', flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.625 }}>
+              <Icons.Clock size={12} />{detail.date}
+            </Box>
+            <Box aria-hidden="true" sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: 'text.disabled' }} />
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.625 }}>
+              <Icons.User size={12} />{detail.author}
+            </Box>
+            <Box aria-hidden="true" sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: 'text.disabled' }} />
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.625 }}>{detail.readTime}</Box>
+            <Box
+              sx={{
+                ml: 'auto',
+                fontSize: 11,
+                color: 'text.disabled',
+                px: 1,
+                py: 0.375,
+                borderRadius: '6px',
+                bgcolor: 'action.hover',
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              {detail.version}
+            </Box>
+          </Box>
+        </Box>
+      </Box>
 
-        <div className="cd-body">
-          <p className="cd-summary">{detail.summary}</p>
+      <Box sx={{ p: '8px 36px 36px' }}>
+        <Typography
+          sx={{
+            fontSize: 16,
+            lineHeight: 1.6,
+            color: 'text.primary',
+            m: '16px 0 28px',
+            p: '18px 20px',
+            borderLeft: '3px solid',
+            borderColor: (theme) => changelogColor(theme, detail.type),
+            bgcolor: 'action.hover',
+            borderRadius: '0 10px 10px 0',
+          }}
+        >
+          {detail.summary}
+        </Typography>
 
-          {detail.sections.map((s, i) => {
-            if (s.kind === 'highlights') {
-              return (
-                <section className="cd-section" key={i}>
-                  <h2>{s.title}</h2>
-                  <div className="cd-highlights">
-                    {s.items.map((h, j) => {
-                      const HIcon = Icons[h.icon];
-                      return (
-                        <div className="cd-highlight" key={j}>
-                          <span className="cd-highlight-ico"><HIcon size={16} /></span>
-                          <div>
-                            <div className="cd-highlight-t">{h.title}</div>
-                            <div className="cd-highlight-d">{h.desc}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            }
-            if (s.kind === 'text') {
-              return (
-                <section className="cd-section" key={i}>
-                  <h2>{s.title}</h2>
-                  <p>{s.body}</p>
-                </section>
-              );
-            }
-            if (s.kind === 'tags') {
-              return (
-                <section className="cd-section cd-tags" key={i} aria-label="Étiquettes">
-                  {s.items.map((tag, j) => <span className="cd-tag" key={j}>{tag}</span>)}
-                </section>
-              );
-            }
-            return null;
-          })}
+        {detail.sections.map((s, i) => {
+          if (s.kind === 'highlights') {
+            return (
+              <Box component="section" key={i} sx={{ mb: 3.5 }}>
+                <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'text.secondary', m: '0 0 12px' }}>
+                  {s.title}
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.25 }}>
+                  {s.items.map((h, j) => {
+                    const HIcon = Icons[h.icon];
+                    return (
+                      <Box
+                        key={j}
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          p: 1.75,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: '12px',
+                          bgcolor: 'background.paper',
+                          transition: 'border-color .15s, transform .15s',
+                          '&:hover': { borderColor: (theme) => changelogColor(theme, detail.type), transform: 'translateY(-1px)' },
+                        }}
+                      >
+                        <Box
+                          aria-hidden="true"
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '9px',
+                            bgcolor: (theme) => alpha(changelogColor(theme, detail.type), 0.12),
+                            color: (theme) => changelogColor(theme, detail.type),
+                            display: 'grid',
+                            placeItems: 'center',
+                            flex: '0 0 32px',
+                          }}
+                        >
+                          <HIcon size={16} />
+                        </Box>
+                        <Box>
+                          <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', mb: 0.25 }}>{h.title}</Typography>
+                          <Typography sx={{ fontSize: 12, color: 'text.disabled', lineHeight: 1.4 }}>{h.desc}</Typography>
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+            );
+          }
+          if (s.kind === 'text') {
+            return (
+              <Box component="section" key={i} sx={{ mb: 3.5 }}>
+                <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'text.secondary', m: '0 0 12px' }}>
+                  {s.title}
+                </Typography>
+                <Typography sx={{ fontSize: 14, lineHeight: 1.65, color: 'text.primary', m: 0 }}>{s.body}</Typography>
+              </Box>
+            );
+          }
+          if (s.kind === 'tags') {
+            return (
+              <Box component="section" key={i} aria-label="Étiquettes" sx={{ mb: 3.5, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                {s.items.map((tag, j) => (
+                  <Box
+                    component="span"
+                    key={j}
+                    sx={{ fontSize: 11, fontWeight: 600, px: 1.25, py: 0.5, borderRadius: '999px', bgcolor: 'action.hover', color: 'text.secondary', border: '1px solid', borderColor: 'divider' }}
+                  >
+                    {tag}
+                  </Box>
+                ))}
+              </Box>
+            );
+          }
+          return null;
+        })}
 
-          {detail.related.length > 0 && (
-            <section className="cd-section">
-              <h2>Autres évolutions</h2>
-              <div className="cd-related">
-                {detail.related.map((r, i) => {
-                  const rp = PALETTE[r.type];
-                  const RIcon = Icons[rp.icon];
-                  return (
-                    <a
-                      className="cd-related-item"
-                      key={i}
-                      href="#"
-                      style={{ '--t-color': rp.color, '--t-soft': rp.soft } as React.CSSProperties}
+        {detail.related.length > 0 && (
+          <Box component="section" sx={{ mb: 3.5 }}>
+            <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: 'text.secondary', m: '0 0 12px' }}>
+              Autres évolutions
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {detail.related.map((r, i) => {
+                const rMeta = TYPE_META[r.type];
+                const RIcon = Icons[rMeta.icon];
+                return (
+                  <Box
+                    component="a"
+                    key={i}
+                    href="#"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      p: '12px 14px',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: '10px',
+                      textDecoration: 'none',
+                      color: 'text.primary',
+                      transition: 'border-color .15s, transform .15s',
+                      '&:hover': { borderColor: (theme) => changelogColor(theme, r.type), transform: 'translateX(2px)' },
+                    }}
+                  >
+                    <Box
+                      aria-hidden="true"
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: '8px',
+                        bgcolor: (theme) => alpha(changelogColor(theme, r.type), 0.12),
+                        color: (theme) => changelogColor(theme, r.type),
+                        display: 'grid',
+                        placeItems: 'center',
+                        flex: '0 0 28px',
+                      }}
                     >
-                      <span className="cd-related-ico"><RIcon size={14} /></span>
-                      <div className="cd-related-body">
-                        <div className="cd-related-t">{r.title}</div>
-                        <div className="cd-related-d">{rp.label} · {r.date}</div>
-                      </div>
-                      <Icons.ChevronRight size={14} />
-                    </a>
-                  );
-                })}
-              </div>
-            </section>
-          )}
+                      <RIcon size={14} />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary' }}>{r.title}</Typography>
+                      <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{TYPE_META[r.type].label} · {r.date}</Typography>
+                    </Box>
+                    <Icons.ChevronRight size={14} />
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        )}
 
-          <footer className="cd-footer">
-            <a href="#" className="btn btn-ghost">
-              <Icons.BookOpen size={14} /> Lire l&apos;article complet
-            </a>
-            <a href="#" className="btn btn-primary" style={{ marginLeft: 'auto' }}>
-              Voir tout le journal
-            </a>
-          </footer>
-        </div>
-      </article>
-    </div>
+        <Box
+          component="footer"
+          sx={{ mt: 4, pt: 2.5, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}
+        >
+          <Button variant="outlined" color="inherit" startIcon={<Icons.BookOpen size={14} />} sx={{ color: 'text.secondary', borderColor: 'divider' }}>
+            Lire l&apos;article complet
+          </Button>
+          <Button variant="contained" sx={{ ml: 'auto' }}>
+            Voir tout le journal
+          </Button>
+        </Box>
+      </Box>
+    </Drawer>
   );
-
-  return createPortal(panel, document.body);
 }

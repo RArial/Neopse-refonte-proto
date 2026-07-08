@@ -2,12 +2,14 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons, type IconName } from '@/components/ui/Icons';
 import type { NavEntry } from '@/types/navigation';
 
 const SIDEBAR_NAV: NavEntry[] = [
   { type: 'item', id: 'dashboard', icon: 'Dashboard', label: 'Tableau de bord', href: '/dashboard' },
+  { type: 'item', id: 'contenu', icon: 'Pages', label: 'Contenu', href: '/dashboard/contenu' },
   { type: 'item', id: 'access', icon: 'Globe', label: 'Accès au site', external: true },
   { type: 'divider' },
   {
@@ -87,6 +89,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('neopse:sidebar-collapsed') === '1'; }
     catch { return false; }
@@ -141,7 +144,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
 
           if (n.type === 'item') {
             const IconEl = Icons[n.icon as IconName];
-            const isActive = active === n.id;
+            const isActive = n.href ? pathname === n.href : active === n.id;
 
             if (n.href) {
               return (
