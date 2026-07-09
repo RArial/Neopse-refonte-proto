@@ -14,6 +14,8 @@ export interface NavItem {
   href?: string;
   external?: boolean;
   highlight?: boolean;
+  /** Accentue le libellé d'un lien pour le distinguer du reste du menu (ex. « Accès au site »). */
+  accent?: 'amber';
 }
 
 export interface NavGroup {
@@ -24,8 +26,14 @@ export interface NavGroup {
   items: NavSubItem[];
 }
 
+export interface NavSectionTitle {
+  type: 'section-title';
+  id: string;
+  label: string;
+}
+
 export interface NavDivider {
   type: 'divider';
 }
 
-export type NavEntry = NavItem | NavGroup | NavDivider;
+export type NavEntry = NavItem | NavGroup | NavSectionTitle | NavDivider;

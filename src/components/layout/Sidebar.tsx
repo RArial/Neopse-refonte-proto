@@ -8,22 +8,16 @@ import { Icons, type IconName } from '@/components/ui/Icons';
 import type { NavEntry } from '@/types/navigation';
 
 const SIDEBAR_NAV: NavEntry[] = [
+  { type: 'section-title', id: 'site-internet', label: 'Site internet' },
+  { type: 'item', id: 'access', icon: 'Globe', label: 'Accès au site', external: true, accent: 'amber' },
   { type: 'item', id: 'dashboard', icon: 'Dashboard', label: 'Tableau de bord', href: '/dashboard' },
   { type: 'item', id: 'contenu', icon: 'Pages', label: 'Contenu', href: '/dashboard/contenu' },
-  { type: 'item', id: 'access', icon: 'Globe', label: 'Accès au site', external: true },
+  { type: 'item', id: 'parametres', icon: 'Settings', label: 'Paramètres', href: '/dashboard/parametres' },
   { type: 'divider' },
-  {
-    type: 'group', id: 'settings', icon: 'Settings', label: 'Paramètres',
-    items: [
-      { id: 'contrib', icon: 'Users', label: 'Contribution' },
-      { id: 'tech', icon: 'Server', label: 'Données techniques' },
-      { id: 'multi', icon: 'Languages', label: 'Multilingue' },
-      { id: 'domain', icon: 'Globe2', label: 'Noms de domaine' },
-    ],
-  },
   {
     type: 'group', id: 'config', icon: 'Wrench', label: 'Configuration',
     items: [
+      { id: 'contrib', icon: 'Users', label: 'Contribution' },
       { id: 'a11y', icon: 'Eye', label: 'Accessibilité' },
       { id: 'pagesmgr', icon: 'Layout', label: 'Gestion du site' },
       { id: 'mockups', icon: 'Layers', label: 'Maquettes' },
@@ -142,16 +136,25 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
             return <div className="nav-divider" key={`divider-${i}`} role="separator" />;
           }
 
+          if (n.type === 'section-title') {
+            return (
+              <div className="nav-section-title" key={n.id} aria-hidden={collapsed}>
+                {n.label}
+              </div>
+            );
+          }
+
           if (n.type === 'item') {
             const IconEl = Icons[n.icon as IconName];
             const isActive = n.href ? pathname === n.href : active === n.id;
+            const accentClass = n.accent === 'amber' && 'accent-amber';
 
             if (n.href) {
               return (
                 <Link
                   key={n.id}
                   href={n.href}
-                  className={cn('nav-item', isActive && 'active', n.highlight && 'inedi')}
+                  className={cn('nav-item', isActive && 'active', n.highlight && 'inedi', accentClass)}
                   aria-current={isActive ? 'page' : undefined}
                   title={collapsed ? n.label : undefined}
                   onClick={() => setActive(n.id)}
@@ -165,7 +168,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
             return (
               <button
                 key={n.id}
-                className={cn('nav-item', isActive && 'active', n.highlight && 'inedi')}
+                className={cn('nav-item', isActive && 'active', n.highlight && 'inedi', accentClass)}
                 aria-current={isActive ? 'page' : undefined}
                 title={collapsed ? n.label : undefined}
                 onClick={() => setActive(n.id)}
@@ -173,6 +176,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
               >
                 <span className="ico">{IconEl && <IconEl size={18} />}</span>
                 <span className="lbl">{n.label}</span>
+                {n.external && <span className="chev"><Icons.ArrowUpRight size={13} /></span>}
               </button>
             );
           }

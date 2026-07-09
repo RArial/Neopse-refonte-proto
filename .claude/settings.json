@@ -96,7 +96,21 @@
       "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
       "Bash(command -v node)",
       "Bash(npx --yes -p playwright node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
-      "Bash(curl -s http://localhost:3000/dashboard/contenu)"
+      "Bash(curl -s http://localhost:3000/dashboard/contenu)",
+      "Bash(curl -sf http://localhost:3000)",
+      "Bash(chromium-cli --session neopse)",
+      "Bash(node /private/tmp/claude-502/-Users-rarial-neopseRefont/95197e94-5c97-4e9b-b956-3f29e9bc5f4a/scratchpad/verify.mjs)",
+      "Bash(node .verify-tmp.mjs)",
+      "Bash(node -e \"console.log\\(require\\('./package.json'\\).devDependencies\\)\")",
+      "Bash(npm init *)",
+      "Bash(ls \"$HOME/Library/Caches/ms-playwright\" 2>/dev/null || echo \"no cache dir\")",
+      "Read(//Users/rarial/Library/Caches/ms-playwright/**)",
+      "Bash(node verify.mjs)",
+      "Bash(node inspect.mjs)",
+      "Bash(node verify2.mjs)",
+      "Bash(rm -f /private/tmp/claude-502/-Users-rarial-neopseRefont/95197e94-5c97-4e9b-b956-3f29e9bc5f4a/scratchpad/*.mjs)",
+      "Bash(node check-radius.mjs)",
+      "Bash(node check-guard.mjs)"
     ],
     "additionalDirectories": [
       "/Users/rarial/neopseRefont/src/app/dashboard/contenu/module",
