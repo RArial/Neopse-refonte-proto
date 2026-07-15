@@ -110,7 +110,12 @@
       "Bash(node verify2.mjs)",
       "Bash(rm -f /private/tmp/claude-502/-Users-rarial-neopseRefont/95197e94-5c97-4e9b-b956-3f29e9bc5f4a/scratchpad/*.mjs)",
       "Bash(node check-radius.mjs)",
-      "Bash(node check-guard.mjs)"
+      "Bash(node check-guard.mjs)",
+      "Bash(node check-personnalisation.mjs)",
+      "Bash(node check-personnalisation2.mjs)",
+      "Bash(npx tsx -e ' *)",
+      "Bash(node check-personnalisation3.mjs)",
+      "Bash(node check-personnalisation4.mjs)"
     ],
     "additionalDirectories": [
       "/Users/rarial/neopseRefont/src/app/dashboard/contenu/module",

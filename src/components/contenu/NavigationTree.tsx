@@ -24,6 +24,7 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
+import Divider from '@mui/material/Divider';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -57,6 +58,7 @@ import HorizontalRuleOutlinedIcon from '@mui/icons-material/HorizontalRuleOutlin
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import PublishOutlinedIcon from '@mui/icons-material/PublishOutlined';
 import UnarchiveOutlinedIcon from '@mui/icons-material/UnarchiveOutlined';
+import ViewStreamOutlinedIcon from '@mui/icons-material/ViewStreamOutlined';
 import type { AddedModule, ContentItemKind, ModuleDropContainer, NavChildNode, NavNodeKind, NavTreeNode } from '@/types/content';
 import { useContenuStore } from '@/components/contenu/ContenuProvider';
 import { canNestModuleInto, containerOf } from '@/lib/moduleTree';
@@ -1148,6 +1150,38 @@ export function NavigationTree() {
           ) : (
             <EmptyViewState message="Aucun module archivé." />
           ))}
+      </Box>
+
+      <Divider sx={{ borderColor: 'divider' }} />
+
+      <Box sx={{ px: 2.5, py: 2 }}>
+        <Typography
+          variant="overline"
+          color="text.secondary"
+          sx={{ display: 'block', mb: 1, lineHeight: 1.5, letterSpacing: '.06em' }}
+        >
+          Éléments globaux
+        </Typography>
+        <List disablePadding aria-label="Éléments globaux du site">
+          <ListItem
+            disablePadding
+            secondaryAction={
+              <Button component={Link} href="/dashboard/contenu/pied-de-page" size="small" endIcon={<ChevronRightIcon fontSize="small" />}>
+                Modifier
+              </Button>
+            }
+          >
+            <ListItemButton component={Link} href="/dashboard/contenu/pied-de-page" sx={{ py: 1.25, pr: 14, borderRadius: 1.5 }}>
+              <ListItemIcon sx={{ minWidth: 36, color: 'text.secondary' }}>
+                <ViewStreamOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Pied de page"
+                slotProps={{ primary: { sx: { fontWeight: 500, fontSize: 14 } } }}
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
       </Box>
     </Paper>
   );

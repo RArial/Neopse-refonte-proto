@@ -40,6 +40,13 @@ export function ParametresForm() {
     setSettings((prev) => ({ ...prev, domains: [...prev.domains, domain] }));
   }
 
+  function handleEditDomain(id: string, address: string) {
+    setSettings((prev) => ({
+      ...prev,
+      domains: prev.domains.map((domain) => (domain.id === id ? { ...domain, address } : domain)),
+    }));
+  }
+
   function handleCancel() {
     setSettings(saved);
   }
@@ -121,7 +128,7 @@ export function ParametresForm() {
         </SettingsSection>
 
         <SettingsSection icon="Globe" title="Nom de domaine" description="Gérez les noms de domaine associés à votre site">
-          <DomaineSection domains={settings.domains} onAddDomain={handleAddDomain} />
+          <DomaineSection domains={settings.domains} onAddDomain={handleAddDomain} onEditDomain={handleEditDomain} />
         </SettingsSection>
       </Box>
 

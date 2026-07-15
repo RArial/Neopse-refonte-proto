@@ -12,6 +12,7 @@ const SIDEBAR_NAV: NavEntry[] = [
   { type: 'item', id: 'access', icon: 'Globe', label: 'Accès au site', external: true, accent: 'amber' },
   { type: 'item', id: 'dashboard', icon: 'Dashboard', label: 'Tableau de bord', href: '/dashboard' },
   { type: 'item', id: 'contenu', icon: 'Pages', label: 'Contenu', href: '/dashboard/contenu' },
+  { type: 'item', id: 'personnalisation', icon: 'Palette', label: 'Personnalisation', href: '/dashboard/personnalisation' },
   { type: 'item', id: 'parametres', icon: 'Settings', label: 'Paramètres', href: '/dashboard/parametres' },
   { type: 'divider' },
   {
@@ -84,10 +85,15 @@ interface SidebarProps {
 
 export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
   const pathname = usePathname();
+  // Préférence épinglée par l'utilisateur (persistée) : repliée par défaut, le survol la déplie
+  // temporairement (voir `visuallyExpanded`). Épingler via le bouton du bas force l'affichage
+  // déplié en permanence, quel que soit le survol.
   const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem('neopse:sidebar-collapsed') === '1'; }
-    catch { return false; }
+    try { return localStorage.getItem('neopse:sidebar-collapsed') !== '0'; }
+    catch { return true; }
   });
+  const [hovering, setHovering] = useState(false);
+  const visuallyExpanded = collapsed ? hovering : true;
 
   const [openMap, setOpenMap] = useState<Record<string, boolean>>(() => {
     const parent = findParentGroup(activeKey);
@@ -109,21 +115,29 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
   }, []);
 
   const handleGroupClick = useCallback((groupId: string) => {
-    if (collapsed) {
-      setCollapsed(false);
-      try { localStorage.setItem('neopse:sidebar-collapsed', '0'); } catch {}
-      setOpenMap(m => ({ ...m, [groupId]: true }));
-    } else {
-      setOpenMap(m => ({ ...m, [groupId]: !m[groupId] }));
-    }
-  }, [collapsed]);
+    setOpenMap(m => ({ ...m, [groupId]: !m[groupId] }));
+  }, []);
+
+  const handleMouseEnter = useCallback(() => setHovering(true), []);
+  const handleMouseLeave = useCallback(() => setHovering(false), []);
+  const handleFocus = useCallback(() => setHovering(true), []);
+  const handleBlur = useCallback((event: React.FocusEvent<HTMLElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) setHovering(false);
+  }, []);
 
   return (
-    <aside className={cn('sidebar', !collapsed && 'expanded')} aria-label="Navigation principale">
+    <aside
+      className={cn('sidebar', visuallyExpanded && 'expanded')}
+      aria-label="Navigation principale"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    >
       {/* Brand */}
       <div className="brand">
         <div className="logo" aria-hidden="true">N</div>
-        <div className="label" aria-hidden={collapsed}>
+        <div className="label" aria-hidden={!visuallyExpanded}>
           <span className="n">Neopse</span>
           <span className="t">Démo arborescence</span>
         </div>
@@ -138,7 +152,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
 
           if (n.type === 'section-title') {
             return (
-              <div className="nav-section-title" key={n.id} aria-hidden={collapsed}>
+              <div className="nav-section-title" key={n.id} aria-hidden={!visuallyExpanded}>
                 {n.label}
               </div>
             );
@@ -156,7 +170,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
                   href={n.href}
                   className={cn('nav-item', isActive && 'active', n.highlight && 'inedi', accentClass)}
                   aria-current={isActive ? 'page' : undefined}
-                  title={collapsed ? n.label : undefined}
+                  title={!visuallyExpanded ? n.label : undefined}
                   onClick={() => setActive(n.id)}
                 >
                   <span className="ico">{IconEl && <IconEl size={18} />}</span>
@@ -170,7 +184,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
                 key={n.id}
                 className={cn('nav-item', isActive && 'active', n.highlight && 'inedi', accentClass)}
                 aria-current={isActive ? 'page' : undefined}
-                title={collapsed ? n.label : undefined}
+                title={!visuallyExpanded ? n.label : undefined}
                 onClick={() => setActive(n.id)}
                 type="button"
               >
@@ -183,7 +197,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
 
           if (n.type === 'group') {
             const IconEl = Icons[n.icon as IconName];
-            const isOpen = openMap[n.id] && !collapsed;
+            const isOpen = openMap[n.id] && visuallyExpanded;
             const hasActiveChild = n.items.some(it => it.id === active);
 
             return (
@@ -191,7 +205,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
                 <button
                   className={cn('nav-item', isOpen && 'open', hasActiveChild && 'has-active')}
                   onClick={() => handleGroupClick(n.id)}
-                  title={collapsed ? n.label : undefined}
+                  title={!visuallyExpanded ? n.label : undefined}
                   aria-expanded={isOpen}
                   type="button"
                 >
@@ -243,13 +257,15 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
         </button>
       </div>
 
-      {/* Copyright + collapse toggle */}
+      {/* Copyright + épingler déplié/replié */}
       <div className="sidebar-copy">
-        {!collapsed && <span aria-hidden="true">©NEOPSE</span>}
+        {visuallyExpanded && <span aria-hidden="true">©NEOPSE</span>}
         <button
           className="collapse-btn"
           onClick={toggleCollapsed}
-          aria-label={collapsed ? 'Déployer la navigation' : 'Réduire la navigation'}
+          aria-label={collapsed ? 'Garder la navigation dépliée' : 'Replier la navigation'}
+          aria-pressed={!collapsed}
+          title={collapsed ? 'Garder dépliée' : 'Replier'}
           type="button"
         >
           <Icons.ChevronRight

@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      {
+        // L'éditeur de personnalisation embarque le site en direct dans une iframe same-origin
+        // (voir PreviewPane) : DENY casserait ce rendu. SAMEORIGIN garde la protection contre
+        // le framing par un tiers tout en autorisant l'app à s'afficher dans sa propre iframe.
+        source: "/preview/:path*",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
     ];
   },
   images: {

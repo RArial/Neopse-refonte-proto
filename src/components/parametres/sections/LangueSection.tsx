@@ -1,16 +1,16 @@
 'use client';
 
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
@@ -22,11 +22,11 @@ interface LangueSectionProps {
   onChange: (patch: Partial<SiteSettings>) => void;
 }
 
+const uncheckedIcon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
 export function LangueSection({ settings, onChange }: LangueSectionProps) {
-  function handleSpecificLanguagesChange(event: SelectChangeEvent<string[]>) {
-    const value = event.target.value;
-    onChange({ specificLanguages: typeof value === 'string' ? value.split(',') : value });
-  }
+  const selectedLanguages = LANGUAGE_OPTIONS.filter((lang) => settings.specificLanguages.includes(lang.code));
 
   return (
     <Stack spacing={2.5}>
@@ -34,16 +34,12 @@ export function LangueSection({ settings, onChange }: LangueSectionProps) {
         id="parametres-field-defaultLanguage"
         select
         label="Langue par défaut"
-        value={settings.defaultLanguage}
-        onChange={(event) => onChange({ defaultLanguage: event.target.value })}
+        value="fr"
+        disabled
         fullWidth
-        helperText="Langue utilisée par défaut pour les visiteurs du site."
+        helperText="Le français est la langue par défaut du site et ne peut pas être modifiée."
       >
-        {LANGUAGE_OPTIONS.map((lang) => (
-          <MenuItem key={lang.code} value={lang.code}>
-            {lang.label}
-          </MenuItem>
-        ))}
+        <MenuItem value="fr">Français</MenuItem>
       </TextField>
 
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
@@ -84,30 +80,39 @@ export function LangueSection({ settings, onChange }: LangueSectionProps) {
           </FormControl>
 
           {settings.traductionMode === 'specific' && (
-            <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel id="parametres-field-specificLanguages-label">Langues à traduire</InputLabel>
-              <Select
-                labelId="parametres-field-specificLanguages-label"
-                id="parametres-field-specificLanguages"
-                multiple
-                value={settings.specificLanguages}
-                onChange={handleSpecificLanguagesChange}
-                input={<OutlinedInput label="Langues à traduire" />}
-                renderValue={(selected) => (
-                  <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((code) => (
-                      <Chip key={code} size="small" label={LANGUAGE_OPTIONS.find((l) => l.code === code)?.label ?? code} />
-                    ))}
-                  </Stack>
-                )}
-              >
-                {LANGUAGE_OPTIONS.map((lang) => (
-                  <MenuItem key={lang.code} value={lang.code}>
-                    {lang.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Autocomplete
+              multiple
+              disableCloseOnSelect
+              id="parametres-field-specificLanguages"
+              options={LANGUAGE_OPTIONS}
+              value={selectedLanguages}
+              onChange={(_event, value) => onChange({ specificLanguages: value.map((lang) => lang.code) })}
+              getOptionLabel={(option) => option.label}
+              isOptionEqualToValue={(option, value) => option.code === value.code}
+              sx={{ mt: 2 }}
+              renderOption={(props, option, { selected }) => {
+                const { key, ...optionProps } = props;
+                return (
+                  <li key={key} {...optionProps}>
+                    <Checkbox
+                      icon={uncheckedIcon}
+                      checkedIcon={checkedIcon}
+                      checked={selected}
+                      sx={{ mr: 1 }}
+                    />
+                    {option.label}
+                  </li>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Langues à traduire"
+                  placeholder="Rechercher une langue…"
+                  helperText="Recherchez une langue puis cochez-la pour l'ajouter à la traduction."
+                />
+              )}
+            />
           )}
         </Box>
       )}
