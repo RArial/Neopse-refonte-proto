@@ -5,79 +5,26 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons, type IconName } from '@/components/ui/Icons';
+import { PagesFlyoutPanel } from '@/components/layout/PagesFlyoutPanel';
 import type { NavEntry } from '@/types/navigation';
 
 const SIDEBAR_NAV: NavEntry[] = [
   { type: 'section-title', id: 'site-internet', label: 'Site internet' },
   { type: 'item', id: 'access', icon: 'Globe', label: 'Accès au site', external: true, accent: 'amber' },
   { type: 'item', id: 'dashboard', icon: 'Dashboard', label: 'Tableau de bord', href: '/dashboard' },
-  { type: 'item', id: 'contenu', icon: 'Pages', label: 'Contenu', href: '/dashboard/contenu' },
-  { type: 'item', id: 'personnalisation', icon: 'Palette', label: 'Personnalisation', href: '/dashboard/personnalisation' },
+  { type: 'item', id: 'contenu', icon: 'AccountTree', label: 'Structure', href: '/dashboard/contenu' },
+  { type: 'flyout', id: 'pages-flyout', icon: 'Pages', label: 'Pages' },
+  { type: 'item', id: 'personnalisation', icon: 'Brush', label: 'Personnalisation', href: '/dashboard/personnalisation' },
+  { type: 'item', id: 'gestionnaire', icon: 'Folder', label: 'Gestionnaire' },
   { type: 'item', id: 'parametres', icon: 'Settings', label: 'Paramètres', href: '/dashboard/parametres' },
   { type: 'divider' },
-  {
-    type: 'group', id: 'config', icon: 'Wrench', label: 'Configuration',
-    items: [
-      { id: 'contrib', icon: 'Users', label: 'Contribution' },
-      { id: 'a11y', icon: 'Eye', label: 'Accessibilité' },
-      { id: 'pagesmgr', icon: 'Layout', label: 'Gestion du site' },
-      { id: 'mockups', icon: 'Layers', label: 'Maquettes' },
-      { id: 'legal', icon: 'Shield', label: 'Mentions légales' },
-      { id: 'widgets', icon: 'Sliders', label: 'Widgets personnalisés' },
-    ],
-  },
-  {
-    type: 'group', id: 'pages', icon: 'Pages', label: 'Pages & modules',
-    items: [
-      { id: 'news', icon: 'Newspaper', label: 'Actualités', badge: 12 },
-      { id: 'agenda', icon: 'Calendar', label: 'Agenda', badge: 4 },
-      { id: 'directory', icon: 'IdCard', label: 'Annuaire' },
-      { id: 'steps', icon: 'FileText', label: 'Démarches en ligne' },
-      { id: 'faq', icon: 'Question', label: 'FAQ' },
-      { id: 'gallery', icon: 'Photo', label: 'Galeries' },
-      { id: 'polls', icon: 'Vote', label: 'Sondages' },
-      { id: 'free', icon: 'Edit', label: 'Pages libres' },
-    ],
-  },
-  {
-    type: 'group', id: 'shares', icon: 'Share', label: 'Partages',
-    items: [
-      { id: 'flux', icon: 'Rss', label: 'Externalisation des flux' },
-      { id: 'twin', icon: 'Heart', label: 'Jumelages' },
-      { id: 'labels', icon: 'Tag', label: 'Labels' },
-      { id: 'links', icon: 'Link', label: 'Liens' },
-      { id: 'news2', icon: 'Mail', label: 'Newsletters' },
-      { id: 'social', icon: 'AtSign', label: 'Réseaux sociaux' },
-    ],
-  },
-  {
-    type: 'group', id: 'managers', icon: 'Briefcase', label: 'Gestionnaires',
-    items: [
-      { id: 'files', icon: 'Folder', label: 'Gestionnaire de fichiers' },
-      { id: 'forms', icon: 'Form', label: 'Gestionnaire de formulaires' },
-      { id: 'media', icon: 'Image', label: 'Gestionnaire de médias' },
-    ],
-  },
-  {
-    type: 'group', id: 'mobile', icon: 'Smartphone', label: 'Application mobile',
-    items: [
-      { id: 'mtech', icon: 'Database', label: 'Données techniques' },
-      { id: 'reports', icon: 'AlertTriangle', label: 'Signalements', badge: 3 },
-      { id: 'devices', icon: 'Tablet', label: 'Appareils connectés' },
-      { id: 'push', icon: 'Bell', label: 'Notifications push' },
-    ],
-  },
-  { type: 'divider' },
-  { type: 'item', id: 'users', icon: 'Users', label: 'Utilisateurs' },
-  { type: 'item', id: 'inedi', icon: 'UserGroup', label: 'INEDI Citoyens', highlight: true },
+  { type: 'section-title', id: 'projet', label: 'Projet' },
+  { type: 'item', id: 'services', icon: 'AlignJustify', label: 'Services', href: '/dashboard/services' },
+  { type: 'item', id: 'infos-projet', icon: 'Briefcase', label: 'Infos du projet', href: '/dashboard/infos-projet' },
+  { type: 'item', id: 'parrainage', icon: 'UserPlus', label: 'Parrainage', href: '/dashboard/parrainage' },
+  { type: 'item', id: 'commandes', icon: 'Ticket', label: 'Mes commandes', href: '/dashboard/mes-commandes' },
+  { type: 'item', id: 'administrateurs', icon: 'UserGroup', label: 'Administrateurs', href: '/dashboard/administrateurs' },
 ];
-
-function findParentGroup(id: string): string | null {
-  for (const n of SIDEBAR_NAV) {
-    if (n.type === 'group' && n.items.some(i => i.id === id)) return n.id;
-  }
-  return null;
-}
 
 interface SidebarProps {
   activeKey?: string;
@@ -93,16 +40,11 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
     catch { return true; }
   });
   const [hovering, setHovering] = useState(false);
-  const visuallyExpanded = collapsed ? hovering : true;
-
-  const [openMap, setOpenMap] = useState<Record<string, boolean>>(() => {
-    const parent = findParentGroup(activeKey);
-    const m: Record<string, boolean> = {};
-    for (const n of SIDEBAR_NAV) {
-      if (n.type === 'group') m[n.id] = n.id === parent;
-    }
-    return m;
-  });
+  const [pagesFlyoutOpen, setPagesFlyoutOpen] = useState(false);
+  // Le panneau « Pages » gardé ouvert compte comme un survol : la largeur du rail ne doit pas
+  // changer sous lui pendant qu'il est ancré à sa largeur dépliée (sinon un vide apparaît entre
+  // le rail replié et le panneau resté à sa position dépliée).
+  const visuallyExpanded = collapsed ? (hovering || pagesFlyoutOpen) : true;
 
   const [active, setActive] = useState(activeKey);
 
@@ -114,10 +56,6 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
     });
   }, []);
 
-  const handleGroupClick = useCallback((groupId: string) => {
-    setOpenMap(m => ({ ...m, [groupId]: !m[groupId] }));
-  }, []);
-
   const handleMouseEnter = useCallback(() => setHovering(true), []);
   const handleMouseLeave = useCallback(() => setHovering(false), []);
   const handleFocus = useCallback(() => setHovering(true), []);
@@ -126,6 +64,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
   }, []);
 
   return (
+    <>
     <aside
       className={cn('sidebar', visuallyExpanded && 'expanded')}
       aria-label="Navigation principale"
@@ -195,53 +134,23 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
             );
           }
 
-          if (n.type === 'group') {
+          if (n.type === 'flyout') {
             const IconEl = Icons[n.icon as IconName];
-            const isOpen = openMap[n.id] && visuallyExpanded;
-            const hasActiveChild = n.items.some(it => it.id === active);
 
             return (
-              <div key={n.id}>
-                <button
-                  className={cn('nav-item', isOpen && 'open', hasActiveChild && 'has-active')}
-                  onClick={() => handleGroupClick(n.id)}
-                  title={!visuallyExpanded ? n.label : undefined}
-                  aria-expanded={isOpen}
-                  type="button"
-                >
-                  <span className="ico">{IconEl && <IconEl size={18} />}</span>
-                  <span className="lbl">{n.label}</span>
-                  <span className="chev"><Icons.ChevronDown size={14} /></span>
-                </button>
-
-                {isOpen && (
-                  <div className="sub" role="group" aria-label={n.label}>
-                    {n.items.map(it => {
-                      const SubIconEl = Icons[it.icon as IconName];
-                      const isActive = active === it.id;
-
-                      return (
-                        <a
-                          key={it.id}
-                          href={it.href ?? '#'}
-                          className={cn('sub-item', isActive && 'active')}
-                          aria-current={isActive ? 'page' : undefined}
-                          onClick={e => {
-                            if (!it.href) e.preventDefault();
-                            setActive(it.id);
-                          }}
-                        >
-                          <span className="sub-ico">{SubIconEl && <SubIconEl size={14} />}</span>
-                          <span className="sub-lbl">{it.label}</span>
-                          {it.badge != null && (
-                            <span className="sub-badge" aria-label={`${it.badge} éléments`}>{it.badge}</span>
-                          )}
-                        </a>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              <button
+                key={n.id}
+                className={cn('nav-item', pagesFlyoutOpen && 'has-active')}
+                title={!visuallyExpanded ? n.label : undefined}
+                aria-expanded={pagesFlyoutOpen}
+                aria-haspopup="menu"
+                onClick={() => setPagesFlyoutOpen((open) => !open)}
+                type="button"
+              >
+                <span className="ico">{IconEl && <IconEl size={18} />}</span>
+                <span className="lbl">{n.label}</span>
+                <span className="chev"><Icons.ChevronRight size={14} /></span>
+              </button>
             );
           }
 
@@ -275,5 +184,13 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
         </button>
       </div>
     </aside>
+
+    {pagesFlyoutOpen && (
+      <PagesFlyoutPanel
+        left={visuallyExpanded ? 'var(--sidebar-expanded)' : 'var(--sidebar-w)'}
+        onClose={() => setPagesFlyoutOpen(false)}
+      />
+    )}
+    </>
   );
 }

@@ -101,8 +101,8 @@ function KpiCard({ icon, label, value, delta, trend, color, data }: KpiData) {
             borderRadius: '10px',
             display: 'grid',
             placeItems: 'center',
-            bgcolor: 'secondary.main',
-            color: 'common.white',
+            bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.12),
+            color: 'secondary.main',
             flexShrink: 0,
           }}
         >

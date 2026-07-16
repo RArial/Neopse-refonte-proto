@@ -98,6 +98,9 @@ export const Icons = {
   Moon:          icon(<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>),
   LayoutGrid:    icon(<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>),
   AlignJustify:  icon(<path d="M3 6h18M3 10h18M3 14h18M3 18h18"/>),
+  Circle:        icon(<circle cx="12" cy="12" r="9"/>),
+  AccountTree:   icon(<><rect x="3" y="9" width="6" height="6" rx="1.5"/><rect x="15" y="3" width="6" height="6" rx="1.5"/><rect x="15" y="15" width="6" height="6" rx="1.5"/><path d="M9 12h2v-6h4M11 12v6h4"/></>),
+  Brush:         icon(<><path d="m11 10 3 3"/><path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"/><path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"/></>),
 } as const;
 
 export type IconName = keyof typeof Icons;

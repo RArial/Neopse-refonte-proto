@@ -1,6 +1,9 @@
+'use client';
+
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
 import { Icons, type IconName } from '@/components/ui/Icons';
 
 interface ShortcutItem {
@@ -65,8 +68,8 @@ export function Shortcuts() {
                   borderRadius: '12px',
                   display: 'grid',
                   placeItems: 'center',
-                  bgcolor: 'warning.main',
-                  color: 'common.white',
+                  bgcolor: (theme) => alpha(theme.palette.warning.main, 0.14),
+                  color: 'warning.dark',
                   flex: '0 0 40px',
                   transition: 'transform .2s',
                 }}

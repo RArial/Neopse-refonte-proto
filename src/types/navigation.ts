@@ -1,11 +1,3 @@
-export interface NavSubItem {
-  id: string;
-  icon: string;
-  label: string;
-  badge?: number;
-  href?: string;
-}
-
 export interface NavItem {
   type: 'item';
   id: string;
@@ -18,14 +10,6 @@ export interface NavItem {
   accent?: 'amber';
 }
 
-export interface NavGroup {
-  type: 'group';
-  id: string;
-  icon: string;
-  label: string;
-  items: NavSubItem[];
-}
-
 export interface NavSectionTitle {
   type: 'section-title';
   id: string;
@@ -36,4 +20,12 @@ export interface NavDivider {
   type: 'divider';
 }
 
-export type NavEntry = NavItem | NavGroup | NavSectionTitle | NavDivider;
+/** Déclenche un panneau flottant distinct (voir `PagesFlyoutPanel`). */
+export interface NavFlyout {
+  type: 'flyout';
+  id: string;
+  icon: string;
+  label: string;
+}
+
+export type NavEntry = NavItem | NavSectionTitle | NavDivider | NavFlyout;

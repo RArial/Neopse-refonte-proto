@@ -1,6 +1,15 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useId } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Divider from '@mui/material/Divider';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { Icons, type IconName } from '@/components/ui/Icons';
 import { cn } from '@/lib/utils';
 
@@ -91,6 +100,67 @@ function ToolDropdown() {
   );
 }
 
+const CURRENT_USER = { initials: 'QG', name: 'Quentin Girard' };
+
+function AccountMenu() {
+  const router = useRouter();
+  const menuId = useId();
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const open = anchorEl !== null;
+
+  const closeMenu = useCallback(() => setAnchorEl(null), []);
+
+  function handleLogout() {
+    closeMenu();
+    router.push('/');
+  }
+
+  return (
+    <>
+      <button
+        className="avatar"
+        type="button"
+        aria-label={`${CURRENT_USER.name} — Ouvrir le menu du compte`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+      >
+        {CURRENT_USER.initials}
+      </button>
+      <Menu
+        id={menuId}
+        anchorEl={anchorEl}
+        open={open}
+        onClose={closeMenu}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ list: { 'aria-label': 'Menu du compte', dense: true } }}
+      >
+        <MenuItem component={Link} href="/dashboard/profil" onClick={closeMenu}>
+          <ListItemIcon>
+            <PersonOutlineIcon fontSize="small" />
+          </ListItemIcon>
+          Mon profil
+        </MenuItem>
+        <MenuItem component={Link} href="/dashboard/abonnements" onClick={closeMenu}>
+          <ListItemIcon>
+            <NotificationsNoneIcon fontSize="small" />
+          </ListItemIcon>
+          Mes abonnements
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          Déconnexion
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
 export function Topbar() {
   function openTweaks() {
     window.postMessage({ type: '__activate_edit_mode' }, '*');
@@ -122,9 +192,7 @@ export function Topbar() {
         >
           <Icons.Grid size={18} />
         </button>
-        <button className="avatar" type="button" aria-label="Quentin Girard — Paramètres du compte">
-          QG
-        </button>
+        <AccountMenu />
       </div>
     </header>
   );
