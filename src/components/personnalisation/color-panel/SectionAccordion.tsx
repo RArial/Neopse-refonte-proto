@@ -10,22 +10,21 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { resolveSectionProperty, SECTION_PROPERTIES } from '@/lib/personnalisation/colorModel';
 import { usePersonnalisation } from '@/components/personnalisation/PersonnalisationProvider';
-import { PropertyRow } from '@/components/personnalisation/color-panel/PropertyRow';
 import type { SectionKey } from '@/types/personnalisation';
 
 interface SectionAccordionProps {
-  section: SectionKey;
+  /** Omis pour les sections qui ne portent pas de propriétés de couleur (ex. « Maquettes ») —
+   * dans ce cas, la surbrillance de contraste ne peut jamais cibler cette section. */
+  section?: SectionKey;
   label: string;
   infoText: string;
   defaultExpanded?: boolean;
-  beforeContent?: ReactNode;
+  children: ReactNode;
 }
 
-export function SectionAccordion({ section, label, infoText, defaultExpanded, beforeContent }: SectionAccordionProps) {
-  const { draftTokens, activePalette, setSectionRole, highlightTarget } = usePersonnalisation();
-  const properties = SECTION_PROPERTIES[section];
+export function SectionAccordion({ section, label, infoText, defaultExpanded, children }: SectionAccordionProps) {
+  const { highlightTarget } = usePersonnalisation();
   const [expanded, setExpanded] = useState(Boolean(defaultExpanded));
 
   // Un avertissement de contraste concernant cette section force son dépliage, même si l'utilisateur
@@ -34,7 +33,7 @@ export function SectionAccordion({ section, label, infoText, defaultExpanded, be
   const [lastHandledTarget, setLastHandledTarget] = useState(highlightTarget);
   if (highlightTarget !== lastHandledTarget) {
     setLastHandledTarget(highlightTarget);
-    if (highlightTarget?.owner === section) setExpanded(true);
+    if (section && highlightTarget?.owner === section) setExpanded(true);
   }
 
   function handleChange(_event: SyntheticEvent, next: boolean) {
@@ -75,30 +74,7 @@ export function SectionAccordion({ section, label, infoText, defaultExpanded, be
           </Tooltip>
         </Stack>
       </AccordionSummary>
-      <AccordionDetails sx={{ p: 0, borderTop: '1px solid', borderColor: 'divider' }}>
-        {beforeContent}
-        <Stack sx={{ '& > *:not(:last-child)': { borderBottom: '1px solid', borderColor: 'divider' } }}>
-          {properties.map((def) => {
-            const resolved = resolveSectionProperty(draftTokens, activePalette, section, def);
-            const againstDef = def.against ? properties.find((p) => p.key === def.against) : undefined;
-            const againstColorKey = againstDef ? resolveSectionProperty(draftTokens, activePalette, section, againstDef).colorKey : null;
-
-            return (
-              <PropertyRow
-                key={def.key}
-                owner={section}
-                def={def}
-                palette={activePalette}
-                resolvedColorKey={resolved.colorKey}
-                alpha={resolved.alpha}
-                againstColorKey={againstColorKey}
-                onChangeColor={(colorKey) => setSectionRole(section, def.key, colorKey ? { colorKey, alpha: resolved.alpha } : null)}
-                onChangeAlpha={(alpha) => setSectionRole(section, def.key, resolved.colorKey ? { colorKey: resolved.colorKey, alpha } : null)}
-              />
-            );
-          })}
-        </Stack>
-      </AccordionDetails>
+      <AccordionDetails sx={{ p: 0, borderTop: '1px solid', borderColor: 'divider' }}>{children}</AccordionDetails>
     </Accordion>
   );
 }

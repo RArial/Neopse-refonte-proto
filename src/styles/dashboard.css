@@ -12,17 +12,18 @@
 }
 
 /* ===== Sidebar ======================================================= */
-/* Repliée : occupe sa colonne de grille normalement (rail fixe, `--sidebar-w`).
-   Dépliée : passe en position fixed pour se superposer au contenu principal
-   sans jamais faire bouger sa mise en page — la colonne de grille garde sa
-   largeur repliée en permanence. */
+/* Toujours en position fixed, quel que soit l'état (repliée ou dépliée au
+   survol) : elle ne doit jamais suivre le défilement d'une page. La colonne
+   de grille `--sidebar-w` reste réservée en permanence puisque `grid-template-
+   columns` définit une taille de piste explicite, indépendante du fait que
+   la sidebar (hors flux en position fixed) l'occupe ou non. */
 .sidebar {
   grid-column: 1;
   background: var(--navy-900);
   color: #fff;
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   height: 100dvh;
@@ -32,7 +33,6 @@
   z-index: 30;
 }
 .sidebar.expanded {
-  position: fixed;
   width: var(--sidebar-expanded);
   box-shadow: 16px 0 32px -12px rgba(0, 0, 0, .35);
 }
@@ -330,6 +330,7 @@
   color: color-mix(in oklch, white 78%, transparent);
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
@@ -338,6 +339,10 @@
 .pages-flyout-item:hover,
 .pages-flyout-item:focus-visible {
   background: color-mix(in oklch, white 8%, transparent);
+  color: #fff;
+}
+.pages-flyout-item.active {
+  background: color-mix(in oklch, white 9%, transparent);
   color: #fff;
 }
 .pages-flyout-item .ico { flex: 0 0 20px; display: grid; place-items: center; opacity: .85; }
@@ -499,29 +504,6 @@
 }
 .avatar:hover { transform: scale(1.05); box-shadow: 0 0 0 3px var(--amber-soft); }
 
-/* ===== Help float ==================================================== */
-.help-float {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: 30;
-  background: var(--coral);
-  color: #fff;
-  border: 0;
-  border-radius: 999px;
-  padding: 12px 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  box-shadow: 0 8px 24px -6px color-mix(in oklch, var(--coral) 40%, transparent);
-  transition: transform .15s;
-  font-family: inherit;
-}
-.help-float:hover { transform: translateY(-2px); }
-
 /* ===== Page skeleton (loading state) ================================= */
 @keyframes skel-shimmer {
   from { background-position: -400px 0; }
@@ -543,4 +525,16 @@
 .skel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .skel-grid--kpi { grid-template-columns: repeat(4, 1fr); }
 .skel-card { height: 90px; }
+
+/* ===== Impression (ex. détail de commande) ============================ */
+@media print {
+  .app > aside,
+  .topbar,
+  .no-print {
+    display: none !important;
+  }
+  .app {
+    display: block;
+  }
+}
 .skel-kpi { height: 120px; }

@@ -1,7 +1,7 @@
 'use client';
 
-import { useLayoutEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { usePersonnalisation } from '@/components/personnalisation/PersonnalisationProvider';
 import { ThemeEditorPage } from '@/components/personnalisation/ThemeEditorPage';
 
@@ -26,9 +26,20 @@ interface VariantEditorRouteProps {
  * variantes sans jamais se stabiliser). Le cleanup rend le premier passage idempotent : un second
  * passage relance la même action « sélectionner » au lieu de tomber dans la correction d'URL. */
 export function VariantEditorRoute({ variantId }: VariantEditorRouteProps) {
-  const { activeVariant, requestSelectVariant, pendingVariantSwitchId } = usePersonnalisation();
+  const { activeVariant, requestSelectVariant, pendingVariantSwitchId, openSection } = usePersonnalisation();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const lastSyncedVariantId = useRef<string | null>(null);
+
+  // Deep-link « section » (ex. lien « Personnalisation » depuis l'écran Pied de page) : ouvre
+  // directement la section demandée dans l'onglet Détails.
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section === 'general' || section === 'header' || section === 'internalHeader' || section === 'footer') {
+      openSection(section);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useLayoutEffect(() => {
     if (pendingVariantSwitchId !== null) return;

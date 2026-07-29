@@ -93,9 +93,14 @@ export function InfosProjetForm() {
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
         sx={{
+          position: 'sticky',
+          top: 62, // hauteur fixe de la Topbar (elle-même sticky) — évite que ce header ne se cache dessous
+          zIndex: 10,
+          bgcolor: 'background.default',
           alignItems: { xs: 'flex-start', sm: 'flex-end' },
           justifyContent: 'space-between',
           mb: 2.5,
+          pt: { xs: 2, md: 2.5 },
           pb: 2,
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -124,7 +129,8 @@ export function InfosProjetForm() {
         <SettingsSection
           icon="Briefcase"
           title="Informations générales concernant le Projet"
-          description="Structure, identité et coordonnées de votre projet"
+          description="Structure, identité, coordonnées et vignette de votre projet"
+          collapsible={false}
         >
           <Stack spacing={2.5}>
             <TextField
@@ -212,15 +218,57 @@ export function InfosProjetForm() {
               fullWidth
             />
 
+            <Stack spacing={0.75}>
+              <Typography variant="subtitle2" component="h3" sx={{ fontWeight: 700 }}>
+                Vignette du projet
+              </Typography>
+              <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    width: 96,
+                    height: 96,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    display: 'grid',
+                    placeItems: 'center',
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    bgcolor: 'action.hover',
+                    position: 'relative',
+                  }}
+                >
+                  {info.thumbnailUrl ? (
+                    <Image src={info.thumbnailUrl} alt="Vignette du projet" fill unoptimized style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <Box sx={{ color: 'text.disabled' }} aria-hidden="true">
+                      <Icons.Image size={28} />
+                    </Box>
+                  )}
+                </Box>
+                <Stack spacing={0.75}>
+                  <Button component="label" variant="contained" size="small" startIcon={<Icons.Folder size={16} />} sx={{ alignSelf: 'flex-start' }}>
+                    Ajouter une vignette
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      hidden
+                      onChange={handleThumbnailChange}
+                      aria-label="Choisir une vignette pour le projet"
+                    />
+                  </Button>
+                  <Typography variant="caption" color="text.secondary">
+                    Format JPG, PNG ou WebP, ratio carré recommandé.
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Stack>
+
             <FormControlLabel
-              control={
-                <Checkbox
-                  checked={info.acceptsTerms}
-                  onChange={(event) => setInfo((prev) => ({ ...prev, acceptsTerms: event.target.checked }))}
-                />
-              }
+              control={<Checkbox checked disabled />}
               label={
-                <Typography variant="body2">
+                <Typography variant="body2" color="text.secondary">
                   J&apos;accepte les{' '}
                   <Link href="#" onClick={(event) => event.preventDefault()}>
                     Conditions Générales d&apos;Utilisation
@@ -229,50 +277,6 @@ export function InfosProjetForm() {
                 </Typography>
               }
             />
-          </Stack>
-        </SettingsSection>
-
-        <SettingsSection icon="Image" title="Vignette du Projet" description="Visuel affiché sur votre fiche projet">
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <Box
-              sx={{
-                width: 96,
-                height: 96,
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                display: 'grid',
-                placeItems: 'center',
-                overflow: 'hidden',
-                flexShrink: 0,
-                bgcolor: 'action.hover',
-                position: 'relative',
-              }}
-            >
-              {info.thumbnailUrl ? (
-                <Image src={info.thumbnailUrl} alt="Vignette du projet" fill unoptimized style={{ objectFit: 'cover' }} />
-              ) : (
-                <Box sx={{ color: 'text.disabled' }} aria-hidden="true">
-                  <Icons.Image size={28} />
-                </Box>
-              )}
-            </Box>
-            <Stack spacing={0.75}>
-              <Button component="label" variant="contained" size="small" startIcon={<Icons.Folder size={16} />} sx={{ alignSelf: 'flex-start' }}>
-                J&apos;ajoute une vignette
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  hidden
-                  onChange={handleThumbnailChange}
-                  aria-label="Choisir une vignette pour le projet"
-                />
-              </Button>
-              <Typography variant="caption" color="text.secondary">
-                Format JPG, PNG ou WebP, ratio carré recommandé.
-              </Typography>
-            </Stack>
           </Stack>
         </SettingsSection>
       </Box>

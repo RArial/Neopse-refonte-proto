@@ -3,16 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
+interface UseUnsavedChangesGuardOptions {
+  /** Préfixes de chemin (ex. sous-pages d'un même écran) qui ne déclenchent pas l'avertissement. */
+  excludePrefixes?: string[];
+}
+
+const EMPTY_PREFIXES: string[] = [];
+
 /**
  * Avertit l'utilisateur avant de quitter la page tant que `isDirty` est vrai :
  * - navigateur (fermeture d'onglet, rechargement, saisie d'une nouvelle URL) via `beforeunload` ;
  * - navigation interne (clic sur un lien `next/link`) interceptée en amont, avant que le routeur ne l'exécute.
  */
-export function useUnsavedChangesGuard(isDirty: boolean) {
+export function useUnsavedChangesGuard(isDirty: boolean, options: UseUnsavedChangesGuardOptions = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const isDirtyRef = useRef(isDirty);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const excludePrefixes = options.excludePrefixes ?? EMPTY_PREFIXES;
 
   useEffect(() => {
     isDirtyRef.current = isDirty;
@@ -47,6 +55,7 @@ export function useUnsavedChangesGuard(isDirty: boolean) {
         return;
       }
       if (url.origin !== window.location.origin || url.pathname === pathname) return;
+      if (excludePrefixes.some((prefix) => url.pathname.startsWith(prefix))) return;
 
       event.preventDefault();
       setPendingHref(`${url.pathname}${url.search}${url.hash}`);
@@ -54,7 +63,7 @@ export function useUnsavedChangesGuard(isDirty: boolean) {
 
     document.addEventListener('click', handleClick, true);
     return () => document.removeEventListener('click', handleClick, true);
-  }, [pathname]);
+  }, [pathname, excludePrefixes]);
 
   const confirmLeave = useCallback(() => {
     if (pendingHref) router.push(pendingHref);

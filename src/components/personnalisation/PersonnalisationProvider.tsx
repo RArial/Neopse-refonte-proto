@@ -1,17 +1,16 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { computeManualOverrideIssues, createDefaultTokens } from '@/lib/personnalisation/colorModel';
+import { computeManualOverrideIssues, createDefaultTokens, SECTION_PROPERTIES } from '@/lib/personnalisation/colorModel';
 import { createId, createPreviewSlug, SEED_CUSTOM_PALETTES, SEED_HISTORY, SEED_VARIANTS } from '@/lib/personnalisation/seed';
 import { getPreset, NEOPSE_DEFAULT_PALETTE_ID, PRESET_PALETTES } from '@/lib/personnalisation/palettes';
 import { TEMPLATES } from '@/lib/personnalisation/templates';
-import { resolveRevealTarget, roleId } from '@/lib/personnalisation/previewRoles';
-import {
-  PREVIEW_CLEAR_HIGHLIGHT_MESSAGE,
-  PREVIEW_HIGHLIGHT_MESSAGE,
-} from '@/components/personnalisation/preview-site/previewMessages';
+import { resolveRevealTarget } from '@/lib/personnalisation/previewRoles';
 import type {
+  BackgroundGraphicKind,
+  BackgroundMode,
+  BackgroundSlot,
   ColorKey,
   ContrastIssue,
   EditorStatus,
@@ -28,7 +27,7 @@ import { MODULE_KEYS, PAGE_GABARITS } from '@/types/personnalisation';
 
 const CURRENT_USER = 'Vous';
 
-export type EditorTab = 'maquette' | 'modifier';
+export type EditorTab = 'general' | 'details';
 
 export interface HighlightTarget {
   owner: SectionKey | ModuleKey;
@@ -87,18 +86,23 @@ interface PersonnalisationStore {
 
   setTemplate: (templateId: string) => void;
   setTypographyPairing: (pairingId: string) => void;
+  setLogo: (slot: keyof ThemeTokens['logos'], url: string | null) => void;
+
+  setSearchEnabled: (enabled: boolean) => void;
+  setBackgroundMode: (slot: BackgroundSlot, mode: BackgroundMode) => void;
+  setBackgroundGraphicKind: (slot: BackgroundSlot, kind: BackgroundGraphicKind) => void;
+  setBackgroundImage: (slot: BackgroundSlot, url: string | null) => void;
+  setBackgroundTexture: (slot: BackgroundSlot, textureId: string | null) => void;
 
   openModuleAccordion: () => void;
   setModuleAccordionOpen: (open: boolean) => void;
   dismissModuleCoexistenceMessage: () => void;
   setActiveEditorTab: (tab: EditorTab) => void;
   focusContrastIssue: (issue: ContrastIssue) => void;
+  openSection: (section: SectionKey) => void;
   clearHighlight: () => void;
 
   setPreviewPageId: (pageId: PageGabaritId) => void;
-  registerPreviewFrame: (win: Window | null) => void;
-  highlightRole: (owner: SectionKey | ModuleKey, propertyKey: string) => void;
-  clearHighlightRole: () => void;
   requestReveal: (owner: SectionKey | ModuleKey, propertyKey: string) => void;
 
   save: () => void;
@@ -115,7 +119,6 @@ interface PersonnalisationStore {
 
   duplicateVariant: (id: string, nameOverride?: string) => string | null;
   createVariant: () => string;
-  duplicateActiveIntoNewVariant: () => { id: string; name: string };
   renameVariant: (id: string, name: string) => void;
   deleteVariant: (id: string) => void;
   restoreFromHistory: (entryId: string) => void;
@@ -142,11 +145,10 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
   const [publishTargetId, setPublishTargetId] = useState<string | null>(null);
   const [moduleCoexistenceMessage, setModuleCoexistenceMessage] = useState<string | null>(null);
   const [moduleAccordionOpen, setModuleAccordionOpen] = useState(false);
-  const [activeEditorTab, setActiveEditorTab] = useState<EditorTab>('maquette');
+  const [activeEditorTab, setActiveEditorTab] = useState<EditorTab>('general');
   const [highlightTarget, setHighlightTarget] = useState<HighlightTarget | null>(null);
   const [previewPageId, setPreviewPageId] = useState<PageGabaritId>(PAGE_GABARITS[0].id as PageGabaritId);
   const [revealCommand, setRevealCommand] = useState<RevealCommand | null>(null);
-  const previewFrameRef = useRef<Window | null>(null);
 
   const activePalette = useMemo(() => resolvePalette(draftTokens.paletteId, customPalettes), [draftTokens.paletteId, customPalettes]);
 
@@ -273,6 +275,65 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
     [markDirty],
   );
 
+  const setLogo = useCallback(
+    (slot: keyof ThemeTokens['logos'], url: string | null) => {
+      setDraftTokens((prev) => ({ ...prev, logos: { ...prev.logos, [slot]: url } }));
+      markDirty();
+    },
+    [markDirty],
+  );
+
+  // ─── Recherche & fonds graphiques ───────────────────────────────────────
+
+  const setSearchEnabled = useCallback(
+    (enabled: boolean) => {
+      setDraftTokens((prev) => ({ ...prev, searchEnabled: enabled }));
+      markDirty();
+    },
+    [markDirty],
+  );
+
+  const setBackgroundMode = useCallback(
+    (slot: BackgroundSlot, mode: BackgroundMode) => {
+      setDraftTokens((prev) => ({ ...prev, backgroundModes: { ...prev.backgroundModes, [slot]: mode } }));
+      markDirty();
+    },
+    [markDirty],
+  );
+
+  const setBackgroundGraphicKind = useCallback(
+    (slot: BackgroundSlot, kind: BackgroundGraphicKind) => {
+      setDraftTokens((prev) => ({
+        ...prev,
+        backgroundGraphics: { ...prev.backgroundGraphics, [slot]: { ...prev.backgroundGraphics[slot], kind } },
+      }));
+      markDirty();
+    },
+    [markDirty],
+  );
+
+  const setBackgroundImage = useCallback(
+    (slot: BackgroundSlot, url: string | null) => {
+      setDraftTokens((prev) => ({
+        ...prev,
+        backgroundGraphics: { ...prev.backgroundGraphics, [slot]: { ...prev.backgroundGraphics[slot], imageUrl: url } },
+      }));
+      markDirty();
+    },
+    [markDirty],
+  );
+
+  const setBackgroundTexture = useCallback(
+    (slot: BackgroundSlot, textureId: string | null) => {
+      setDraftTokens((prev) => ({
+        ...prev,
+        backgroundGraphics: { ...prev.backgroundGraphics, [slot]: { ...prev.backgroundGraphics[slot], textureId } },
+      }));
+      markDirty();
+    },
+    [markDirty],
+  );
+
   const openModuleAccordion = useCallback(() => setModuleAccordionOpen(true), []);
   const dismissModuleCoexistenceMessage = useCallback(() => setModuleCoexistenceMessage(null), []);
 
@@ -281,29 +342,25 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
   const clearHighlight = useCallback(() => setHighlightTarget(null), []);
 
   const focusContrastIssue = useCallback((issue: ContrastIssue) => {
-    setActiveEditorTab('modifier');
+    setActiveEditorTab('details');
     if (MODULE_KEYS.includes(issue.section as ModuleKey)) setModuleAccordionOpen(true);
     setHighlightTarget({ owner: issue.section, propertyKey: issue.propertyKey });
   }, []);
 
+  // Ouvre l'onglet Détails et déplie l'accordéon d'une section (ex. lien « Personnalisation »
+  // depuis l'écran Pied de page) — réutilise le mécanisme de surbrillance/scroll de
+  // `focusContrastIssue`, ciblé sur la première propriété de la section faute de propriété précise.
+  const openSection = useCallback((section: SectionKey) => {
+    const firstProperty = SECTION_PROPERTIES[section]?.[0];
+    if (!firstProperty) return;
+    setActiveEditorTab('details');
+    setHighlightTarget({ owner: section, propertyKey: firstProperty.key });
+  }, []);
+
   // ─── Liaison contrôle ↔ aperçu ────────────────────────────────────────────
-  // `previewFrameRef` pointe vers la fenêtre iframe courante (enregistrée par PreviewPane). Le
-  // survol (highlight/clear) poste directement dessus, sans passer par le state React : c'est un
-  // signal transitoire haute fréquence, il n'a pas besoin de déclencher de re-render. Le bouton œil
-  // (reveal) passe lui par `revealCommand` car il peut nécessiter un changement de gabarit — donc un
-  // rendu React (nouvelle URL d'iframe) — avant de pouvoir viser le bon élément.
-
-  const registerPreviewFrame = useCallback((win: Window | null) => {
-    previewFrameRef.current = win;
-  }, []);
-
-  const highlightRole = useCallback((owner: SectionKey | ModuleKey, propertyKey: string) => {
-    previewFrameRef.current?.postMessage({ type: PREVIEW_HIGHLIGHT_MESSAGE, role: roleId(owner, propertyKey) }, window.location.origin);
-  }, []);
-
-  const clearHighlightRole = useCallback(() => {
-    previewFrameRef.current?.postMessage({ type: PREVIEW_CLEAR_HIGHLIGHT_MESSAGE }, window.location.origin);
-  }, []);
+  // Le bouton œil (reveal) passe par `revealCommand` car il peut nécessiter un changement de
+  // gabarit — donc un rendu React (nouvelle URL d'iframe) — avant de pouvoir viser le bon élément.
+  // C'est le seul déclencheur de surbrillance dans l'aperçu : le survol seul n'en produit jamais.
 
   const requestReveal = useCallback(
     (owner: SectionKey | ModuleKey, propertyKey: string) => {
@@ -469,29 +526,6 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
     return newVariant.id;
   }, []);
 
-  // Duplique la variante active (état courant, brouillon en cours compris) puis bascule
-  // immédiatement dessus — l'original n'est jamais réécrit, ses tokens sauvegardés restent intacts.
-  const duplicateActiveIntoNewVariant = useCallback((): { id: string; name: string } => {
-    const name = `Copie de ${activeVariant.name}`;
-    const newVariant: Variant = {
-      id: createId('variant'),
-      name,
-      templateId: draftTemplateId,
-      tokens: draftTokens,
-      status: 'saved',
-      previewSlug: createPreviewSlug(name),
-      updatedAt: new Date().toISOString(),
-      updatedBy: CURRENT_USER,
-    };
-    setVariants((prev) => [...prev, newVariant]);
-    setActiveVariantId(newVariant.id);
-    setDraftTokens(newVariant.tokens);
-    setDraftTemplateId(newVariant.templateId);
-    setDraftForkId(forkIdFor(newVariant.tokens, customPalettes));
-    setStatus('idle');
-    return { id: newVariant.id, name };
-  }, [activeVariant, draftTokens, draftTemplateId, customPalettes]);
-
   const renameVariant = useCallback((id: string, name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -581,16 +615,20 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
     resetToAuto,
     setTemplate,
     setTypographyPairing,
+    setLogo,
+    setSearchEnabled,
+    setBackgroundMode,
+    setBackgroundGraphicKind,
+    setBackgroundImage,
+    setBackgroundTexture,
     openModuleAccordion,
     setModuleAccordionOpen,
     dismissModuleCoexistenceMessage,
     setActiveEditorTab,
     focusContrastIssue,
+    openSection,
     clearHighlight,
     setPreviewPageId,
-    registerPreviewFrame,
-    highlightRole,
-    clearHighlightRole,
     requestReveal,
     save,
     cancelDraft,
@@ -603,7 +641,6 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
     publishVariant,
     duplicateVariant,
     createVariant,
-    duplicateActiveIntoNewVariant,
     renameVariant,
     deleteVariant,
     restoreFromHistory,

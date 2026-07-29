@@ -106,10 +106,10 @@ function EditDomainDialogForm({ domain, onClose, onConfirm }: EditDomainDialogFo
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button color="inherit" onClick={onClose}>
-          J&apos;annule
+          Annuler
         </Button>
         <Button variant="contained" onClick={handleConfirm}>
-          Je confirme
+          Confirmer
         </Button>
       </DialogActions>
     </>

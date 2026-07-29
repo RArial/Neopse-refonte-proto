@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import NextLink from 'next/link';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -18,45 +19,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-
-interface CommandeRecord {
-  id: string;
-  date: string;
-  orderNumber: string;
-  invoiceUrl: string;
-  prestation: string;
-  duration: string;
-  amountTtc: number;
-}
-
-const COMMANDES: CommandeRecord[] = [
-  {
-    id: 'cmd-622',
-    date: '2026-04-09',
-    orderNumber: 'RDC-WEB-20260409-622',
-    invoiceUrl: 'https://chorus-pro.gouv.fr',
-    prestation: 'Outil (Site Internet)',
-    duration: '1 an',
-    amountTtc: 0,
-  },
-  {
-    id: 'cmd-621',
-    date: '2026-04-09',
-    orderNumber: 'RDC-WEB-20260409-621',
-    invoiceUrl: 'https://chorus-pro.gouv.fr',
-    prestation: 'Outil (Site Internet)',
-    duration: '1 an',
-    amountTtc: 0,
-  },
-];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-function formatAmount(value: number): string {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
-}
+import { COMMANDES, formatCommandeAmount as formatAmount, formatCommandeDate as formatDate } from '@/types/commandes';
 
 export function CommandesTable() {
   const [query, setQuery] = useState('');
@@ -140,7 +103,12 @@ export function CommandesTable() {
                   <TableCell sx={{ fontWeight: 700 }}>{formatAmount(commande.amountTtc)}</TableCell>
                   <TableCell align="right">
                     <Tooltip title={`Voir le détail de la commande ${commande.orderNumber}`}>
-                      <IconButton size="small" aria-label={`Voir le détail de la commande ${commande.orderNumber}`}>
+                      <IconButton
+                        size="small"
+                        component={NextLink}
+                        href={`/dashboard/mes-commandes/${commande.id}`}
+                        aria-label={`Voir le détail de la commande ${commande.orderNumber}`}
+                      >
                         <VisibilityOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>

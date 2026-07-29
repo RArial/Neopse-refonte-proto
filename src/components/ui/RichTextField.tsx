@@ -8,39 +8,58 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Box from '@mui/material/Box';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
+import Stack from '@mui/material/Stack';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface RichTextFieldProps {
   label: string;
   value: string;
-  onChange: (html: string) => void;
+  onChange?: (html: string) => void;
   placeholder?: string;
   error?: boolean;
   helperText?: string;
   minHeight?: number;
+  /** Affiche le contenu formaté sans barre d'outils ni possibilité d'édition (lecture seule). */
+  readOnly?: boolean;
+  /** Icône d'information avec infobulle, affichée à côté du libellé. */
+  infoTooltip?: string;
 }
 
-export function RichTextField({ label, value, onChange, placeholder, error, helperText, minHeight = 140 }: RichTextFieldProps) {
+export function RichTextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  error,
+  helperText,
+  minHeight = 140,
+  readOnly = false,
+  infoTooltip,
+}: RichTextFieldProps) {
   const editor = useEditor({
     immediatelyRender: false,
+    editable: !readOnly,
     extensions: [
       StarterKit.configure({ heading: false, blockquote: false, codeBlock: false, horizontalRule: false }),
       Underline,
       Placeholder.configure({ placeholder }),
     ],
     content: value,
-    onUpdate: ({ editor: instance }) => onChange(instance.getHTML()),
+    onUpdate: ({ editor: instance }) => onChange?.(instance.getHTML()),
     editorProps: {
       attributes: {
         role: 'textbox',
         'aria-multiline': 'true',
         'aria-label': label,
+        'aria-readonly': readOnly ? 'true' : 'false',
       },
     },
   });
@@ -74,22 +93,32 @@ export function RichTextField({ label, value, onChange, placeholder, error, help
 
   return (
     <Box>
-      <FormLabel component="legend" sx={{ display: 'block', mb: 0.75, fontSize: 13 }} error={error}>
-        {label}
-      </FormLabel>
+      <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mb: 0.75 }}>
+        <FormLabel component="legend" sx={{ fontSize: 13 }} error={error}>
+          {label}
+        </FormLabel>
+        {infoTooltip && (
+          <Tooltip title={infoTooltip}>
+            <InfoOutlinedIcon fontSize="small" color="action" />
+          </Tooltip>
+        )}
+      </Stack>
 
       <Box
         sx={{
-          border: '1px solid',
+          border: readOnly ? 'none' : '1px solid',
           borderColor: error ? 'error.main' : 'divider',
           borderRadius: 2,
           overflow: 'hidden',
-          '&:focus-within': {
-            borderColor: error ? 'error.main' : 'primary.main',
-            boxShadow: (theme) => `0 0 0 1px ${theme.palette[error ? 'error' : 'primary'].main}`,
-          },
+          ...(!readOnly && {
+            '&:focus-within': {
+              borderColor: error ? 'error.main' : 'primary.main',
+              boxShadow: (theme) => `0 0 0 1px ${theme.palette[error ? 'error' : 'primary'].main}`,
+            },
+          }),
         }}
       >
+        {!readOnly && (
         <ToggleButtonGroup
           size="small"
           aria-label={`Options de mise en forme — ${label}`}
@@ -146,12 +175,13 @@ export function RichTextField({ label, value, onChange, placeholder, error, help
             <FormatListNumberedIcon fontSize="small" />
           </ToggleButton>
         </ToggleButtonGroup>
+        )}
 
         <Box
           sx={{
-            px: 1.75,
-            py: 1.25,
-            minHeight,
+            px: readOnly ? 0 : 1.75,
+            py: readOnly ? 0 : 1.25,
+            minHeight: readOnly ? 'auto' : minHeight,
             fontFamily: 'var(--font-inter), system-ui, sans-serif',
             fontSize: 14,
             lineHeight: 1.6,

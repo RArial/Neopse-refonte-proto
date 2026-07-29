@@ -1,90 +1,81 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
+import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
-import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SettingsSection } from '@/components/parametres/SettingsSection';
+import { useFooterContent } from '@/components/contenu/footer/FooterContentProvider';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
-import {
-  createFooterId,
-  DEFAULT_FOOTER_CONTENT,
-  SOCIAL_NETWORKS,
-  SOCIAL_NETWORK_LABELS,
-  type FooterContent,
-  type FooterLink,
-  type SocialLink,
-  type SocialNetwork,
-} from '@/types/footer';
+import { SEED_VARIANTS } from '@/lib/personnalisation/seed';
+import { SOCIAL_NETWORKS, SOCIAL_NETWORK_LABELS, type SocialNetwork } from '@/types/footer';
 
-function nextUnusedNetwork(existing: SocialLink[]): SocialNetwork {
-  const used = new Set(existing.map((s) => s.network));
-  return SOCIAL_NETWORKS.find((network) => !used.has(network)) ?? SOCIAL_NETWORKS[0];
-}
+const LIENS_EXCLUDED_PREFIXES = ['/dashboard/contenu/pied-de-page/liens'];
+
+const PUBLISHED_VARIANT_ID = (SEED_VARIANTS.find((variant) => variant.status === 'published') ?? SEED_VARIANTS[0]).id;
 
 export function FooterContentForm() {
-  const [saved, setSaved] = useState<FooterContent>(DEFAULT_FOOTER_CONTENT);
-  const [content, setContent] = useState<FooterContent>(DEFAULT_FOOTER_CONTENT);
+  const {
+    content,
+    isDirty,
+    save,
+    cancel,
+    setTitle,
+    setText,
+    removeLink,
+    addLinkCategory,
+    updateLinkCategory,
+    removeLinkCategory,
+    updateSocialLink,
+    addSocialLink,
+    removeSocialLink,
+  } = useFooterContent();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
 
-  const isDirty = useMemo(() => JSON.stringify(content) !== JSON.stringify(saved), [content, saved]);
-  const { isDialogOpen, confirmLeave, cancelLeave } = useUnsavedChangesGuard(isDirty);
+  const { isDialogOpen, confirmLeave, cancelLeave } = useUnsavedChangesGuard(isDirty, { excludePrefixes: LIENS_EXCLUDED_PREFIXES });
+
+  const categoryById = useMemo(() => new Map(content.linkCategories.map((category) => [category.id, category])), [content.linkCategories]);
 
   function handleCancel() {
-    setContent(saved);
+    cancel();
   }
 
   function handleSave() {
-    setSaved(content);
+    save();
     setSuccessMessage('Le pied de page a bien été enregistré.');
   }
 
-  function updateLink(id: string, patch: Partial<FooterLink>) {
-    setContent((prev) => ({ ...prev, links: prev.links.map((link) => (link.id === id ? { ...link, ...patch } : link)) }));
+  function handleRemoveLinkCategory(id: string, name: string) {
+    const removed = removeLinkCategory(id);
+    setCategoryError(removed ? null : `Impossible de supprimer « ${name || 'cette catégorie'} » : elle est utilisée par au moins un lien.`);
+    if (removed && editingCategoryId === id) setEditingCategoryId(null);
   }
 
-  function addLink() {
-    setContent((prev) => ({ ...prev, links: [...prev.links, { id: createFooterId('footer-link'), label: '', url: '' }] }));
-  }
-
-  function removeLink(id: string) {
-    setContent((prev) => ({ ...prev, links: prev.links.filter((link) => link.id !== id) }));
-  }
-
-  function updateSocialLink(id: string, patch: Partial<SocialLink>) {
-    setContent((prev) => ({
-      ...prev,
-      socialLinks: prev.socialLinks.map((social) => (social.id === id ? { ...social, ...patch } : social)),
-    }));
-  }
-
-  function addSocialLink() {
-    setContent((prev) => ({
-      ...prev,
-      socialLinks: [
-        ...prev.socialLinks,
-        { id: createFooterId('footer-social'), network: nextUnusedNetwork(prev.socialLinks), url: '' },
-      ],
-    }));
-  }
-
-  function removeSocialLink(id: string) {
-    setContent((prev) => ({ ...prev, socialLinks: prev.socialLinks.filter((social) => social.id !== id) }));
+  function handleAddLinkCategory() {
+    const id = addLinkCategory();
+    setEditingCategoryId(id);
   }
 
   return (
@@ -93,9 +84,14 @@ export function FooterContentForm() {
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
         sx={{
+          position: 'sticky',
+          top: 62,
+          zIndex: 10,
+          bgcolor: 'background.default',
           alignItems: { xs: 'flex-start', sm: 'flex-end' },
           justifyContent: 'space-between',
           mb: 2.5,
+          pt: { xs: 2, md: 2.5 },
           pb: 2,
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -111,16 +107,6 @@ export function FooterContentForm() {
         </Box>
 
         <Stack direction="row" spacing={1.5} sx={{ flexShrink: 0 }}>
-          <Button
-            component={Link}
-            href="/dashboard/personnalisation"
-            variant="text"
-            color="inherit"
-            startIcon={<PaletteOutlinedIcon fontSize="small" />}
-            sx={{ color: 'text.secondary' }}
-          >
-            Modifier l&apos;apparence
-          </Button>
           <Button type="button" variant="outlined" color="inherit" onClick={handleCancel} disabled={!isDirty}>
             Annuler
           </Button>
@@ -131,7 +117,11 @@ export function FooterContentForm() {
       </Stack>
 
       <Alert severity="info" variant="outlined" sx={{ mb: 2.5 }}>
-        Les couleurs du pied de page se règlent dans l&apos;écran Apparence — cet écran ne gère que son contenu.
+        Les couleurs du pied de page se règlent dans l&apos;écran{' '}
+        <Link component={NextLink} href={`/dashboard/personnalisation/${PUBLISHED_VARIANT_ID}?section=footer`} sx={{ fontWeight: 600 }}>
+          Personnalisation
+        </Link>{' '}
+        — cet écran ne gère que son contenu.
       </Alert>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -141,16 +131,11 @@ export function FooterContentForm() {
           description="Titre et texte affichés au-dessus des liens du pied de page"
         >
           <Stack spacing={2.5}>
-            <TextField
-              label="Titre"
-              value={content.title}
-              onChange={(event) => setContent((prev) => ({ ...prev, title: event.target.value }))}
-              fullWidth
-            />
+            <TextField label="Titre" value={content.title} onChange={(event) => setTitle(event.target.value)} fullWidth />
             <TextField
               label="Texte"
               value={content.text}
-              onChange={(event) => setContent((prev) => ({ ...prev, text: event.target.value }))}
+              onChange={(event) => setText(event.target.value)}
               fullWidth
               multiline
               minRows={2}
@@ -163,35 +148,182 @@ export function FooterContentForm() {
           title="Liens"
           description="Liens secondaires affichés dans le pied de page (mentions légales, accessibilité…)"
         >
-          <Stack spacing={2}>
-            {content.links.map((link) => (
-              <Stack key={link.id} direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ alignItems: { sm: 'center' } }}>
-                <TextField
-                  label="Libellé"
-                  value={link.label}
-                  onChange={(event) => updateLink(link.id, { label: event.target.value })}
-                  size="small"
-                  fullWidth
-                />
-                <TextField
-                  label="URL"
-                  value={link.url}
-                  onChange={(event) => updateLink(link.id, { url: event.target.value })}
-                  size="small"
-                  fullWidth
-                />
-                <IconButton
-                  onClick={() => removeLink(link.id)}
-                  aria-label={`Supprimer le lien ${link.label || 'sans titre'}`}
-                  sx={{ flexShrink: 0 }}
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                Catégories
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                Organisez les liens par catégorie. Chaque lien doit appartenir à une catégorie.
+              </Typography>
+              {categoryError && (
+                <Alert severity="error" role="alert" sx={{ mb: 1.5 }} onClose={() => setCategoryError(null)}>
+                  {categoryError}
+                </Alert>
+              )}
+              <Stack spacing={1.5}>
+                {content.linkCategories.map((category) => {
+                  const isEditing = editingCategoryId === category.id;
+                  const isUsed = content.links.some((link) => link.categoryId === category.id);
+                  return (
+                    <Stack key={category.id} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                      {isEditing ? (
+                        <TextField
+                          label="Nom de la catégorie"
+                          value={category.name}
+                          onChange={(event) => updateLinkCategory(category.id, { name: event.target.value })}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault();
+                              setEditingCategoryId(null);
+                            }
+                          }}
+                          size="small"
+                          fullWidth
+                          autoFocus
+                        />
+                      ) : (
+                        <Typography variant="body2" sx={{ fontWeight: 600, flex: 1, minWidth: 0 }}>
+                          {category.name || 'Catégorie sans nom'}
+                        </Typography>
+                      )}
+                      {isEditing ? (
+                        <Tooltip title="Valider le nom">
+                          <IconButton
+                            onClick={() => setEditingCategoryId(null)}
+                            aria-label={`Valider le nom de la catégorie ${category.name || 'sans titre'}`}
+                            sx={{ flexShrink: 0 }}
+                          >
+                            <CheckOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Renommer">
+                          <IconButton
+                            onClick={() => setEditingCategoryId(category.id)}
+                            aria-label={`Renommer la catégorie ${category.name || 'sans titre'}`}
+                            sx={{ flexShrink: 0 }}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title={isUsed ? 'Catégorie utilisée par au moins un lien' : ''}>
+                        <span>
+                          <IconButton
+                            onClick={() => handleRemoveLinkCategory(category.id, category.name)}
+                            disabled={isUsed}
+                            aria-label={`Supprimer la catégorie ${category.name || 'sans titre'}`}
+                            sx={{ flexShrink: 0 }}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Stack>
+                  );
+                })}
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="inherit"
+                  startIcon={<AddIcon fontSize="small" />}
+                  onClick={handleAddLinkCategory}
+                  sx={{ alignSelf: 'flex-start' }}
                 >
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
+                  Ajouter une catégorie
+                </Button>
               </Stack>
-            ))}
-            <Button type="button" variant="outlined" startIcon={<AddIcon fontSize="small" />} onClick={addLink} sx={{ alignSelf: 'flex-start' }}>
-              Ajouter un lien
-            </Button>
+            </Box>
+
+            <Box>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  Liens
+                </Typography>
+                <Button
+                  component={NextLink}
+                  href="/dashboard/contenu/pied-de-page/liens/nouveau"
+                  variant="outlined"
+                  startIcon={<AddIcon fontSize="small" />}
+                  disabled={content.linkCategories.length === 0}
+                >
+                  Ajouter un lien
+                </Button>
+              </Stack>
+
+              {content.linkCategories.length === 0 ? (
+                <Alert severity="info" variant="outlined">
+                  Créez d&apos;abord une catégorie ci-dessus pour pouvoir ajouter des liens.
+                </Alert>
+              ) : content.links.length === 0 ? (
+                <Alert severity="info" variant="outlined">
+                  Aucun lien pour le moment.
+                </Alert>
+              ) : (
+                <Stack spacing={1.25}>
+                  {content.links.map((link) => (
+                    <Stack
+                      key={link.id}
+                      direction={{ xs: 'column', sm: 'row' }}
+                      spacing={1.5}
+                      sx={{
+                        alignItems: { sm: 'center' },
+                        justifyContent: 'space-between',
+                        p: 1.5,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 2,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                          {link.label || 'Sans titre'}
+                        </Typography>
+                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: 0.5, flexWrap: 'wrap', rowGap: 0.5 }}>
+                          <Typography
+                            component="a"
+                            href={link.url || undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            variant="body2"
+                            sx={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 0.4,
+                              color: 'primary.main',
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' },
+                            }}
+                          >
+                            Consulter
+                            <OpenInNewIcon sx={{ fontSize: 14 }} />
+                          </Typography>
+                          <Chip size="small" label={categoryById.get(link.categoryId)?.name || 'Catégorie inconnue'} sx={{ bgcolor: 'action.hover' }} />
+                        </Stack>
+                      </Box>
+                      <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+                        <Tooltip title={`Modifier « ${link.label || 'sans titre'} »`}>
+                          <IconButton
+                            component={NextLink}
+                            href={`/dashboard/contenu/pied-de-page/liens/edit/${link.id}`}
+                            size="small"
+                            aria-label={`Modifier « ${link.label || 'sans titre'} »`}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={`Supprimer « ${link.label || 'sans titre'} »`}>
+                          <IconButton size="small" onClick={() => removeLink(link.id)} aria-label={`Supprimer « ${link.label || 'sans titre'} »`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </Stack>
+                  ))}
+                </Stack>
+              )}
+            </Box>
           </Stack>
         </SettingsSection>
 

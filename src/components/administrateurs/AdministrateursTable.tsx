@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,6 +13,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -23,26 +26,20 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlined';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import SearchIcon from '@mui/icons-material/Search';
-
-interface Administrator {
-  id: string;
-  name: string;
-  handle: string;
-  role: string;
-}
+import { ADMIN_ROLE_META, ADMIN_ROLE_ORDER, INITIAL_ADMINS, type AdminRole, type Administrator } from '@/types/administrateurs';
+import { PERMISSION_PROFILES } from '@/types/profils';
 
 interface PendingAdminInvite {
   id: string;
   email: string;
+  role: AdminRole;
+  profileIds: string[];
 }
-
-const INITIAL_ADMINS: Administrator[] = [
-  { id: 'admin-1', name: 'Ojama The Coon', handle: '@TheCoon', role: 'Administrateur de projet' },
-  { id: 'admin-2', name: 'Rémi Arial', handle: '@remiarial', role: 'Administrateur de projet' },
-];
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -54,6 +51,8 @@ export function AdministrateursTable() {
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<AdminRole>('intervenant');
+  const [inviteProfileId, setInviteProfileId] = useState('');
   const [inviteError, setInviteError] = useState<string | null>(null);
 
   const [adminToRemove, setAdminToRemove] = useState<Administrator | null>(null);
@@ -66,6 +65,8 @@ export function AdministrateursTable() {
 
   function openAddDialog() {
     setInviteEmail('');
+    setInviteRole('intervenant');
+    setInviteProfileId('');
     setInviteError(null);
     setAddDialogOpen(true);
   }
@@ -80,7 +81,14 @@ export function AdministrateursTable() {
       setInviteError('Cette adresse a déjà été invitée.');
       return;
     }
-    setPendingInvites((prev) => [...prev, { id: `invite-${Date.now()}`, email: trimmed }]);
+    if (inviteRole === 'intervenant' && !inviteProfileId) {
+      setInviteError('Sélectionnez un profil de droits pour un intervenant.');
+      return;
+    }
+    setPendingInvites((prev) => [
+      ...prev,
+      { id: `invite-${Date.now()}`, email: trimmed, role: inviteRole, profileIds: inviteRole === 'intervenant' ? [inviteProfileId] : [] },
+    ]);
     setAddDialogOpen(false);
     setSnackbarMessage(`Invitation envoyée à ${trimmed}.`);
   }
@@ -90,6 +98,12 @@ export function AdministrateursTable() {
     setAdmins((prev) => prev.filter((admin) => admin.id !== adminToRemove.id));
     setSnackbarMessage(`${adminToRemove.name} a été retiré des administrateurs.`);
     setAdminToRemove(null);
+  }
+
+  function profileNames(profileIds: string[]) {
+    return profileIds
+      .map((id) => PERMISSION_PROFILES.find((profile) => profile.id === id)?.name)
+      .filter((name): name is string => Boolean(name));
   }
 
   return (
@@ -104,6 +118,9 @@ export function AdministrateursTable() {
       </Box>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ justifyContent: 'flex-end', mb: 2 }}>
+        <Button component={Link} href="/dashboard/administrateurs/profils" variant="outlined" color="inherit" startIcon={<BadgeOutlinedIcon fontSize="small" />}>
+          Gérer les profils de droits
+        </Button>
         <TextField
           size="small"
           placeholder="Recherche"
@@ -122,7 +139,7 @@ export function AdministrateursTable() {
           }}
         />
         <Button variant="contained" color="primary" startIcon={<PersonAddAltIcon fontSize="small" />} onClick={openAddDialog}>
-          J&apos;ajoute un administrateur
+          Ajouter un administrateur
         </Button>
       </Stack>
 
@@ -131,7 +148,7 @@ export function AdministrateursTable() {
           <TableHead>
             <TableRow sx={{ bgcolor: 'action.hover' }}>
               <TableCell>Administrateurs</TableCell>
-              <TableCell>Statut</TableCell>
+              <TableCell>Rôle</TableCell>
               <TableCell align="right">Gérer</TableCell>
             </TableRow>
           </TableHead>
@@ -155,7 +172,18 @@ export function AdministrateursTable() {
                       {admin.handle}
                     </Typography>
                   </TableCell>
-                  <TableCell>{admin.role}</TableCell>
+                  <TableCell>
+                    <Tooltip title={ADMIN_ROLE_META[admin.role].description}>
+                      <Chip size="small" label={ADMIN_ROLE_META[admin.role].label} variant="outlined" sx={{ fontWeight: 600 }} />
+                    </Tooltip>
+                    {admin.role === 'intervenant' && admin.profileIds.length > 0 && (
+                      <Stack direction="row" spacing={0.5} sx={{ mt: 0.75, flexWrap: 'wrap', rowGap: 0.5 }}>
+                        {profileNames(admin.profileIds).map((name) => (
+                          <Chip key={name} size="small" label={name} sx={{ bgcolor: 'action.hover' }} />
+                        ))}
+                      </Stack>
+                    )}
+                  </TableCell>
                   <TableCell align="right">
                     <Tooltip title={`Retirer ${admin.name}`}>
                       <IconButton size="small" onClick={() => setAdminToRemove(admin)} aria-label={`Retirer ${admin.name} des administrateurs`}>
@@ -179,13 +207,14 @@ export function AdministrateursTable() {
             <TableHead>
               <TableRow sx={{ bgcolor: 'action.hover' }}>
                 <TableCell>Adresse email</TableCell>
+                <TableCell>Rôle</TableCell>
                 <TableCell>Statut</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {pendingInvites.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={2}>
+                  <TableCell colSpan={3}>
                     <Typography variant="body2" color="text.secondary" sx={{ py: 1.5, textAlign: 'center' }}>
                       Aucune invitation en attente.
                     </Typography>
@@ -195,6 +224,7 @@ export function AdministrateursTable() {
                 pendingInvites.map((invite) => (
                   <TableRow key={invite.id}>
                     <TableCell>{invite.email}</TableCell>
+                    <TableCell>{ADMIN_ROLE_META[invite.role].label}</TableCell>
                     <TableCell>
                       <Chip size="small" label="Invitation envoyée" color="warning" variant="outlined" />
                     </TableCell>
@@ -210,22 +240,95 @@ export function AdministrateursTable() {
         <DialogTitle id="add-admin-dialog-title">Ajouter un administrateur</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
-            La personne invitée recevra un email pour rejoindre ce projet en tant qu&apos;administrateur.
+            La personne invitée recevra un email pour rejoindre ce projet selon le rôle choisi.
           </DialogContentText>
-          <TextField
-            autoFocus
-            fullWidth
-            type="email"
-            label="Adresse email"
-            value={inviteEmail}
-            onChange={(event) => {
-              setInviteEmail(event.target.value);
-              setInviteError(null);
-            }}
-            error={Boolean(inviteError)}
-            helperText={inviteError ?? undefined}
-            slotProps={{ formHelperText: { role: inviteError ? 'alert' : undefined } }}
-          />
+          <Stack spacing={2.5}>
+            <TextField
+              autoFocus
+              fullWidth
+              type="email"
+              label="Adresse email"
+              value={inviteEmail}
+              onChange={(event) => {
+                setInviteEmail(event.target.value);
+                setInviteError(null);
+              }}
+            />
+            <TextField
+              select
+              fullWidth
+              label="Rôle"
+              value={inviteRole}
+              onChange={(event) => {
+                setInviteRole(event.target.value as AdminRole);
+                setInviteError(null);
+              }}
+            >
+              {ADMIN_ROLE_ORDER.map((role) => (
+                <MenuItem key={role} value={role}>
+                  <Box sx={{ py: 0.25 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {ADMIN_ROLE_META[role].label}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', whiteSpace: 'normal' }}>
+                      {ADMIN_ROLE_META[role].description}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              ))}
+            </TextField>
+
+            {inviteRole === 'intervenant' && (
+              <Box>
+                <TextField
+                  select
+                  fullWidth
+                  label="Profil de droits"
+                  value={inviteProfileId}
+                  onChange={(event) => {
+                    setInviteProfileId(event.target.value);
+                    setInviteError(null);
+                  }}
+                >
+                  {PERMISSION_PROFILES.map((profile) => (
+                    <MenuItem key={profile.id} value={profile.id}>
+                      <ListItemText primary={profile.name} />
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Typography
+                  component={Link}
+                  href="/dashboard/administrateurs/profils/nouveau"
+                  variant="caption"
+                  sx={{
+                    mt: 0.75,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    color: 'primary.main',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' },
+                    '& .create-profile-icon': { transition: 'transform 0.2s ease' },
+                    '&:hover .create-profile-icon': { transform: 'translateX(3px)' },
+                    '@media (prefers-reduced-motion: reduce)': {
+                      '& .create-profile-icon': { transition: 'none' },
+                      '&:hover .create-profile-icon': { transform: 'none' },
+                    },
+                  }}
+                >
+                  Créer un nouveau profil de droits
+                  <AddCircleOutlineIcon className="create-profile-icon" sx={{ fontSize: 14 }} />
+                </Typography>
+              </Box>
+            )}
+
+            {inviteError && (
+              <Typography variant="caption" color="error" role="alert">
+                {inviteError}
+              </Typography>
+            )}
+          </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button color="inherit" onClick={() => setAddDialogOpen(false)}>

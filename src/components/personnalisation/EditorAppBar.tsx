@@ -1,18 +1,25 @@
 'use client';
 
+import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PublishOutlinedIcon from '@mui/icons-material/PublishOutlined';
 import { usePersonnalisation } from '@/components/personnalisation/PersonnalisationProvider';
 import { VariantSelector } from '@/components/personnalisation/VariantSelector';
-import { HistoryButton } from '@/components/personnalisation/HistoryButton';
 
 function DirtyIndicator() {
   const { status } = usePersonnalisation();
@@ -22,10 +29,27 @@ function DirtyIndicator() {
 }
 
 export function EditorAppBar() {
-  const { status, isDirty, save, activeVariant, openPublishConfirm, requestReturnToHub } = usePersonnalisation();
+  const { status, isDirty, save, activeVariant, openPublishConfirm, requestReturnToHub, duplicateVariant, renameVariant } =
+    usePersonnalisation();
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
 
   function handlePreview() {
     window.open(`/preview/${activeVariant.previewSlug}`, '_blank', 'noopener,noreferrer');
+  }
+
+  function handleDuplicate() {
+    duplicateVariant(activeVariant.id);
+  }
+
+  function openRename() {
+    setRenameValue(activeVariant.name);
+    setRenameOpen(true);
+  }
+
+  function confirmRename() {
+    renameVariant(activeVariant.id, renameValue);
+    setRenameOpen(false);
   }
 
   return (
@@ -42,7 +66,26 @@ export function EditorAppBar() {
 
         <Box sx={{ flex: 1 }} />
 
-        <HistoryButton />
+        <Button
+          variant="text"
+          color="inherit"
+          size="small"
+          startIcon={<ContentCopyIcon fontSize="small" />}
+          onClick={handleDuplicate}
+          sx={{ color: 'text.secondary' }}
+        >
+          Dupliquer
+        </Button>
+        <Button
+          variant="text"
+          color="inherit"
+          size="small"
+          startIcon={<DriveFileRenameOutlineIcon fontSize="small" />}
+          onClick={openRename}
+          sx={{ color: 'text.secondary' }}
+        >
+          Renommer
+        </Button>
         <Button
           variant="text"
           color="inherit"
@@ -67,6 +110,28 @@ export function EditorAppBar() {
           Publier
         </Button>
       </Toolbar>
+
+      <Dialog open={renameOpen} onClose={() => setRenameOpen(false)} aria-labelledby="rename-variant-title">
+        <DialogTitle id="rename-variant-title">Renommer la variante</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Nom de la variante"
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            sx={{ mt: 1, minWidth: 320 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button color="inherit" onClick={() => setRenameOpen(false)}>
+            Annuler
+          </Button>
+          <Button variant="contained" onClick={confirmRename} disabled={!renameValue.trim()}>
+            Renommer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 }

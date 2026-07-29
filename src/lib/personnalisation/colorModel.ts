@@ -15,7 +15,7 @@ import {
 const WHITE: Rgb = [255, 255, 255];
 const SECTION_KEYS: SectionKey[] = ['general', 'header', 'internalHeader', 'footer'];
 
-export type PropertyIcon = 'fill' | 'titleText' | 'bodyText' | 'search' | 'button' | 'dropdown';
+export type PropertyIcon = 'fill' | 'titleText' | 'bodyText' | 'button' | 'dropdown';
 export type PropertyKind = 'bg' | 'text-manual' | 'text-derived';
 
 export interface PropertyDef {
@@ -29,19 +29,26 @@ export interface PropertyDef {
 
 export const SECTION_PROPERTIES: Record<SectionKey, PropertyDef[]> = {
   general: [
-    { key: 'bodyBg', label: 'Fond de page', icon: 'fill', kind: 'bg' },
+    { key: 'bodyBg', label: 'Fond principal', icon: 'fill', kind: 'bg' },
+    { key: 'secondaryBg', label: 'Fond secondaire', icon: 'fill', kind: 'bg' },
     { key: 'bodyText', label: 'Texte', icon: 'bodyText', kind: 'text-derived', against: 'bodyBg' },
     { key: 'linkColor', label: 'Liens', icon: 'bodyText', kind: 'text-manual', against: 'bodyBg' },
-    { key: 'buttonBg', label: 'Boutons', icon: 'button', kind: 'bg' },
+    { key: 'blocBg', label: 'Fond de bloc', icon: 'fill', kind: 'bg' },
+    { key: 'blocText', label: 'Texte de bloc', icon: 'bodyText', kind: 'text-derived', against: 'blocBg' },
+    { key: 'buttonBg', label: 'Fond de bouton', icon: 'button', kind: 'bg' },
+    { key: 'buttonText', label: 'Texte de bouton', icon: 'button', kind: 'text-derived', against: 'buttonBg' },
   ],
   header: [
     { key: 'headerBg', label: 'Fond', icon: 'fill', kind: 'bg' },
-    { key: 'dropdownBg', label: 'Menu déroulant (fond)', icon: 'dropdown', kind: 'bg' },
-    { key: 'dropdownHover', label: 'Menu déroulant (survol)', icon: 'dropdown', kind: 'bg' },
-    { key: 'navText', label: 'Textes', icon: 'bodyText', kind: 'text-derived', against: 'headerBg' },
-    { key: 'searchBg', label: 'Recherche (fond)', icon: 'search', kind: 'bg' },
-    { key: 'searchBorder', label: 'Recherche (bordure)', icon: 'search', kind: 'bg' },
-    { key: 'headerButtonBg', label: 'Boutons', icon: 'button', kind: 'bg' },
+    { key: 'dropdownText', label: 'Menu déroulant — texte par défaut', icon: 'dropdown', kind: 'text-derived', against: 'dropdownBg' },
+    { key: 'dropdownBg', label: 'Menu déroulant — fond par défaut', icon: 'dropdown', kind: 'bg' },
+    { key: 'dropdownHoverText', label: 'Menu déroulant — texte au survol', icon: 'dropdown', kind: 'text-derived', against: 'dropdownHoverBg' },
+    { key: 'dropdownHoverBg', label: 'Menu déroulant — fond au survol', icon: 'dropdown', kind: 'bg' },
+    { key: 'navText', label: 'Texte par défaut', icon: 'bodyText', kind: 'text-derived', against: 'headerBg' },
+    { key: 'navTextHover', label: 'Texte au survol', icon: 'bodyText', kind: 'text-derived', against: 'navHoverBg' },
+    { key: 'navHoverBg', label: 'Fond au survol', icon: 'fill', kind: 'bg' },
+    { key: 'headerButtonBg', label: 'Fond de bouton', icon: 'button', kind: 'bg' },
+    { key: 'headerButtonText', label: 'Texte de bouton', icon: 'button', kind: 'text-derived', against: 'headerButtonBg' },
   ],
   internalHeader: [
     { key: 'internalHeaderBg', label: 'Fond', icon: 'fill', kind: 'bg' },
@@ -52,7 +59,8 @@ export const SECTION_PROPERTIES: Record<SectionKey, PropertyDef[]> = {
     { key: 'footerBg', label: 'Fond', icon: 'fill', kind: 'bg' },
     { key: 'footerTitle', label: 'Titre', icon: 'titleText', kind: 'text-derived', against: 'footerBg' },
     { key: 'footerText', label: 'Texte', icon: 'bodyText', kind: 'text-derived', against: 'footerBg' },
-    { key: 'footerButtonBg', label: 'Boutons', icon: 'button', kind: 'bg' },
+    { key: 'footerButtonBg', label: 'Fond de bouton', icon: 'button', kind: 'bg' },
+    { key: 'footerButtonText', label: 'Texte de bouton', icon: 'button', kind: 'text-derived', against: 'footerButtonBg' },
   ],
 };
 
@@ -67,15 +75,16 @@ export const MODULE_PROPERTIES: PropertyDef[] = [
 const DEFAULT_SECTION_VALUES: ThemeTokens['sections'] = {
   general: {
     bodyBg: { colorKey: 'surfaceLight', alpha: 1 },
+    secondaryBg: { colorKey: 'surfaceDark', alpha: 1 },
     linkColor: { colorKey: 'primary', alpha: 1 },
+    blocBg: { colorKey: 'surfaceLight', alpha: 1 },
     buttonBg: { colorKey: 'primary', alpha: 1 },
   },
   header: {
     headerBg: { colorKey: 'secondary', alpha: 1 },
     dropdownBg: { colorKey: 'secondary', alpha: 1 },
-    dropdownHover: { colorKey: 'surfaceDark', alpha: 1 },
-    searchBg: { colorKey: 'surfaceLight', alpha: 1 },
-    searchBorder: { colorKey: 'surfaceDark', alpha: 0.3 },
+    dropdownHoverBg: { colorKey: 'surfaceDark', alpha: 1 },
+    navHoverBg: { colorKey: 'surfaceDark', alpha: 1 },
     headerButtonBg: { colorKey: 'accent', alpha: 1 },
   },
   internalHeader: {
@@ -98,6 +107,13 @@ export function createDefaultTokens(paletteId: string): ThemeTokens {
     },
     modules: { news: {}, events: {}, directory: {}, forms: {}, media: {} },
     typography: { pairingId: 'sans-moderne', baseFontSize: 16 },
+    searchEnabled: true,
+    backgroundModes: { principal: 'color', secondaire: 'color' },
+    backgroundGraphics: {
+      principal: { kind: 'image', imageUrl: null, textureId: null },
+      secondaire: { kind: 'image', imageUrl: null, textureId: null },
+    },
+    logos: { principalDesktop: null, principalMobile: null, secondary: null },
   };
 }
 

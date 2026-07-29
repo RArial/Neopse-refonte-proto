@@ -335,7 +335,7 @@ export function DomaineSection({ domains, onAddDomain, onEditDomain }: DomaineSe
                 Retour
               </Button>
               <Button type="submit" variant="contained">
-                {source === 'externe' ? 'Je vérifie les paramètres DNS' : 'Je vérifie la disponibilité'}
+                {source === 'externe' ? 'Vérifier les paramètres DNS' : 'Vérifier la disponibilité'}
               </Button>
             </Stack>
           </Stack>

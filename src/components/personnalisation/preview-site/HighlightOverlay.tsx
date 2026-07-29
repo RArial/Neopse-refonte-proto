@@ -1,14 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  PREVIEW_CLEAR_HIGHLIGHT_MESSAGE,
-  PREVIEW_HIGHLIGHT_MESSAGE,
-  PREVIEW_REVEAL_MESSAGE,
-} from '@/components/personnalisation/preview-site/previewMessages';
+import { PREVIEW_REVEAL_MESSAGE } from '@/components/personnalisation/preview-site/previewMessages';
 
 const HIGHLIGHT_COLOR = '#f59e0b';
-const REVEAL_PERSIST_MS = 2000;
+const REVEAL_PERSIST_MS = 3000;
 
 interface OverlayRect {
   top: number;
@@ -16,8 +12,6 @@ interface OverlayRect {
   width: number;
   height: number;
 }
-
-type Mode = 'hover' | 'reveal';
 
 function measure(role: string): OverlayRect[] {
   return Array.from(document.querySelectorAll(`[data-role~="${role}"]`)).map((el) => {
@@ -29,55 +23,26 @@ function measure(role: string): OverlayRect[] {
 /**
  * Surbrillance de rôle dans l'aperçu embarqué. Dessine un contour PAR-DESSUS les éléments
  * `data-role` correspondants (jamais leur fond/bordure réels) : l'aperçu reste toujours fidèle.
- * Deux modes : `hover` (transitoire, s'efface au `clearHighlight`) et `reveal` (persistant ~2s,
- * ne s'annule pas si un `clearHighlight` de survol arrive entre-temps ailleurs).
+ * Ne se déclenche que sur clic du bouton œil (persistant ~3s) — jamais sur simple survol.
  */
 export function HighlightOverlay() {
   const [role, setRole] = useState<string | null>(null);
-  const [, setMode] = useState<Mode | null>(null);
   const [rects, setRects] = useState<OverlayRect[]>([]);
   const persistTimerRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    function clearPersistTimer() {
-      if (persistTimerRef.current !== null) {
-        window.clearTimeout(persistTimerRef.current);
-        persistTimerRef.current = null;
-      }
-    }
-
     function handleMessage(event: MessageEvent) {
       if (event.origin !== window.location.origin) return;
       const data = event.data ?? {};
 
-      if (data.type === PREVIEW_HIGHLIGHT_MESSAGE && typeof data.role === 'string') {
-        clearPersistTimer();
-        setRole(data.role);
-        setMode('hover');
-        setRects(measure(data.role));
-        return;
-      }
-
-      if (data.type === PREVIEW_CLEAR_HIGHLIGHT_MESSAGE) {
-        // Un survol persistant issu d'un clic (mode 'reveal') ne doit jamais être annulé par un
-        // simple départ de souris ailleurs dans le panneau.
-        setMode((current) => {
-          if (current !== 'hover') return current;
-          setRole(null);
-          setRects([]);
-          return null;
-        });
-        return;
-      }
-
       if (data.type === PREVIEW_REVEAL_MESSAGE && typeof data.role === 'string') {
-        clearPersistTimer();
-        setRole(data.role);
-        setMode('reveal');
-        setRects(measure(data.role));
+        const revealedRole = data.role;
+        if (persistTimerRef.current !== null) window.clearTimeout(persistTimerRef.current);
+        setRole(revealedRole);
+        setRects(measure(revealedRole));
 
-        const elements = document.querySelectorAll(`[data-role~="${data.role}"]`);
+        const elements = document.querySelectorAll(`[data-role~="${revealedRole}"]`);
         if (elements.length > 0) {
           const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           elements[0].scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
@@ -86,7 +51,6 @@ export function HighlightOverlay() {
         persistTimerRef.current = window.setTimeout(() => {
           persistTimerRef.current = null;
           setRole(null);
-          setMode(null);
           setRects([]);
         }, REVEAL_PERSIST_MS);
       }
@@ -95,7 +59,7 @@ export function HighlightOverlay() {
     window.addEventListener('message', handleMessage);
     return () => {
       window.removeEventListener('message', handleMessage);
-      clearPersistTimer();
+      if (persistTimerRef.current !== null) window.clearTimeout(persistTimerRef.current);
     };
   }, []);
 

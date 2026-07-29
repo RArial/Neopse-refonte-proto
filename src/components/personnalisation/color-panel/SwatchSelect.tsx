@@ -43,7 +43,7 @@ export function SwatchSelect({ label, palette, value, againstColorKey, allowAuto
       value={selectValue}
       onChange={handleChange}
       aria-label={label}
-      sx={{ minWidth: 148, fontSize: 14 }}
+      sx={{ minWidth: 148, fontSize: 14, '& .MuiSelect-select': { pl: 1 } }}
       renderValue={(v) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {v === AUTO_VALUE ? <AutoSwatch /> : <Swatch hex={palette.colors[v as ColorKey]} />}

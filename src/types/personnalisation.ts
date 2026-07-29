@@ -57,12 +57,39 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
 
 export const MODULE_KEYS: ModuleKey[] = ['news', 'events', 'directory', 'forms', 'media'];
 
+export type BackgroundSlot = 'principal' | 'secondaire';
+
+export const BACKGROUND_SLOTS: BackgroundSlot[] = ['principal', 'secondaire'];
+
+export const BACKGROUND_SLOT_LABELS: Record<BackgroundSlot, string> = {
+  principal: 'Fond principal',
+  secondaire: 'Fond secondaire',
+};
+
+export type BackgroundMode = 'color' | 'graphic';
+
+export type BackgroundGraphicKind = 'image' | 'texture';
+
+export interface BackgroundGraphic {
+  kind: BackgroundGraphicKind;
+  imageUrl: string | null;
+  textureId: string | null;
+}
+
 export interface ThemeTokens {
   paletteId: string;
   sections: Record<SectionKey, Partial<Record<string, RoleValue>>>;
   /** Surcharges uniquement — un module hérite de `sections.general` pour toute clé absente. */
   modules: Record<ModuleKey, Partial<Record<string, RoleValue>>>;
   typography: { pairingId: string; baseFontSize: number };
+  /** Affiche ou masque la recherche dans l'en-tête. */
+  searchEnabled: boolean;
+  /** Mode actif (couleur ou fond graphique) pour le fond principal et le fond secondaire. */
+  backgroundModes: Record<BackgroundSlot, BackgroundMode>;
+  /** Image personnalisée ou texture choisie, utilisée uniquement quand le mode est 'graphic'. */
+  backgroundGraphics: Record<BackgroundSlot, BackgroundGraphic>;
+  /** Logos de marque — seul emplacement où l'utilisateur peut les définir. */
+  logos: { principalDesktop: string | null; principalMobile: string | null; secondary: string | null };
 }
 
 // ─── Variantes & historique (inchangé dans son principe) ──────────────────

@@ -2,6 +2,7 @@
 
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import { RichTextField } from '@/components/ui/RichTextField';
 import type { SiteSettings } from '@/types/parametres';
 
 interface InformationsSiteSectionProps {
@@ -47,12 +48,11 @@ export function InformationsSiteSection({ settings, onChange }: InformationsSite
         fullWidth
         helperText="Séparez chaque mot-clé par une virgule."
       />
-      <TextField
-        id="parametres-field-notFoundPage"
+      <RichTextField
         label="Page d'erreur 404"
         value={settings.notFoundPage}
-        onChange={(event) => onChange({ notFoundPage: event.target.value })}
-        fullWidth
+        onChange={(html) => onChange({ notFoundPage: html })}
+        placeholder="Contenu affiché lorsque l'adresse demandée par un visiteur n'existe pas."
         helperText="Page affichée lorsque l'adresse demandée par un visiteur n'existe pas."
       />
     </Stack>

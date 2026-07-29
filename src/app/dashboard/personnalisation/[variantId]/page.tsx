@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { VariantEditorRoute } from '@/components/personnalisation/VariantEditorRoute';
 
@@ -12,5 +13,9 @@ interface VariantEditorPageProps {
 export default async function VariantEditorPage({ params }: VariantEditorPageProps) {
   const { variantId } = await params;
 
-  return <VariantEditorRoute variantId={variantId} />;
+  return (
+    <Suspense fallback={null}>
+      <VariantEditorRoute variantId={variantId} />
+    </Suspense>
+  );
 }

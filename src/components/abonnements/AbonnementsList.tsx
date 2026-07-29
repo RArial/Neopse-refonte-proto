@@ -89,7 +89,7 @@ export function AbonnementsList() {
           onClick={handleSearch}
           sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
         >
-          Je recherche les projets NEOPSE sur cette localité
+          Rechercher les projets NEOPSE sur cette localité
         </Button>
       </Stack>
 
@@ -166,7 +166,7 @@ export function AbonnementsList() {
                           />
                         ) : (
                           <Button size="small" variant="contained" onClick={() => handleSubscribe(project)}>
-                            Je m&apos;abonne
+                            S&apos;abonner
                           </Button>
                         )}
                       </Stack>

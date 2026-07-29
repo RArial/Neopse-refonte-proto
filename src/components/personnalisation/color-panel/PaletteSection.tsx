@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -16,8 +17,12 @@ import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import { NEOPSE_DEFAULT_PALETTE_ID, PRESET_PALETTES } from '@/lib/personnalisation/palettes';
+import { TYPOGRAPHY_PAIRINGS } from '@/lib/personnalisation/typography';
 import { usePersonnalisation } from '@/components/personnalisation/PersonnalisationProvider';
+import { VignetteUploader } from '@/components/pages-modules/VignetteUploader';
+import { Subsection } from '@/components/personnalisation/color-panel/Subsection';
 import { COLOR_KEY_DESCRIPTIONS, COLOR_KEY_LABELS, COLOR_KEYS, type ColorKey, type Palette } from '@/types/personnalisation';
 
 const HEX_PATTERN = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/;
@@ -112,7 +117,7 @@ function PaletteColorRow({ colorKey, hex, onChange }: { colorKey: ColorKey; hex:
 }
 
 export function PaletteSection() {
-  const { activePalette, selectPreset, resetPalette, updatePaletteColor } = usePersonnalisation();
+  const { draftTokens, activePalette, selectPreset, resetPalette, updatePaletteColor, setTypographyPairing, setLogo } = usePersonnalisation();
   const [expanded, setExpanded] = useState(true);
 
   function handleChange(_event: SyntheticEvent, next: boolean) {
@@ -194,6 +199,72 @@ export function PaletteSection() {
             </Button>
           </Stack>
         )}
+
+        <Box sx={{ mt: 3 }}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 1.25 }}>
+            <Box sx={{ color: 'text.secondary', display: 'flex' }} aria-hidden="true">
+              <FormatSizeIcon fontSize="small" />
+            </Box>
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+              Typographie
+            </Typography>
+          </Stack>
+          <TextField
+            select
+            size="small"
+            value={draftTokens.typography.pairingId}
+            onChange={(e) => setTypographyPairing(e.target.value)}
+            sx={{ minWidth: 220 }}
+            aria-label="Association typographique"
+          >
+            {TYPOGRAPHY_PAIRINGS.map((pairing) => (
+              <MenuItem key={pairing.id} value={pairing.id}>
+                {pairing.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="body2" sx={{ fontWeight: 700, mb: 1.5 }}>
+            Logos
+          </Typography>
+          <Stack spacing={2.5}>
+            <Subsection label="Logo principal (PC)" nested>
+              <VignetteUploader
+                value={draftTokens.logos.principalDesktop}
+                onChange={(url) => setLogo('principalDesktop', url)}
+                itemLabel="logo"
+                itemGender="masculine"
+                minHeight={120}
+                buttonsAlign="flex-start"
+                sx={{ mt: 1.5 }}
+              />
+            </Subsection>
+            <Subsection label="Logo principal (mobile/tablette)" nested>
+              <VignetteUploader
+                value={draftTokens.logos.principalMobile}
+                onChange={(url) => setLogo('principalMobile', url)}
+                itemLabel="logo"
+                itemGender="masculine"
+                minHeight={120}
+                buttonsAlign="flex-start"
+                sx={{ mt: 1.5 }}
+              />
+            </Subsection>
+            <Subsection label="Logo secondaire" nested>
+              <VignetteUploader
+                value={draftTokens.logos.secondary}
+                onChange={(url) => setLogo('secondary', url)}
+                itemLabel="logo"
+                itemGender="masculine"
+                minHeight={120}
+                buttonsAlign="flex-start"
+                sx={{ mt: 1.5 }}
+              />
+            </Subsection>
+          </Stack>
+        </Box>
       </AccordionDetails>
     </Accordion>
   );

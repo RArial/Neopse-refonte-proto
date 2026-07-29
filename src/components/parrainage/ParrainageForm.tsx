@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState, type ChangeEvent } from 'react';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
@@ -28,6 +31,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import MailOutlineIcon from '@mui/icons-material/MailOutlined';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import ShareIcon from '@mui/icons-material/Share';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 
 const REFERRAL_CODE = 'LJKEDQAIE';
 const MAX_INVITATIONS_PER_DAY = 10;
@@ -44,6 +48,11 @@ export function ParrainageForm() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
+  const [reversementDialogOpen, setReversementDialogOpen] = useState(false);
+  const [ribFile, setRibFile] = useState<File | null>(null);
+  const [invoiceConfirmed, setInvoiceConfirmed] = useState(false);
+  const [reversementError, setReversementError] = useState<string | null>(null);
+  const ribInputId = useId();
 
   const referralLink = typeof window !== 'undefined' ? `${window.location.origin}/parrainage/${REFERRAL_CODE}` : `/parrainage/${REFERRAL_CODE}`;
   const invitationsSentToday = pendingInvitations.length;
@@ -73,6 +82,31 @@ export function ParrainageForm() {
     setInviteEmail('');
     setInviteError(null);
     setInviteDialogOpen(true);
+  }
+
+  function openReversementDialog() {
+    setRibFile(null);
+    setInvoiceConfirmed(false);
+    setReversementError(null);
+    setReversementDialogOpen(true);
+  }
+
+  function handleRibFileChange(event: ChangeEvent<HTMLInputElement>) {
+    setRibFile(event.target.files?.[0] ?? null);
+    setReversementError(null);
+  }
+
+  function handleConfirmReversement() {
+    if (!ribFile) {
+      setReversementError('Merci de joindre un RIB avant d\'enregistrer.');
+      return;
+    }
+    if (!invoiceConfirmed) {
+      setReversementError('Merci de confirmer que vous pouvez éditer des factures au nom de votre structure.');
+      return;
+    }
+    setReversementDialogOpen(false);
+    setSnackbarMessage("Votre demande d'activation du reversement en euros a bien été prise en compte.");
   }
 
   function handleSendInvitation() {
@@ -178,13 +212,8 @@ export function ParrainageForm() {
                 (= 0 €)
               </Typography>
             </Box>
-            <Button
-              variant="contained"
-              onClick={() =>
-                setSnackbarMessage("Votre demande d'activation du reversement en euros a bien été prise en compte.")
-              }
-            >
-              Je souhaite activer le reversement en euros
+            <Button variant="contained" onClick={openReversementDialog}>
+              Activer le reversement en euros
             </Button>
           </Stack>
         </Paper>
@@ -291,6 +320,70 @@ export function ParrainageForm() {
           </Button>
           <Button variant="contained" onClick={handleSendInvitation}>
             Envoyer l&apos;invitation
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={reversementDialogOpen}
+        onClose={() => setReversementDialogOpen(false)}
+        aria-labelledby="reversement-dialog-title"
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle id="reversement-dialog-title">Activer le reversement en euros</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2.5 }}>
+            Pour activer le reversement en euros, il est nécessaire de fournir un RIB à l&apos;équipe NEOPSE et de
+            confirmer la possibilité d&apos;éditer des factures.
+          </DialogContentText>
+
+          <Button
+            component="label"
+            variant="outlined"
+            startIcon={<UploadFileIcon />}
+            htmlFor={ribInputId}
+          >
+            Joindre un RIB
+            <input
+              id={ribInputId}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              hidden
+              onChange={handleRibFileChange}
+            />
+          </Button>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {ribFile ? ribFile.name : 'Aucun fichier sélectionné.'}
+          </Typography>
+
+          <FormControlLabel
+            sx={{ mt: 2, alignItems: 'flex-start' }}
+            control={
+              <Checkbox
+                checked={invoiceConfirmed}
+                onChange={(event) => {
+                  setInvoiceConfirmed(event.target.checked);
+                  setReversementError(null);
+                }}
+                sx={{ mt: -0.75 }}
+              />
+            }
+            label="Je confirme que je peux éditer des factures au nom de ma structure NeopseUX."
+          />
+
+          {reversementError && (
+            <FormHelperText error role="alert" sx={{ mt: 1 }}>
+              {reversementError}
+            </FormHelperText>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button color="inherit" onClick={() => setReversementDialogOpen(false)}>
+            Annuler
+          </Button>
+          <Button variant="contained" onClick={handleConfirmReversement}>
+            Enregistrer
           </Button>
         </DialogActions>
       </Dialog>

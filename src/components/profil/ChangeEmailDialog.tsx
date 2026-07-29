@@ -20,16 +20,22 @@ interface ChangeEmailDialogProps {
 
 export function ChangeEmailDialog({ open, currentEmail, onClose, onConfirm }: ChangeEmailDialogProps) {
   const [newEmail, setNewEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
 
   function handleClose() {
     setNewEmail('');
+    setConfirmEmail('');
     setError(null);
+    setConfirmError(null);
     onClose();
   }
 
   function handleSubmit() {
     const trimmed = newEmail.trim();
+    const trimmedConfirm = confirmEmail.trim();
+
     if (!EMAIL_PATTERN.test(trimmed)) {
       setError('Indiquez une adresse email valide.');
       return;
@@ -38,6 +44,14 @@ export function ChangeEmailDialog({ open, currentEmail, onClose, onConfirm }: Ch
       setError('Cette adresse est déjà associée à votre compte.');
       return;
     }
+    setError(null);
+
+    if (trimmedConfirm !== trimmed) {
+      setConfirmError('Les deux adresses email ne correspondent pas.');
+      return;
+    }
+    setConfirmError(null);
+
     onConfirm(trimmed);
     handleClose();
   }
@@ -62,6 +76,20 @@ export function ChangeEmailDialog({ open, currentEmail, onClose, onConfirm }: Ch
           error={Boolean(error)}
           helperText={error ?? undefined}
           slotProps={{ formHelperText: { role: error ? 'alert' : undefined } }}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          fullWidth
+          type="email"
+          label="Confirmez la nouvelle adresse email"
+          value={confirmEmail}
+          onChange={(event) => {
+            setConfirmEmail(event.target.value);
+            setConfirmError(null);
+          }}
+          error={Boolean(confirmError)}
+          helperText={confirmError ?? undefined}
+          slotProps={{ formHelperText: { role: confirmError ? 'alert' : undefined } }}
         />
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>

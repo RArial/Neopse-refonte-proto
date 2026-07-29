@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { usePersonnalisation, type EditorTab } from '@/components/personnalisation/PersonnalisationProvider';
-import { TemplateGrid } from '@/components/personnalisation/TemplateGrid';
+import { GeneralTabPanel } from '@/components/personnalisation/GeneralTabPanel';
 import { ColorsPanel } from '@/components/personnalisation/color-panel/ColorsPanel';
 import { ContrastWarnings } from '@/components/personnalisation/ContrastWarnings';
 
@@ -34,28 +34,28 @@ export function EditorPanel() {
       }}
     >
       <Tabs value={activeEditorTab} onChange={handleChange} variant="fullWidth" sx={{ borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-        <Tab value="maquette" label="Maquette" sx={{ textTransform: 'none' }} />
+        <Tab value="general" label="Général" sx={{ textTransform: 'none' }} />
         <Tab
-          value="modifier"
+          value="details"
           label={
             contrastIssues.length > 0 ? (
               <Badge badgeContent={contrastIssues.length} color="warning" sx={{ '& .MuiBadge-badge': { right: -10 } }}>
-                Modifier
+                Détails
               </Badge>
             ) : (
-              'Modifier'
+              'Détails'
             )
           }
           sx={{ textTransform: 'none' }}
         />
       </Tabs>
 
-      <Box sx={{ p: activeEditorTab === 'modifier' ? 0 : 2, flex: 1, minHeight: 0, overflowY: 'auto' }}>
-        {activeEditorTab === 'maquette' && <TemplateGrid />}
-        {activeEditorTab === 'modifier' && <ColorsPanel />}
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        {activeEditorTab === 'general' && <GeneralTabPanel />}
+        {activeEditorTab === 'details' && <ColorsPanel />}
       </Box>
 
-      {contrastIssues.length > 0 && activeEditorTab === 'modifier' && (
+      {contrastIssues.length > 0 && activeEditorTab === 'details' && (
         <Box sx={{ position: 'sticky', bottom: 0, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', p: 2, flexShrink: 0 }}>
           <ContrastWarnings />
         </Box>

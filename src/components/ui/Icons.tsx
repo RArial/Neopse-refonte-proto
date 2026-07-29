@@ -101,6 +101,10 @@ export const Icons = {
   Circle:        icon(<circle cx="12" cy="12" r="9"/>),
   AccountTree:   icon(<><rect x="3" y="9" width="6" height="6" rx="1.5"/><rect x="15" y="3" width="6" height="6" rx="1.5"/><rect x="15" y="15" width="6" height="6" rx="1.5"/><path d="M9 12h2v-6h4M11 12v6h4"/></>),
   Brush:         icon(<><path d="m11 10 3 3"/><path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"/><path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"/></>),
+  Play:          icon(<><circle cx="12" cy="12" r="9"/><path d="M10.5 8.5 15.5 12l-5 3.5z" fill="currentColor" stroke="none"/></>),
+  Paperclip:     icon(<path d="M21.44 11.05 12.25 20.24a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a1.5 1.5 0 0 1-2.12-2.12l8.49-8.48"/>),
+  Code:          icon(<><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></>),
+  CreditCard:    icon(<><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></>),
 } as const;
 
 export type IconName = keyof typeof Icons;

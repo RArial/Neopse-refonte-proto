@@ -65,9 +65,14 @@ export function ParametresForm() {
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
         sx={{
+          position: 'sticky',
+          top: 62,
+          zIndex: 10,
+          bgcolor: 'background.default',
           alignItems: { xs: 'flex-start', sm: 'flex-end' },
           justifyContent: 'space-between',
           mb: 2.5,
+          pt: { xs: 2, md: 2.5 },
           pb: 2,
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -115,20 +120,20 @@ export function ParametresForm() {
           <FaviconSection settings={settings} onChange={handleChange} />
         </SettingsSection>
 
-        <SettingsSection icon="TrendUp" title="Suivi de fréquentation — outils Google" description="Google Analytics et Google Search Console">
-          <SuiviFrequentationSection settings={settings} onChange={handleChange} />
-        </SettingsSection>
-
-        <SettingsSection icon="FileText" title="Autres types d'affiliation" description="Scripts à insérer en haut et bas de page">
-          <AffiliationSection settings={settings} onChange={handleChange} />
+        <SettingsSection icon="Globe" title="Nom de domaine" description="Gérez les noms de domaine associés à votre site">
+          <DomaineSection domains={settings.domains} onAddDomain={handleAddDomain} onEditDomain={handleEditDomain} />
         </SettingsSection>
 
         <SettingsSection icon="Languages" title="Options de langue" description="Langue par défaut et configuration multilingue">
           <LangueSection settings={settings} onChange={handleChange} />
         </SettingsSection>
 
-        <SettingsSection icon="Globe" title="Nom de domaine" description="Gérez les noms de domaine associés à votre site">
-          <DomaineSection domains={settings.domains} onAddDomain={handleAddDomain} onEditDomain={handleEditDomain} />
+        <SettingsSection icon="TrendUp" title="Suivi de fréquentation — outils Google" description="Google Analytics et Google Search Console">
+          <SuiviFrequentationSection settings={settings} onChange={handleChange} />
+        </SettingsSection>
+
+        <SettingsSection icon="FileText" title="Autres types d'affiliation" description="Scripts à insérer en haut et bas de page">
+          <AffiliationSection settings={settings} onChange={handleChange} />
         </SettingsSection>
       </Box>
 

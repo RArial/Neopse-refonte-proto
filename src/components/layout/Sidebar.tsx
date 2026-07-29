@@ -6,16 +6,17 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons, type IconName } from '@/components/ui/Icons';
 import { PagesFlyoutPanel } from '@/components/layout/PagesFlyoutPanel';
+import { AssistancePopover } from '@/components/assistance/AssistancePopover';
 import type { NavEntry } from '@/types/navigation';
 
 const SIDEBAR_NAV: NavEntry[] = [
   { type: 'section-title', id: 'site-internet', label: 'Site internet' },
   { type: 'item', id: 'access', icon: 'Globe', label: 'Accès au site', external: true, accent: 'amber' },
   { type: 'item', id: 'dashboard', icon: 'Dashboard', label: 'Tableau de bord', href: '/dashboard' },
-  { type: 'item', id: 'contenu', icon: 'AccountTree', label: 'Structure', href: '/dashboard/contenu' },
-  { type: 'flyout', id: 'pages-flyout', icon: 'Pages', label: 'Pages' },
+  { type: 'item', id: 'contenu', icon: 'AccountTree', label: 'Contenu', href: '/dashboard/contenu' },
+  { type: 'flyout', id: 'pages-flyout', icon: 'Pages', label: 'Modules' },
   { type: 'item', id: 'personnalisation', icon: 'Brush', label: 'Personnalisation', href: '/dashboard/personnalisation' },
-  { type: 'item', id: 'gestionnaire', icon: 'Folder', label: 'Gestionnaire' },
+  { type: 'item', id: 'gestionnaire', icon: 'Folder', label: 'Stockage', href: '/dashboard/gestionnaire' },
   { type: 'item', id: 'parametres', icon: 'Settings', label: 'Paramètres', href: '/dashboard/parametres' },
   { type: 'divider' },
   { type: 'section-title', id: 'projet', label: 'Projet' },
@@ -41,7 +42,8 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
   });
   const [hovering, setHovering] = useState(false);
   const [pagesFlyoutOpen, setPagesFlyoutOpen] = useState(false);
-  // Le panneau « Pages » gardé ouvert compte comme un survol : la largeur du rail ne doit pas
+  const [assistanceAnchor, setAssistanceAnchor] = useState<HTMLElement | null>(null);
+  // Le panneau « Modules » gardé ouvert compte comme un survol : la largeur du rail ne doit pas
   // changer sous lui pendant qu'il est ancré à sa largeur dépliée (sinon un vide apparaît entre
   // le rail replié et le panneau resté à sa position dépliée).
   const visuallyExpanded = collapsed ? (hovering || pagesFlyoutOpen) : true;
@@ -160,9 +162,15 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
 
       {/* Footer */}
       <div className="sidebar-foot">
-        <button className="foot-btn support" type="button">
-          <span className="ico"><Icons.LifeBuoy size={16} /></span>
-          <span className="lbl">Support</span>
+        <button
+          className="foot-btn support"
+          type="button"
+          title={!visuallyExpanded ? 'Assistance' : undefined}
+          aria-haspopup="dialog"
+          onClick={(event) => setAssistanceAnchor(event.currentTarget)}
+        >
+          <span className="ico"><Icons.Question size={16} /></span>
+          <span className="lbl">Assistance</span>
         </button>
       </div>
 
@@ -191,6 +199,8 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
         onClose={() => setPagesFlyoutOpen(false)}
       />
     )}
+
+    <AssistancePopover anchorEl={assistanceAnchor} onClose={() => setAssistanceAnchor(null)} />
     </>
   );
 }

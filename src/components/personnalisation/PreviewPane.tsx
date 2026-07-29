@@ -25,8 +25,7 @@ type Viewport = '375' | '768' | 'full';
 const VIEWPORT_WIDTH: Record<Viewport, string> = { '375': '375px', '768': '768px', full: '100%' };
 
 export function PreviewPane() {
-  const { draftTokens, activePalette, activeVariant, previewPageId, setPreviewPageId, registerPreviewFrame, revealCommand } =
-    usePersonnalisation();
+  const { draftTokens, activePalette, activeVariant, previewPageId, setPreviewPageId, revealCommand } = usePersonnalisation();
   const [viewport, setViewport] = useState<Viewport>('full');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const debounceRef = useRef<number | null>(null);
@@ -62,11 +61,6 @@ export function PreviewPane() {
     );
   }
 
-  useEffect(() => {
-    registerPreviewFrame(iframeRef.current?.contentWindow ?? null);
-    return () => registerPreviewFrame(null);
-  }, [registerPreviewFrame]);
-
   // Pousse les tokens à chaque changement, avec un debounce de 60ms — sans jamais recharger l'iframe.
   useEffect(() => {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -85,7 +79,6 @@ export function PreviewPane() {
       if (event.data?.type !== PREVIEW_READY_MESSAGE) return;
       postTokens();
       loadedPageIdRef.current = previewPageId;
-      registerPreviewFrame(iframeRef.current?.contentWindow ?? null);
       if (pendingRevealRef.current) {
         const command = pendingRevealRef.current;
         pendingRevealRef.current = null;

@@ -11,6 +11,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Icons, type IconName } from '@/components/ui/Icons';
+import { NotificationsMenu } from '@/components/notifications/NotificationsMenu';
 import { cn } from '@/lib/utils';
 
 interface Tool {
@@ -24,6 +25,93 @@ const TOOLS: Tool[] = [
   { id: 'Billetterie',         icon: 'Ticket',    desc: 'Vente de billets en ligne' },
   { id: 'Espace collaboratif', icon: 'Briefcase', desc: 'Documents & équipes' },
 ];
+
+interface Project {
+  id: string;
+  icon: IconName;
+  desc: string;
+}
+
+const PROJECTS: Project[] = [
+  { id: 'Démo arborescence', icon: 'AccountTree', desc: 'Projet de démonstration' },
+  { id: 'Ville de Neopse',   icon: 'MapPin',       desc: 'Site officiel de la collectivité' },
+  { id: 'Intranet agents',   icon: 'Layers',       desc: 'Espace interne collaborateurs' },
+];
+
+function ProjectDropdown() {
+  const [open, setOpen] = useState(false);
+  const [project, setProject] = useState<string>('Démo arborescence');
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [open]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    if (open) document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  const current = PROJECTS.find(p => p.id === project) ?? PROJECTS[0];
+  const CurrentIcon = Icons[current.icon];
+
+  const selectProject = useCallback((id: string) => {
+    setProject(id);
+    setOpen(false);
+  }, []);
+
+  return (
+    <div className="tool-dd" ref={menuRef}>
+      <button
+        className={cn('tool-dd-btn', open && 'open')}
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={`Projet actif : ${project}`}
+      >
+        <CurrentIcon size={13} />
+        <span>Mon projet {project}</span>
+        <Icons.ChevronDown size={12} />
+      </button>
+
+      {open && (
+        <div className="tool-dd-menu" role="listbox" aria-label="Choisir un projet">
+          {PROJECTS.map(p => {
+            const ProjectIcon = Icons[p.icon];
+            const isSelected = p.id === project;
+            return (
+              <button
+                key={p.id}
+                className={cn('tool-dd-item', isSelected && 'on')}
+                onClick={() => selectProject(p.id)}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+              >
+                <span className="tool-dd-ico"><ProjectIcon size={16} /></span>
+                <span className="tool-dd-lbl">
+                  <span className="tool-dd-t">{p.id}</span>
+                  <span className="tool-dd-d">{p.desc}</span>
+                </span>
+                {isSelected && <Icons.ChevronRight size={14} />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ToolDropdown() {
   const [open, setOpen] = useState(false);
@@ -162,14 +250,10 @@ function AccountMenu() {
 }
 
 export function Topbar() {
-  function openTweaks() {
-    window.postMessage({ type: '__activate_edit_mode' }, '*');
-  }
-
   return (
     <header className="topbar">
       <div className="topbar-crumb" aria-label="Fil d'Ariane">
-        <b>Mon projet Démo arborescence</b>
+        <ProjectDropdown />
         <span className="sep" aria-hidden="true">/</span>
         <ToolDropdown />
       </div>
@@ -177,21 +261,7 @@ export function Topbar() {
       <div className="topbar-spacer" />
 
       <div className="topbar-actions">
-        <button className="icon-btn" type="button" aria-label="Aide">
-          <Icons.Question size={18} />
-        </button>
-        <button className="icon-btn" type="button" aria-label="2 notifications non lues">
-          <Icons.Bell size={18} />
-          <span className="badge" aria-hidden="true">2</span>
-        </button>
-        <button
-          className="icon-btn"
-          type="button"
-          aria-label="Personnaliser l'affichage"
-          onClick={openTweaks}
-        >
-          <Icons.Grid size={18} />
-        </button>
+        <NotificationsMenu />
         <AccountMenu />
       </div>
     </header>

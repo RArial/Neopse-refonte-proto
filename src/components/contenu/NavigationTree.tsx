@@ -45,6 +45,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import AccessibleOutlinedIcon from '@mui/icons-material/AccessibleOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
@@ -54,15 +55,24 @@ import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import HorizontalRuleOutlinedIcon from '@mui/icons-material/HorizontalRuleOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import PublishOutlinedIcon from '@mui/icons-material/PublishOutlined';
 import UnarchiveOutlinedIcon from '@mui/icons-material/UnarchiveOutlined';
 import ViewStreamOutlinedIcon from '@mui/icons-material/ViewStreamOutlined';
 import type { AddedModule, ContentItemKind, ModuleDropContainer, NavChildNode, NavNodeKind, NavTreeNode } from '@/types/content';
+import type { LegalTemplateId } from '@/types/legal';
 import { useContenuStore } from '@/components/contenu/ContenuProvider';
+import { useLegalPages } from '@/components/contenu/legal/LegalPagesProvider';
+import { LEGAL_PAGE_ROUTES } from '@/lib/legal/legalTemplates';
 import { canNestModuleInto, containerOf } from '@/lib/moduleTree';
 import { ROOT_THEMATIQUE_ID } from '@/lib/navTree';
+
+const LEGAL_PAGE_ICON: Record<LegalTemplateId, typeof GavelOutlinedIcon> = {
+  legal: GavelOutlinedIcon,
+  accessibility: AccessibleOutlinedIcon,
+};
 
 const KIND_ICON: Record<NavNodeKind, typeof AccountTreeOutlinedIcon> = {
   tab: AccountTreeOutlinedIcon,
@@ -794,6 +804,7 @@ function EmptyViewState({ message }: { message: string }) {
 export function NavigationTree() {
   const router = useRouter();
   const { modules, navTree, topLevelItems, draftModules, archivedModules, moveModuleToContainer, moveTab } = useContenuStore();
+  const { templates: legalTemplates, getCompletion: getLegalCompletion } = useLegalPages();
   const [view, setView] = useState<NavView>('tree');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [dropPreview, setDropPreview] = useState<DropPreview | null>(null);
@@ -1181,6 +1192,55 @@ export function NavigationTree() {
               />
             </ListItemButton>
           </ListItem>
+        </List>
+      </Box>
+
+      <Divider sx={{ borderColor: 'divider' }} />
+
+      <Box sx={{ px: 2.5, py: 2 }}>
+        <Typography
+          variant="overline"
+          color="text.secondary"
+          sx={{ display: 'block', mb: 1, lineHeight: 1.5, letterSpacing: '.06em' }}
+        >
+          Pages obligatoires
+        </Typography>
+        <List disablePadding aria-label="Pages obligatoires du site">
+          {legalTemplates.map((template) => {
+            const completion = getLegalCompletion(template.id);
+            const href = LEGAL_PAGE_ROUTES[template.id];
+            const LegalIcon = LEGAL_PAGE_ICON[template.id];
+
+            return (
+              <ListItem
+                key={template.id}
+                disablePadding
+                secondaryAction={
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      color={completion.complete ? 'success' : 'warning'}
+                      label={completion.complete ? 'Complète' : `À compléter — ${completion.missingCount}`}
+                    />
+                    <Button component={Link} href={href} size="small" endIcon={<ChevronRightIcon fontSize="small" />}>
+                      Modifier
+                    </Button>
+                  </Stack>
+                }
+              >
+                <ListItemButton component={Link} href={href} sx={{ py: 1.25, pr: 26, borderRadius: 1.5 }}>
+                  <ListItemIcon sx={{ minWidth: 36, color: 'text.secondary' }}>
+                    <LegalIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={template.title}
+                    slotProps={{ primary: { sx: { fontWeight: 500, fontSize: 14 } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
       </Box>
     </Paper>

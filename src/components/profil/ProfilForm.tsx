@@ -175,7 +175,7 @@ export function ProfilForm() {
                 onClick={() => setEmailDialogOpen(true)}
                 sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
               >
-                Je modifie mon adresse email
+                Modifier mon adresse email
               </Button>
             </Stack>
 
@@ -194,7 +194,7 @@ export function ProfilForm() {
                 onClick={() => setPasswordDialogOpen(true)}
                 sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
               >
-                Je modifie mon mot de passe
+                Modifier mon mot de passe
               </Button>
             </Stack>
 
@@ -304,7 +304,7 @@ export function ProfilForm() {
                 startIcon={<PhotoCameraOutlinedIcon fontSize="small" />}
                 onClick={handleAvatarButtonClick}
               >
-                Je modifie ma photo
+                Modifier ma photo
               </Button>
               <input
                 ref={fileInputRef}
@@ -330,7 +330,7 @@ export function ProfilForm() {
           Annuler
         </Button>
         <Button type="button" variant="contained" onClick={handleSave}>
-          J&apos;enregistre mes paramètres
+          Enregistrer mes paramètres
         </Button>
       </Stack>
 
