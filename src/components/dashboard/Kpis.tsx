@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import Link from 'next/link';
 import { Icons, type IconName } from '@/components/ui/Icons';
 import { Sparkline, type SparklineColor } from './Sparkline';
 
@@ -17,6 +18,8 @@ interface KpiData {
   trend: Trend;
   color: KpiColor;
   data: number[];
+  /** Absent : la carte n'a pas de destination (ex. Abonnés, Localiti). */
+  href?: string;
 }
 
 const COLOR_MAP: Record<KpiColor, SparklineColor> = {
@@ -35,6 +38,7 @@ const KPIS: KpiData[] = [
     trend: 'up',
     color: 'amber',
     data: [1, 0, 2, 1, 3, 2, 1, 2, 1, 2],
+    href: '/dashboard/formulaires?tab=reponses',
   },
   {
     icon: 'UserPlus',
@@ -62,6 +66,7 @@ const KPIS: KpiData[] = [
     trend: 'up',
     color: 'amber',
     data: [3, 3, 4, 4, 4, 5, 5, 6, 6, 6],
+    href: '/dashboard/administrateurs',
   },
 ];
 
@@ -71,11 +76,12 @@ const DELTA_TEXT_COLOR: Record<Trend, string> = {
   flat: 'text.secondary',
 };
 
-function KpiCard({ icon, label, value, delta, trend, color, data }: KpiData) {
+function KpiCard({ icon, label, value, delta, trend, color, data, href }: KpiData) {
   const IconEl = Icons[icon];
   return (
     <Box
-      component="article"
+      component={href ? Link : 'article'}
+      href={href}
       aria-label={`${label} : ${value}`}
       sx={{
         bgcolor: 'background.paper',
@@ -88,8 +94,11 @@ function KpiCard({ icon, label, value, delta, trend, color, data }: KpiData) {
         gap: 1.5,
         position: 'relative',
         overflow: 'hidden',
+        textDecoration: 'none',
+        color: 'inherit',
+        cursor: href ? 'pointer' : 'default',
         transition: 'transform .18s, box-shadow .18s, border-color .18s',
-        '&:hover': { transform: 'translateY(-2px)', boxShadow: 2, borderColor: 'grey.300' },
+        ...(href && { '&:hover': { transform: 'translateY(-2px)', boxShadow: 2, borderColor: 'grey.300' } }),
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.25 }}>

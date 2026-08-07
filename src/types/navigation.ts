@@ -26,6 +26,8 @@ export interface NavFlyout {
   id: string;
   icon: string;
   label: string;
+  /** Désactive temporairement l'entrée sans la supprimer, pour réactivation ultérieure facile. */
+  hidden?: boolean;
 }
 
 export type NavEntry = NavItem | NavSectionTitle | NavDivider | NavFlyout;

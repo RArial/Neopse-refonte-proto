@@ -4,21 +4,23 @@ import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import Link from 'next/link';
 import { Icons, type IconName } from '@/components/ui/Icons';
 
 interface ShortcutItem {
   icon: IconName;
   title: string;
   sub: string;
+  href: string;
 }
 
 const SHORTCUTS: ShortcutItem[] = [
-  { icon: 'Pages',     title: 'Gestion du site', sub: '42 pages publiées' },
-  { icon: 'Edit',      title: 'Maquettes',        sub: 'Charte & gabarits' },
-  { icon: 'Newspaper', title: 'Unes',              sub: '3 à la une' },
-  { icon: 'Megaphone', title: 'Actualités',        sub: '12 publications' },
-  { icon: 'Calendar',  title: 'Agenda',            sub: '5 événements à venir' },
-  { icon: 'Bell',      title: 'Alertes',           sub: '2 alertes diffusées' },
+  { icon: 'AccountTree',  title: 'Gestionnaire de pages', sub: '42 pages publiées',       href: '/dashboard/contenu' },
+  { icon: 'Brush',        title: 'Apparence',             sub: 'Charte & gabarits',        href: '/dashboard/personnalisation' },
+  { icon: 'Sparkles',     title: 'Unes',                  sub: '3 à la une',               href: '/dashboard/unes' },
+  { icon: 'Newspaper',    title: 'Actualités',            sub: '12 publications',          href: '/dashboard/actualites' },
+  { icon: 'Calendar',     title: 'Agenda',                sub: '5 événements à venir',      href: '/dashboard/agenda' },
+  { icon: 'AlertTriangle', title: 'Alertes',              sub: '2 alertes diffusées',       href: '/dashboard/alertes' },
 ];
 
 export function Shortcuts() {
@@ -35,6 +37,8 @@ export function Shortcuts() {
           return (
             <ButtonBase
               key={i}
+              component={Link}
+              href={item.href}
               aria-label={`${item.title} — ${item.sub}`}
               sx={{
                 display: 'flex',

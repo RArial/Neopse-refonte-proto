@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
+import Link from 'next/link';
 import { Icons } from '@/components/ui/Icons';
 
 type ItemColor = 'teal' | 'amber' | 'lilac' | 'coral';
@@ -54,8 +55,8 @@ function News() {
           Dernières actualités publiées
         </Typography>
         <Box
-          component="a"
-          href="#"
+          component={Link}
+          href="/dashboard/actualites"
           aria-label="Voir toutes les actualités"
           sx={{
             fontSize: 12,
@@ -199,8 +200,8 @@ function Agenda() {
           Événements à venir
         </Typography>
         <Box
-          component="a"
-          href="#"
+          component={Link}
+          href="/dashboard/agenda"
           aria-label="Voir tout l'agenda"
           sx={{
             fontSize: 12,

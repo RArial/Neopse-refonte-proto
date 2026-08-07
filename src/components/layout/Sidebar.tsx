@@ -14,7 +14,7 @@ const SIDEBAR_NAV: NavEntry[] = [
   { type: 'item', id: 'access', icon: 'Globe', label: 'Accès au site', external: true, accent: 'amber' },
   { type: 'item', id: 'dashboard', icon: 'Dashboard', label: 'Tableau de bord', href: '/dashboard' },
   { type: 'item', id: 'contenu', icon: 'AccountTree', label: 'Gestionnaire des pages', href: '/dashboard/contenu' },
-  { type: 'flyout', id: 'pages-flyout', icon: 'Pages', label: 'Modules' },
+  { type: 'flyout', id: 'pages-flyout', icon: 'Pages', label: 'Modules', hidden: true },
   { type: 'item', id: 'personnalisation', icon: 'Brush', label: 'Apparence', href: '/dashboard/personnalisation' },
   { type: 'item', id: 'gestionnaire', icon: 'Folder', label: 'Fichiers', href: '/dashboard/gestionnaire' },
   { type: 'item', id: 'formulaires', icon: 'Form', label: 'Formulaires', href: '/dashboard/formulaires' },
@@ -87,7 +87,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="nav" aria-label="Menu principal">
-        {SIDEBAR_NAV.map((n, i) => {
+        {SIDEBAR_NAV.filter((n) => !(n.type === 'flyout' && n.hidden)).map((n, i) => {
           if (n.type === 'divider') {
             return <div className="nav-divider" key={`divider-${i}`} role="separator" />;
           }
