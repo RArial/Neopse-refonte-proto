@@ -43,7 +43,7 @@ export function FooterLinkForm({ mode, linkId }: FooterLinkFormProps) {
         <Breadcrumbs separator={<NavigateNextIcon sx={{ fontSize: 16 }} />} aria-label="Fil d'Ariane" sx={{ mb: 1.5, fontSize: 13 }}>
           <Link href="/dashboard/contenu" style={{ textDecoration: 'none' }}>
             <Typography component="span" variant="body2" color="text.secondary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-              Contenu
+              Gestionnaire des pages
             </Typography>
           </Link>
           <Link href={PIED_DE_PAGE_HREF} style={{ textDecoration: 'none' }}>

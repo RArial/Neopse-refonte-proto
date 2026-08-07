@@ -1,4 +1,4 @@
-export type FileKind = 'image' | 'pdf' | 'form';
+export type FileKind = 'image' | 'pdf';
 
 export interface ManagedFile {
   id: string;
@@ -15,7 +15,7 @@ export interface ManagedFolder {
   parentId: string;
 }
 
-export type ManagerSectionId = 'images' | 'documents' | 'formulaires';
+export type ManagerSectionId = 'images' | 'documents';
 
 export interface ManagerSection {
   id: ManagerSectionId;
@@ -63,23 +63,6 @@ export const MANAGER_SECTIONS: ManagerSection[] = [
       { id: 'doc-1', name: 'Compte-rendu-21-02-2026', kind: 'pdf', meta: '136,1 kB · PDF', folderId: 'doc-pv', dateAdded: '2026-02-21' },
       { id: 'doc-2', name: 'Réunion-conseil-21-02-2026', kind: 'pdf', meta: '136,1 kB · PDF', folderId: 'doc-pv', dateAdded: '2026-02-21' },
       { id: 'doc-3', name: 'depliant-programme-ete', kind: 'pdf', meta: '898,3 kB · PDF', folderId: 'doc-telechargements', dateAdded: '2026-06-01' },
-    ],
-  },
-  {
-    id: 'formulaires',
-    label: 'Formulaires',
-    rootLabel: 'Formulaires',
-    uploadLabel: 'Je crée un formulaire',
-    acceptedFileTypes: '',
-    folders: [
-      { id: 'form-contact', label: 'Contact', parentId: ROOT_FOLDER_ID },
-      { id: 'form-inscriptions', label: 'Inscriptions', parentId: ROOT_FOLDER_ID },
-    ],
-    files: [
-      { id: 'form-1', name: 'Formulaire de contact', kind: 'form', meta: '8 champs · Actif', folderId: 'form-contact', dateAdded: '2026-01-05' },
-      { id: 'form-2', name: 'Inscription newsletter', kind: 'form', meta: '3 champs · Actif', folderId: 'form-inscriptions', dateAdded: '2026-01-20' },
-      { id: 'form-3', name: 'Inscription événement', kind: 'form', meta: '5 champs · Actif', folderId: 'form-inscriptions', dateAdded: '2026-04-11' },
-      { id: 'form-4', name: 'Enquête de satisfaction', kind: 'form', meta: '10 champs · Inactif', folderId: 'form-inscriptions', dateAdded: '2026-04-18' },
     ],
   },
 ];

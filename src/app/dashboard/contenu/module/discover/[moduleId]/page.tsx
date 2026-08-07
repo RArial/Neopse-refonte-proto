@@ -9,8 +9,8 @@ import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { getDiscoverModule } from '@/lib/catalogModules';
 import { UnlockModuleAction } from '@/components/contenu/module/UnlockModuleAction';
 
@@ -52,7 +52,7 @@ export default async function DiscoverModulePage({ params }: DiscoverModulePageP
       >
         <Link href="/dashboard/contenu" style={{ textDecoration: 'none' }}>
           <Typography component="span" variant="body2" color="text.secondary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-            Contenu
+            Gestionnaire des pages
           </Typography>
         </Link>
         <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
@@ -70,7 +70,7 @@ export default async function DiscoverModulePage({ params }: DiscoverModulePageP
               {mod.label}
             </Typography>
             <Chip
-              icon={<LockOutlinedIcon sx={{ fontSize: 14 }} />}
+              icon={<ShoppingCartOutlinedIcon sx={{ fontSize: 14 }} />}
               label="Non inclus dans votre forfait actuel"
               size="small"
               variant="outlined"

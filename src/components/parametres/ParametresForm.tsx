@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type SyntheticEvent } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -11,6 +11,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { Icons } from '@/components/ui/Icons';
 import { SettingsSection } from '@/components/parametres/SettingsSection';
@@ -24,10 +26,22 @@ import { DomaineSection } from '@/components/parametres/sections/DomaineSection'
 import { DEFAULT_SITE_SETTINGS, type DomainRecord, type SiteSettings } from '@/types/parametres';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
+type SettingsTab = 'acces' | 'site' | 'favicon' | 'domaine' | 'langue' | 'suivi';
+
+const SETTINGS_TABS: { value: SettingsTab; label: string }[] = [
+  { value: 'acces', label: 'Accès' },
+  { value: 'site', label: 'Site' },
+  { value: 'favicon', label: 'Favicon' },
+  { value: 'domaine', label: 'Domaine' },
+  { value: 'langue', label: 'Langue' },
+  { value: 'suivi', label: 'Suivi & scripts' },
+];
+
 export function ParametresForm() {
   const [saved, setSaved] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<SettingsTab>('acces');
 
   const isDirty = useMemo(() => JSON.stringify(settings) !== JSON.stringify(saved), [settings, saved]);
   const { isDialogOpen, confirmLeave, cancelLeave } = useUnsavedChangesGuard(isDirty);
@@ -54,6 +68,10 @@ export function ParametresForm() {
   function handleSave() {
     setSaved(settings);
     setSuccessMessage('Les paramètres du site ont bien été enregistrés.');
+  }
+
+  function handleTabChange(_event: SyntheticEvent, value: SettingsTab) {
+    setActiveTab(value);
   }
 
   return (
@@ -107,34 +125,69 @@ export function ParametresForm() {
         </Stack>
       </Stack>
 
+      <Tabs
+        value={activeTab}
+        onChange={handleTabChange}
+        aria-label="Sections des paramètres"
+        sx={{ borderBottom: '1px solid', borderColor: 'divider', mb: 2.5 }}
+      >
+        {SETTINGS_TABS.map((tab) => (
+          <Tab key={tab.value} value={tab.value} label={tab.label} sx={{ textTransform: 'none' }} />
+        ))}
+      </Tabs>
+
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        <SettingsSection icon="Globe" title="Ouverture au public" description="Contrôlez l'accès public à votre site">
-          <OuvertureAuPublicSection settings={settings} onChange={handleChange} />
-        </SettingsSection>
+        {activeTab === 'acces' && (
+          <SettingsSection icon="Globe" title="Ouverture au public" description="Contrôlez l'accès public à votre site" collapsible={false}>
+            <OuvertureAuPublicSection settings={settings} onChange={handleChange} />
+          </SettingsSection>
+        )}
 
-        <SettingsSection icon="FileText" title="Informations concernant le site" description="Titre, description et identité affichés en ligne">
-          <InformationsSiteSection settings={settings} onChange={handleChange} />
-        </SettingsSection>
+        {activeTab === 'site' && (
+          <SettingsSection
+            icon="FileText"
+            title="Informations concernant le site"
+            description="Titre, description et identité affichés en ligne"
+            collapsible={false}
+          >
+            <InformationsSiteSection settings={settings} onChange={handleChange} />
+          </SettingsSection>
+        )}
 
-        <SettingsSection icon="Image" title="Icône du site web" description="Favicon affiché dans l'onglet du navigateur">
-          <FaviconSection settings={settings} onChange={handleChange} />
-        </SettingsSection>
+        {activeTab === 'favicon' && (
+          <SettingsSection icon="Image" title="Icône du site web" description="Favicon affiché dans l'onglet du navigateur" collapsible={false}>
+            <FaviconSection settings={settings} onChange={handleChange} />
+          </SettingsSection>
+        )}
 
-        <SettingsSection icon="Globe" title="Nom de domaine" description="Gérez les noms de domaine associés à votre site">
-          <DomaineSection domains={settings.domains} onAddDomain={handleAddDomain} onEditDomain={handleEditDomain} />
-        </SettingsSection>
+        {activeTab === 'domaine' && (
+          <SettingsSection icon="Globe" title="Nom de domaine" description="Gérez les noms de domaine associés à votre site" collapsible={false}>
+            <DomaineSection domains={settings.domains} onAddDomain={handleAddDomain} onEditDomain={handleEditDomain} />
+          </SettingsSection>
+        )}
 
-        <SettingsSection icon="Languages" title="Options de langue" description="Langue par défaut et configuration multilingue">
-          <LangueSection settings={settings} onChange={handleChange} />
-        </SettingsSection>
+        {activeTab === 'langue' && (
+          <SettingsSection icon="Languages" title="Options de langue" description="Langue par défaut et configuration multilingue" collapsible={false}>
+            <LangueSection settings={settings} onChange={handleChange} />
+          </SettingsSection>
+        )}
 
-        <SettingsSection icon="TrendUp" title="Suivi de fréquentation — outils Google" description="Google Analytics et Google Search Console">
-          <SuiviFrequentationSection settings={settings} onChange={handleChange} />
-        </SettingsSection>
+        {activeTab === 'suivi' && (
+          <>
+            <SettingsSection
+              icon="TrendUp"
+              title="Suivi de fréquentation — outils Google"
+              description="Google Analytics et Google Search Console"
+              collapsible={false}
+            >
+              <SuiviFrequentationSection settings={settings} onChange={handleChange} />
+            </SettingsSection>
 
-        <SettingsSection icon="FileText" title="Autres types d'affiliation" description="Scripts à insérer en haut et bas de page">
-          <AffiliationSection settings={settings} onChange={handleChange} />
-        </SettingsSection>
+            <SettingsSection icon="FileText" title="Autres types d'affiliation" description="Scripts à insérer en haut et bas de page" collapsible={false}>
+              <AffiliationSection settings={settings} onChange={handleChange} />
+            </SettingsSection>
+          </>
+        )}
       </Box>
 
       <Snackbar

@@ -13,10 +13,8 @@ import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { AttachmentsField } from '@/components/pages-modules/AttachmentsField';
 import { Icons } from '@/components/ui/Icons';
-import { MANAGER_SECTIONS } from '@/types/gestionnaire';
+import { FORMS } from '@/types/formulaires';
 import { CONTENT_BLOCK_META, type ContentBlockData, type ContentBlockPatch } from '@/types/editos';
-
-const SITE_FORMS = MANAGER_SECTIONS.find((section) => section.id === 'formulaires')?.files.filter((file) => file.kind === 'form') ?? [];
 
 interface ContentBlockCardProps {
   block: ContentBlockData;
@@ -161,7 +159,7 @@ export function ContentBlockCard({ block, onChange, onDuplicate, onDelete }: Con
         {block.kind === 'form' && (
           <TextField select value={block.formId} onChange={(event) => onChange({ formId: event.target.value })} fullWidth label="Formulaire">
             <MenuItem value="">Aucune sélection</MenuItem>
-            {SITE_FORMS.map((form) => (
+            {FORMS.map((form) => (
               <MenuItem key={form.id} value={form.id}>
                 {form.name}
               </MenuItem>

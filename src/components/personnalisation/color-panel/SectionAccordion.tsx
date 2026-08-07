@@ -4,6 +4,7 @@ import { useState, type ReactNode, type SyntheticEvent } from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
@@ -20,10 +21,46 @@ interface SectionAccordionProps {
   label: string;
   infoText: string;
   defaultExpanded?: boolean;
+  /** Quand `false`, la section est affichée fixe (non repliable), sans comportement accordéon.
+   * Par défaut `true`. */
+  collapsible?: boolean;
   children: ReactNode;
 }
 
-export function SectionAccordion({ section, label, infoText, defaultExpanded, children }: SectionAccordionProps) {
+const containerSx = {
+  border: '1px solid',
+  borderColor: 'divider',
+  borderRadius: 2,
+  overflow: 'hidden',
+} as const;
+
+const headerSx = {
+  px: 2,
+  py: 1.5,
+} as const;
+
+function SectionHeaderContent({ label, infoText }: { label: string; infoText: string }) {
+  return (
+    <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flex: 1 }}>
+      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+        {label}
+      </Typography>
+      <Tooltip title={infoText}>
+        <IconButton
+          size="small"
+          component="span"
+          onClick={(e) => e.stopPropagation()}
+          onFocus={(e) => e.stopPropagation()}
+          aria-label={`À propos de ${label}`}
+        >
+          <InfoOutlinedIcon fontSize="inherit" />
+        </IconButton>
+      </Tooltip>
+    </Stack>
+  );
+}
+
+export function SectionAccordion({ section, label, infoText, defaultExpanded, collapsible = true, children }: SectionAccordionProps) {
   const { highlightTarget } = usePersonnalisation();
   const [expanded, setExpanded] = useState(Boolean(defaultExpanded));
 
@@ -38,6 +75,17 @@ export function SectionAccordion({ section, label, infoText, defaultExpanded, ch
 
   function handleChange(_event: SyntheticEvent, next: boolean) {
     setExpanded(next);
+  }
+
+  if (!collapsible) {
+    return (
+      <Box sx={containerSx}>
+        <Box sx={headerSx}>
+          <SectionHeaderContent label={label} infoText={infoText} />
+        </Box>
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>{children}</Box>
+      </Box>
+    );
   }
 
   return (
@@ -57,22 +105,7 @@ export function SectionAccordion({ section, label, infoText, defaultExpanded, ch
       }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon fontSize="small" />}>
-        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flex: 1 }}>
-          <Typography variant="body2" sx={{ fontWeight: 700 }}>
-            {label}
-          </Typography>
-          <Tooltip title={infoText}>
-            <IconButton
-              size="small"
-              component="span"
-              onClick={(e) => e.stopPropagation()}
-              onFocus={(e) => e.stopPropagation()}
-              aria-label={`À propos de ${label}`}
-            >
-              <InfoOutlinedIcon fontSize="inherit" />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+        <SectionHeaderContent label={label} infoText={infoText} />
       </AccordionSummary>
       <AccordionDetails sx={{ p: 0, borderTop: '1px solid', borderColor: 'divider' }}>{children}</AccordionDetails>
     </Accordion>

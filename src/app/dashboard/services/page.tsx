@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ServicesOverview } from '@/components/services/ServicesOverview';
 
 export const metadata: Metadata = {
-  title: 'Services',
+  title: 'Outils',
 };
 
 export default function ServicesPage() {

@@ -11,12 +11,17 @@ import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { usePersonnalisation } from '@/components/personnalisation/PersonnalisationProvider';
+import type { ContrastIssue } from '@/types/personnalisation';
 
-export function ContrastWarnings() {
-  const { contrastIssues, resetToAuto, focusContrastIssue } = usePersonnalisation();
+interface ContrastWarningsProps {
+  issues: ContrastIssue[];
+}
+
+export function ContrastWarnings({ issues }: ContrastWarningsProps) {
+  const { resetToAuto, focusContrastIssue } = usePersonnalisation();
   const [open, setOpen] = useState(true);
 
-  if (contrastIssues.length === 0) return null;
+  if (issues.length === 0) return null;
 
   return (
     <Alert
@@ -36,11 +41,11 @@ export function ContrastWarnings() {
       }
     >
       <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
-        {contrastIssues.length} problème{contrastIssues.length > 1 ? 's' : ''} de contraste (RGAA)
+        {issues.length} problème{issues.length > 1 ? 's' : ''} de contraste (RGAA)
       </Typography>
       <Collapse in={open}>
         <Stack sx={{ mt: 0.5 }}>
-          {contrastIssues.map((issue, index) => (
+          {issues.map((issue, index) => (
             <Stack
               key={`${issue.section}-${issue.propertyKey}`}
               direction="row"

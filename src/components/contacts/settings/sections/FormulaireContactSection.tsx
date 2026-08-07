@@ -7,10 +7,8 @@ import FormLabel from '@mui/material/FormLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { MANAGER_SECTIONS } from '@/types/gestionnaire';
+import { FORMS } from '@/types/formulaires';
 import { CONTACTS_MOCK, type ContactPageSettings } from '@/types/pagesModules';
-
-const SITE_FORMS = MANAGER_SECTIONS.find((section) => section.id === 'formulaires')?.files.filter((file) => file.kind === 'form') ?? [];
 
 interface SectionProps {
   settings: ContactPageSettings;
@@ -58,7 +56,7 @@ export function FormulaireContactSection({ settings, onChange }: SectionProps) {
         helperText="Formulaire affiché sur la page Contacts, parmi ceux créés dans le gestionnaire de formulaires."
       >
         <MenuItem value="">Aucune sélection</MenuItem>
-        {SITE_FORMS.map((form) => (
+        {FORMS.map((form) => (
           <MenuItem key={form.id} value={form.id}>
             {form.name}
           </MenuItem>

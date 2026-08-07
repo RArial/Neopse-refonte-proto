@@ -104,8 +104,8 @@ function ModuleAccordionItem({ moduleKey, expanded, onToggle }: { moduleKey: Mod
   );
 }
 
-export function ModuleOverridesAccordion() {
-  const { moduleAccordionOpen, setModuleAccordionOpen, highlightTarget } = usePersonnalisation();
+export function ModulesTabPanel() {
+  const { highlightTarget } = usePersonnalisation();
   const [openModule, setOpenModule] = useState<ModuleKey | null>(null);
 
   // Un avertissement de contraste concernant un module ouvre directement son accordéon. Détecté pendant
@@ -119,38 +119,15 @@ export function ModuleOverridesAccordion() {
   }
 
   return (
-    <Accordion
-      expanded={moduleAccordionOpen}
-      onChange={(_, expanded) => setModuleAccordionOpen(expanded)}
-      disableGutters
-      elevation={0}
-      square
-      sx={{
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
-        overflow: 'hidden',
-        '&:before': { display: 'none' },
-        '&.Mui-expanded': { margin: 0 },
-      }}
-    >
-      <AccordionSummary expandIcon={<ExpandMoreIcon fontSize="small" />}>
-        <Typography variant="body2" sx={{ fontWeight: 700 }}>
-          Personnalisations par module
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails sx={{ p: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Stack spacing={1}>
-          {MODULE_KEYS.map((moduleKey) => (
-            <ModuleAccordionItem
-              key={moduleKey}
-              moduleKey={moduleKey}
-              expanded={openModule === moduleKey}
-              onToggle={(expanded) => setOpenModule(expanded ? moduleKey : null)}
-            />
-          ))}
-        </Stack>
-      </AccordionDetails>
-    </Accordion>
+    <Stack spacing={1.5} sx={{ p: 2 }}>
+      {MODULE_KEYS.map((moduleKey) => (
+        <ModuleAccordionItem
+          key={moduleKey}
+          moduleKey={moduleKey}
+          expanded={openModule === moduleKey}
+          onToggle={(expanded) => setOpenModule(expanded ? moduleKey : null)}
+        />
+      ))}
+    </Stack>
   );
 }

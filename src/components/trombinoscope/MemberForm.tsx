@@ -30,7 +30,7 @@ import { CategoriesDialog } from '@/components/pages-modules/CategoriesDialog';
 import { useSectionScrollSpy } from '@/hooks/useSectionScrollSpy';
 import { useStickyFormLayout } from '@/hooks/useStickyFormLayout';
 import { readCopyNameParam } from '@/lib/duplicateParams';
-import { MANAGER_SECTIONS } from '@/types/gestionnaire';
+import { FORMS } from '@/types/formulaires';
 import { CONTACTS_MOCK } from '@/types/pagesModules';
 import {
   DEFAULT_MEMBER_FORM,
@@ -46,8 +46,6 @@ const STATUS_CHIP_META: Record<MemberStatus, { label: string; color: 'success' |
   published: { label: 'Publié', color: 'success' },
   archived: { label: 'Archivé', color: 'default' },
 };
-
-const SITE_FORMS = MANAGER_SECTIONS.find((section) => section.id === 'formulaires')?.files.filter((file) => file.kind === 'form') ?? [];
 
 const ESSENTIAL_SECTIONS: SommaireSection[] = [{ id: 'informations-generales', icon: 'FileText', navLabel: 'Informations générales' }];
 const COMPLEMENTARY_SECTIONS: SommaireSection[] = [
@@ -304,7 +302,7 @@ export function MemberForm({ mode, initialMember }: MemberFormProps) {
                 helperText={!hasContact ? 'Cochez au moins un contact ci-dessus pour choisir un formulaire.' : undefined}
               >
                 <MenuItem value="">Aucune sélection</MenuItem>
-                {SITE_FORMS.map((form) => (
+                {FORMS.map((form) => (
                   <MenuItem key={form.id} value={form.id}>
                     {form.name}
                   </MenuItem>
@@ -313,8 +311,8 @@ export function MemberForm({ mode, initialMember }: MemberFormProps) {
 
               <Typography variant="caption" color="text.secondary">
                 Pour créer un nouveau formulaire, rendez-vous dans la{' '}
-                <MuiLink component={Link} href="/dashboard/gestionnaire?section=formulaires">
-                  section formulaires de la page stockage
+                <MuiLink component={Link} href="/dashboard/formulaires">
+                  page Formulaires
                 </MuiLink>
                 .
               </Typography>

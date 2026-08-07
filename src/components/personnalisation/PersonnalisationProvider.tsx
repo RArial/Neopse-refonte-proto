@@ -27,7 +27,7 @@ import { MODULE_KEYS, PAGE_GABARITS } from '@/types/personnalisation';
 
 const CURRENT_USER = 'Vous';
 
-export type EditorTab = 'general' | 'details';
+export type EditorTab = 'templates' | 'general' | 'modules';
 
 export interface HighlightTarget {
   owner: SectionKey | ModuleKey;
@@ -70,7 +70,6 @@ interface PersonnalisationStore {
   pendingVariantSwitchId: string | null;
   publishTargetId: string | null;
   moduleCoexistenceMessage: string | null;
-  moduleAccordionOpen: boolean;
   activeEditorTab: EditorTab;
   highlightTarget: HighlightTarget | null;
   previewPageId: PageGabaritId;
@@ -94,8 +93,6 @@ interface PersonnalisationStore {
   setBackgroundImage: (slot: BackgroundSlot, url: string | null) => void;
   setBackgroundTexture: (slot: BackgroundSlot, textureId: string | null) => void;
 
-  openModuleAccordion: () => void;
-  setModuleAccordionOpen: (open: boolean) => void;
   dismissModuleCoexistenceMessage: () => void;
   setActiveEditorTab: (tab: EditorTab) => void;
   focusContrastIssue: (issue: ContrastIssue) => void;
@@ -144,8 +141,7 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
   const [pendingVariantSwitchId, setPendingVariantSwitchId] = useState<string | null>(null);
   const [publishTargetId, setPublishTargetId] = useState<string | null>(null);
   const [moduleCoexistenceMessage, setModuleCoexistenceMessage] = useState<string | null>(null);
-  const [moduleAccordionOpen, setModuleAccordionOpen] = useState(false);
-  const [activeEditorTab, setActiveEditorTab] = useState<EditorTab>('general');
+  const [activeEditorTab, setActiveEditorTab] = useState<EditorTab>('templates');
   const [highlightTarget, setHighlightTarget] = useState<HighlightTarget | null>(null);
   const [previewPageId, setPreviewPageId] = useState<PageGabaritId>(PAGE_GABARITS[0].id as PageGabaritId);
   const [revealCommand, setRevealCommand] = useState<RevealCommand | null>(null);
@@ -334,7 +330,6 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
     [markDirty],
   );
 
-  const openModuleAccordion = useCallback(() => setModuleAccordionOpen(true), []);
   const dismissModuleCoexistenceMessage = useCallback(() => setModuleCoexistenceMessage(null), []);
 
   // ─── Avertissements de contraste : cliquer un lien saute jusqu'à l'élément concerné ────────
@@ -342,18 +337,17 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
   const clearHighlight = useCallback(() => setHighlightTarget(null), []);
 
   const focusContrastIssue = useCallback((issue: ContrastIssue) => {
-    setActiveEditorTab('details');
-    if (MODULE_KEYS.includes(issue.section as ModuleKey)) setModuleAccordionOpen(true);
+    setActiveEditorTab(MODULE_KEYS.includes(issue.section as ModuleKey) ? 'modules' : 'general');
     setHighlightTarget({ owner: issue.section, propertyKey: issue.propertyKey });
   }, []);
 
-  // Ouvre l'onglet Détails et déplie l'accordéon d'une section (ex. lien « Personnalisation »
+  // Ouvre l'onglet Général et déplie l'accordéon d'une section (ex. lien « Personnalisation »
   // depuis l'écran Pied de page) — réutilise le mécanisme de surbrillance/scroll de
   // `focusContrastIssue`, ciblé sur la première propriété de la section faute de propriété précise.
   const openSection = useCallback((section: SectionKey) => {
     const firstProperty = SECTION_PROPERTIES[section]?.[0];
     if (!firstProperty) return;
-    setActiveEditorTab('details');
+    setActiveEditorTab('general');
     setHighlightTarget({ owner: section, propertyKey: firstProperty.key });
   }, []);
 
@@ -602,7 +596,6 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
     pendingVariantSwitchId,
     publishTargetId,
     moduleCoexistenceMessage,
-    moduleAccordionOpen,
     activeEditorTab,
     highlightTarget,
     previewPageId,
@@ -621,8 +614,6 @@ export function PersonnalisationProvider({ children }: { children: ReactNode }) 
     setBackgroundGraphicKind,
     setBackgroundImage,
     setBackgroundTexture,
-    openModuleAccordion,
-    setModuleAccordionOpen,
     dismissModuleCoexistenceMessage,
     setActiveEditorTab,
     focusContrastIssue,

@@ -2,7 +2,7 @@ export type AdminRole = 'gerant' | 'admin-site' | 'intervenant';
 
 export const ADMIN_ROLE_META: Record<AdminRole, { label: string; description: string }> = {
   gerant: {
-    label: 'Gérant de projet',
+    label: 'Administrateur projet',
     description: 'Tous les droits de gestion, y compris la capacité de passer des commandes pour le compte NEOPSE.',
   },
   'admin-site': {

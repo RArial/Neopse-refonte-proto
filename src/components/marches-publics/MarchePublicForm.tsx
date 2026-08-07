@@ -28,7 +28,7 @@ import { RichTextField } from '@/components/ui/RichTextField';
 import { useSectionScrollSpy } from '@/hooks/useSectionScrollSpy';
 import { useStickyFormLayout } from '@/hooks/useStickyFormLayout';
 import { readCopyNameParam } from '@/lib/duplicateParams';
-import { MANAGER_SECTIONS } from '@/types/gestionnaire';
+import { FORMS } from '@/types/formulaires';
 import { CONTACTS_MOCK } from '@/types/pagesModules';
 import {
   DEFAULT_MARCHE_PUBLIC_FORM,
@@ -44,8 +44,6 @@ const STATUS_CHIP_META: Record<MarchePublicStatus, { label: string; color: 'succ
   published: { label: 'Publié', color: 'success' },
   archived: { label: 'Archivé', color: 'default' },
 };
-
-const SITE_FORMS = MANAGER_SECTIONS.find((section) => section.id === 'formulaires')?.files.filter((file) => file.kind === 'form') ?? [];
 
 const ESSENTIAL_SECTIONS: SommaireSection[] = [
   { id: 'informations-generales', icon: 'FileText', navLabel: 'Informations générales' },
@@ -381,7 +379,7 @@ export function MarchePublicForm({ mode, initialMarchePublic }: MarchePublicForm
 
               <TextField select label="Formulaire" value={data.formId} onChange={(e) => handleChange({ formId: e.target.value })} fullWidth>
                 <MenuItem value="">Aucune sélection</MenuItem>
-                {SITE_FORMS.map((form) => (
+                {FORMS.map((form) => (
                   <MenuItem key={form.id} value={form.id}>
                     {form.name}
                   </MenuItem>
@@ -390,8 +388,8 @@ export function MarchePublicForm({ mode, initialMarchePublic }: MarchePublicForm
 
               <Typography variant="caption" color="text.secondary">
                 Pour créer un nouveau formulaire, rendez-vous dans la{' '}
-                <MuiLink component={Link} href="/dashboard/gestionnaire?section=formulaires">
-                  section formulaires de la page stockage
+                <MuiLink component={Link} href="/dashboard/formulaires">
+                  page Formulaires
                 </MuiLink>
                 .
               </Typography>

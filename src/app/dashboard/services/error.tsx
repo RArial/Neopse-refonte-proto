@@ -9,7 +9,7 @@ interface Props {
 
 export default function ServicesError({ error, reset }: Props) {
   useEffect(() => {
-    console.error('Services error:', error);
+    console.error('Outils error:', error);
   }, [error]);
 
   return (
@@ -19,7 +19,7 @@ export default function ServicesError({ error, reset }: Props) {
     >
       <h2 className="text-lg font-semibold">Une erreur est survenue</h2>
       <p className="text-sm text-gray-500 max-w-sm">
-        Les services n&apos;ont pas pu se charger. Réessayez ou contactez le support si le problème persiste.
+        Les outils n&apos;ont pas pu se charger. Réessayez ou contactez le support si le problème persiste.
       </p>
       <button
         type="button"

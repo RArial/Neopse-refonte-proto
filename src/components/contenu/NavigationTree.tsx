@@ -16,7 +16,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { alpha, type Theme } from '@mui/material/styles';
+import { alpha, type SxProps, type Theme } from '@mui/material/styles';
 import type { SvgIconProps } from '@mui/material/SvgIcon';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -49,18 +49,21 @@ import AccessibleOutlinedIcon from '@mui/icons-material/AccessibleOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ContactsOutlinedIcon from '@mui/icons-material/ContactsOutlined';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
+import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HorizontalRuleOutlinedIcon from '@mui/icons-material/HorizontalRuleOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
-import PublishOutlinedIcon from '@mui/icons-material/PublishOutlined';
+import RemoveCircleOutlinedIcon from '@mui/icons-material/RemoveCircleOutlined';
 import UnarchiveOutlinedIcon from '@mui/icons-material/UnarchiveOutlined';
-import ViewStreamOutlinedIcon from '@mui/icons-material/ViewStreamOutlined';
 import type { AddedModule, ContentItemKind, ModuleDropContainer, NavChildNode, NavNodeKind, NavTreeNode } from '@/types/content';
 import type { LegalTemplateId } from '@/types/legal';
 import { useContenuStore } from '@/components/contenu/ContenuProvider';
@@ -77,6 +80,14 @@ const LEGAL_PAGE_ICON: Record<LegalTemplateId, typeof GavelOutlinedIcon> = {
 const KIND_ICON: Record<NavNodeKind, typeof AccountTreeOutlinedIcon> = {
   tab: AccountTreeOutlinedIcon,
 };
+
+/** Modules du pied de page toujours présents sur le site : à la différence des modules de la structure
+ * de navigation, leur statut ne se pilote pas (pas de dropdown Publié/Non publié), d'où le badge fixe. */
+const FOOTER_MANDATORY_MODULES: { id: string; label: string; icon: typeof LinkOutlinedIcon }[] = [
+  { id: 'footer-liens', label: 'Liens', icon: LinkOutlinedIcon },
+  { id: 'footer-contacts', label: 'Contacts', icon: ContactsOutlinedIcon },
+  { id: 'footer-jumelage', label: 'Jumelage', icon: HandshakeOutlinedIcon },
+];
 
 /** Code couleur de l'icône selon le type d'élément : teal (primaire) pour un module, bleu foncé (secondaire) pour
  * un raccourci — afin de les distinguer au premier coup d'œil dans la structure de navigation. Un onglet (aucun
@@ -98,7 +109,7 @@ const CONNECTOR_LEFT = 34;
 // de page enfant apparaisse clairement plus à droite et rattaché à sa page parente (et non à l'onglet).
 const NESTED_CONNECTOR_STEP = 40;
 
-type NavView = 'tree' | 'drafts' | 'archived';
+type NavView = 'tree' | 'archived';
 
 /** Où l'élément en cours de glissement se déposerait s'il était lâché maintenant : dans quel conteneur, avant quel frère. */
 interface DropPreview {
@@ -146,49 +157,139 @@ function hasVisibleBranch(node: { id: string; children?: NavChildNode[] }, expan
   return Boolean(node.children?.length) || expandedContainerIds.has(node.id);
 }
 
+/** Pastille « Contenu » indiquant qu'un module mène à une page de contenu éditable — utilisée à l'identique
+ * dans la structure de navigation et dans le pied de page, pour signaler la même affordance de clic. Porte
+ * elle-même la classe `row-click-hint` (ciblée par le parent au survol) : c'est cet élément, et non un
+ * conteneur englobant, qui doit changer de couleur et glisser en place, sous peine de rendre le survol inerte. */
+function ContentHintChip({ sx }: { sx?: SxProps<Theme> }) {
+  return (
+    <Box
+      className="row-click-hint"
+      aria-hidden="true"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.125,
+        px: 1,
+        py: 0.375,
+        borderRadius: '999px',
+        border: '1px solid',
+        borderColor: 'primary.light',
+        bgcolor: 'background.paper',
+        color: 'primary.dark',
+        fontSize: 11,
+        fontWeight: 700,
+        whiteSpace: 'nowrap',
+        transform: 'translateX(4px)',
+        transition: 'transform 150ms ease, background-color 150ms ease, border-color 150ms ease',
+        '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+        ...sx,
+      }}
+    >
+      Contenu
+      <ChevronRightIcon sx={{ fontSize: 14 }} />
+    </Box>
+  );
+}
+
 function NavChildRow({
   child,
   depth = 1,
-  canArchive = true,
-  isArchived = false,
-  isDraft = false,
   dragHandle,
   isNestTarget = false,
 }: {
   child: NavChildNode;
   /** 0 = module à la racine du menu, 1 = module dans un onglet (ou à la racine), 2+ = page rattachée à une page parente. */
   depth?: number;
-  canArchive?: boolean;
-  /** Ligne de la section « Archivés » : propose Rétablir / Supprimer définitivement plutôt qu'Archiver. */
-  isArchived?: boolean;
-  /** Ligne de la section « Brouillons » : propose Publier en plus de Modifier les infos / Archiver. */
-  isDraft?: boolean;
   dragHandle?: DragHandleProps;
   /** Cette ligne est-elle survolée comme future page parente de l'élément glissé ? */
   isNestTarget?: boolean;
 }) {
-  const { archiveModule, restoreModule, deleteModule } = useContenuStore();
+  const { archiveModule, restoreModule, deleteModule, updateModule } = useContenuStore();
   const Icon = child.icon ?? ArticleOutlinedIcon;
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
   const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+  const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(null);
 
-  // Nombre de boutons d'action affichés (Publier, Modifier, plus Archiver ou Rétablir + Supprimer définitivement),
+  const isArchived = child.status === 'archived';
+  const isPublished = child.status === 'published';
+
+  // Chip de statut (dropdown) + Modifier, plus Archiver ou Rétablir + Supprimer définitivement : toujours 3 contrôles,
   // pour réserver la marge de droite et positionner l'indice « Contenu » sans jamais les chevaucher.
-  const actionCount = 1 + (isDraft ? 1 : 0) + (isArchived ? 2 : canArchive ? 1 : 0);
+  const actionCount = 3;
+  // Le chip de statut est plus large qu'un bouton icône : lui réserver un espace dédié plutôt que de le
+  // compter comme une action de plus, sous peine de le faire chevaucher l'indice « Contenu ».
+  const statusChipWidth = !isArchived ? 116 : 0;
+
+  function openPublishConfirm() {
+    setStatusMenuAnchor(null);
+    setPublishConfirmOpen(true);
+  }
 
   return (
     <>
       <ListItem
         disablePadding
         secondaryAction={
-          <Stack direction="row" spacing={0.5}>
-            {isDraft && (
-              <Tooltip title="Publier">
-                <IconButton size="small" aria-label={`Publier ${child.label}`} onClick={() => restoreModule(child.id)}>
-                  <PublishOutlinedIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+            {!isArchived && (
+              <>
+                <Chip
+                  onClick={(event) => setStatusMenuAnchor(event.currentTarget)}
+                  label={
+                    <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                      <Box
+                        aria-hidden="true"
+                        sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: isPublished ? 'success.main' : 'text.disabled' }}
+                      />
+                      <span>{isPublished ? 'Publié' : 'Non publié'}</span>
+                      <ArrowDropDownIcon sx={{ fontSize: 20, ml: '-4px !important' }} />
+                    </Stack>
+                  }
+                  aria-haspopup="menu"
+                  aria-expanded={Boolean(statusMenuAnchor)}
+                  aria-label={`Statut de publication de ${child.label} : ${isPublished ? 'publié' : 'non publié'}`}
+                  sx={{
+                    height: 30,
+                    minWidth: 100,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: 0,
+                    bgcolor: (theme) => alpha(isPublished ? theme.palette.success.main : theme.palette.text.primary, isPublished ? 0.14 : 0.08),
+                    color: isPublished ? 'success.dark' : 'text.secondary',
+                    '&:hover': {
+                      bgcolor: (theme) => alpha(isPublished ? theme.palette.success.main : theme.palette.text.primary, isPublished ? 0.22 : 0.14),
+                    },
+                    '& .MuiChip-label': { display: 'flex', alignItems: 'center', pl: 1, pr: 0.75 },
+                  }}
+                />
+                <Menu
+                  anchorEl={statusMenuAnchor}
+                  open={Boolean(statusMenuAnchor)}
+                  onClose={() => setStatusMenuAnchor(null)}
+                  slotProps={{ paper: { sx: { borderRadius: 2.5, minWidth: 240, mt: 0.5 } } }}
+                >
+                  <MenuItem disabled={isPublished} onClick={openPublishConfirm} sx={{ py: 1.25, px: 2, gap: 1.5 }}>
+                    <ListItemIcon sx={{ minWidth: 'auto' }}>
+                      <CheckCircleIcon sx={{ fontSize: 24, color: isPublished ? 'text.primary' : 'action.active' }} />
+                    </ListItemIcon>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: 14 }}>
+                      Publier maintenant
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem disabled={!isPublished} onClick={openPublishConfirm} sx={{ py: 1.25, px: 2, gap: 1.5 }}>
+                    <ListItemIcon sx={{ minWidth: 'auto' }}>
+                      <RemoveCircleOutlinedIcon sx={{ fontSize: 24, color: 'text.disabled' }} />
+                    </ListItemIcon>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: 14, color: 'text.secondary' }}>
+                      Dépublier
+                    </Typography>
+                  </MenuItem>
+                </Menu>
+              </>
             )}
             <Tooltip title="Modifier les infos">
               <IconButton
@@ -225,13 +326,11 @@ function NavChildRow({
                 </Tooltip>
               </>
             ) : (
-              canArchive && (
-                <Tooltip title="Archiver">
-                  <IconButton size="small" aria-label={`Archiver ${child.label}`} onClick={() => setArchiveConfirmOpen(true)}>
-                    <ArchiveOutlinedIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )
+              <Tooltip title="Archiver">
+                <IconButton size="small" aria-label={`Archiver ${child.label}`} onClick={() => setArchiveConfirmOpen(true)}>
+                  <ArchiveOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
             )}
           </Stack>
         }
@@ -243,7 +342,7 @@ function NavChildRow({
             // La poignée de glissement (si présente) reste toujours au même niveau à gauche : seul l'espace
             // entre elle et l'avatar (cf. `mr` de la poignée ci-dessous) grandit avec la profondeur.
             pl: dragHandle ? 1 : depth === 0 ? 3 : 7,
-            pr: 7 + (actionCount - 1) * 6,
+            pr: 7 + (actionCount - 1) * 6 + statusChipWidth / 8,
             minHeight: 'auto',
             transition: 'background-color 150ms ease, transform 150ms ease',
             ...(isNestTarget && nestTargetSx),
@@ -309,36 +408,16 @@ function NavChildRow({
           />
           {/* Un lien ou une séparation ne mène à aucune page de contenu : contrairement à un module, sa carte n'est pas cliquable. */}
           {child.kind === 'module' && (
-            <Box
-              className="row-click-hint"
-              aria-hidden="true"
+            <ContentHintChip
               sx={{
                 position: 'absolute',
                 top: '50%',
                 // Ancré à une distance fixe du bord droit, au-delà de la zone des boutons d'icônes
                 // (44px par bouton + espacement), pour ne jamais se superposer avec eux.
-                right: 80 + (actionCount - 1) * 48,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.125,
-                px: 1,
-                py: 0.375,
-                borderRadius: '999px',
-                border: '1px solid',
-                borderColor: 'primary.light',
-                bgcolor: 'background.paper',
-                color: 'primary.dark',
-                fontSize: 11,
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
+                right: 80 + (actionCount - 1) * 48 + statusChipWidth,
                 transform: 'translateY(-50%) translateX(4px)',
-                transition: 'transform 150ms ease',
-                '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
               }}
-            >
-              Contenu
-              <ChevronRightIcon sx={{ fontSize: 14 }} />
-            </Box>
+            />
           )}
         </ListItemButton>
       </ListItem>
@@ -405,6 +484,33 @@ function NavChildRow({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={publishConfirmOpen} onClose={() => setPublishConfirmOpen(false)} aria-labelledby={`publish-title-${child.id}`}>
+        <DialogTitle id={`publish-title-${child.id}`}>
+          {isPublished ? 'Dépublier' : 'Publier'} « {child.label} » ?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {isPublished
+              ? 'Ce module ne sera plus visible sur le site pour les visiteurs, mais il reste dans la structure de navigation et peut être republié à tout moment.'
+              : 'Ce module deviendra visible sur le site pour les visiteurs.'}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPublishConfirmOpen(false)}>Annuler</Button>
+          <Button
+            color={isPublished ? 'inherit' : 'success'}
+            variant="contained"
+            onClick={() => {
+              setPublishConfirmOpen(false);
+              updateModule(child.id, { status: isPublished ? 'draft' : 'published' });
+            }}
+            autoFocus
+          >
+            {isPublished ? 'Dépublier' : 'Publier'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
@@ -412,12 +518,10 @@ function NavChildRow({
 function SortableModuleRow({
   child,
   depth = 1,
-  canArchive = true,
   isNestTarget = false,
 }: {
   child: NavChildNode;
   depth?: number;
-  canArchive?: boolean;
   isNestTarget?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: child.id });
@@ -430,7 +534,7 @@ function SortableModuleRow({
 
   return (
     <Box ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} sx={{ bgcolor: 'background.paper' }}>
-      <NavChildRow child={child} depth={depth} canArchive={canArchive} dragHandle={{ attributes, listeners }} isNestTarget={isNestTarget} />
+      <NavChildRow child={child} depth={depth} dragHandle={{ attributes, listeners }} isNestTarget={isNestTarget} />
     </Box>
   );
 }
@@ -736,14 +840,6 @@ function NavNodeRow({
               secondary: { variant: 'caption' },
             }}
           />
-          {isTab && !hasChildren && (
-            <Chip
-              label="Vide"
-              size="small"
-              variant="outlined"
-              sx={{ height: 20, fontSize: 11, color: 'text.secondary', borderColor: 'divider', flexShrink: 0 }}
-            />
-          )}
         </ListItemButton>
       </ListItem>
 
@@ -803,7 +899,8 @@ function EmptyViewState({ message }: { message: string }) {
 
 export function NavigationTree() {
   const router = useRouter();
-  const { modules, navTree, topLevelItems, draftModules, archivedModules, moveModuleToContainer, moveTab } = useContenuStore();
+  const { modules, navTree, topLevelItems, archivedModules, searchQuery, treeSearchResults, moveModuleToContainer, moveTab } =
+    useContenuStore();
   const { templates: legalTemplates, getCompletion: getLegalCompletion } = useLegalPages();
   const [view, setView] = useState<NavView>('tree');
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -899,7 +996,7 @@ export function NavigationTree() {
     const siblingsAfter = () => {
       if (isOverAtRoot) return { containerId: ROOT_THEMATIQUE_ID, beforeId: nextIdAfter(withoutActiveIds, overId) };
       const siblingIds = modules
-        .filter((mod) => mod.status === 'published' && mod.id !== activeIdValue && containerOf(mod) === overContainerId)
+        .filter((mod) => mod.status !== 'archived' && mod.id !== activeIdValue && containerOf(mod) === overContainerId)
         .map((mod) => mod.id);
       return { containerId: overContainerId, beforeId: nextIdAfter(siblingIds, overId) };
     };
@@ -929,7 +1026,7 @@ export function NavigationTree() {
     const ids = modules
       .filter(
         (mod) =>
-          mod.status === 'published' &&
+          mod.status !== 'archived' &&
           mod.id !== activeIdValue &&
           (isTabContainer ? mod.thematiqueId === preview.containerId && !mod.parentPageId : mod.parentPageId === preview.containerId),
       )
@@ -1004,19 +1101,12 @@ export function NavigationTree() {
         direction="row"
         sx={{ alignItems: 'center', justifyContent: 'space-between', pl: 1.5, pr: 2, py: 1, borderBottom: '1px solid', borderColor: 'divider' }}
       >
-        <Tabs value={view} onChange={handleChange} aria-label="Sections de la structure de navigation" sx={{ minHeight: 44 }}>
+        <Tabs value={view} onChange={handleChange} aria-label="Sections de la structure et du contenu" sx={{ minHeight: 44 }}>
           <Tab
             value="tree"
             id="nav-tab-tree"
             aria-controls="nav-tabpanel-tree"
-            label={<TabLabel text="Structure de navigation" count={navTree.length} />}
-            sx={{ minHeight: 44, textTransform: 'none' }}
-          />
-          <Tab
-            value="drafts"
-            id="nav-tab-drafts"
-            aria-controls="nav-tabpanel-drafts"
-            label={<TabLabel text="Brouillons" count={draftModules.length} />}
+            label={<TabLabel text="Structure et contenu" count={navTree.length} />}
             sx={{ minHeight: 44, textTransform: 'none' }}
           />
           <Tab
@@ -1029,7 +1119,7 @@ export function NavigationTree() {
         </Tabs>
 
         <Button
-          variant="outlined"
+          variant="contained"
           size="small"
           startIcon={<AddOutlinedIcon />}
           onClick={(event) => setAddMenuAnchor(event.currentTarget)}
@@ -1067,7 +1157,28 @@ export function NavigationTree() {
       </Stack>
 
       <Box role="tabpanel" id="nav-tabpanel-tree" aria-labelledby="nav-tab-tree" hidden={view !== 'tree'}>
-        {view === 'tree' && (
+        {view === 'tree' && searchQuery.trim() ? (
+          treeSearchResults.length > 0 ? (
+            <List disablePadding aria-label={`Résultats de recherche pour « ${searchQuery.trim()} »`}>
+              {treeSearchResults.map((child) => (
+                <Box key={child.id} sx={{ '&:not(:last-child)': { borderBottom: '1px solid', borderColor: 'divider' } }}>
+                  <NavChildRow child={child} depth={0} />
+                </Box>
+              ))}
+            </List>
+          ) : (
+            <EmptyViewState message={`Aucun résultat pour « ${searchQuery.trim()} ».`} />
+          )
+        ) : (
+          view === 'tree' && (
+          <>
+          <Typography
+            variant="overline"
+            color="text.secondary"
+            sx={{ display: 'block', px: 2, pt: 1.5, pb: 0.5, lineHeight: 1.5, letterSpacing: '.06em' }}
+          >
+            Menu de navigation
+          </Typography>
           <DndContext
             id="navigation-tree-dnd"
             sensors={sensors}
@@ -1077,7 +1188,7 @@ export function NavigationTree() {
             onDragCancel={endDrag}
           >
             <SortableContext items={topLevelIds} strategy={verticalListSortingStrategy}>
-              <List disablePadding aria-label="Structure de navigation du site">
+              <List disablePadding aria-label="Menu de navigation du site">
                 {topLevelItems.map((item) => (
                   <Box key={item.node.id}>
                     {isRootTargeted && dropPreview?.beforeId === item.node.id && (
@@ -1130,22 +1241,22 @@ export function NavigationTree() {
               )}
             </DragOverlay>
           </DndContext>
-        )}
-      </Box>
 
-      <Box role="tabpanel" id="nav-tabpanel-drafts" aria-labelledby="nav-tab-drafts" hidden={view !== 'drafts'}>
-        {view === 'drafts' &&
-          (draftModules.length > 0 ? (
-            <List disablePadding aria-label="Modules en brouillon">
-              {draftModules.map((child) => (
-                <Box key={child.id} sx={{ '&:not(:last-child)': { borderBottom: '1px solid', borderColor: 'divider' } }}>
-                  <NavChildRow child={child} depth={0} isDraft />
-                </Box>
-              ))}
-            </List>
-          ) : (
-            <EmptyViewState message="Aucun brouillon pour le moment." />
-          ))}
+          <Divider sx={{ borderColor: 'divider' }} />
+
+          <Box sx={{ px: 2, pt: 1.5, pb: 2 }}>
+            <Typography
+              variant="overline"
+              color="text.secondary"
+              sx={{ display: 'block', mb: 1, lineHeight: 1.5, letterSpacing: '.06em' }}
+            >
+              Modules hors menu
+            </Typography>
+            <EmptyViewState message="Aucun module hors menu pour le moment." />
+          </Box>
+          </>
+          )
+        )}
       </Box>
 
       <Box role="tabpanel" id="nav-tabpanel-archived" aria-labelledby="nav-tab-archived" hidden={view !== 'archived'}>
@@ -1154,7 +1265,7 @@ export function NavigationTree() {
             <List disablePadding aria-label="Modules archivés">
               {archivedModules.map((child) => (
                 <Box key={child.id} sx={{ '&:not(:last-child)': { borderBottom: '1px solid', borderColor: 'divider' } }}>
-                  <NavChildRow child={child} depth={0} canArchive={false} isArchived />
+                  <NavChildRow child={child} depth={0} />
                 </Box>
               ))}
             </List>
@@ -1171,27 +1282,38 @@ export function NavigationTree() {
           color="text.secondary"
           sx={{ display: 'block', mb: 1, lineHeight: 1.5, letterSpacing: '.06em' }}
         >
-          Éléments globaux
+          Pied de page
         </Typography>
-        <List disablePadding aria-label="Éléments globaux du site">
-          <ListItem
-            disablePadding
-            secondaryAction={
-              <Button component={Link} href="/dashboard/contenu/pied-de-page" size="small" endIcon={<ChevronRightIcon fontSize="small" />}>
-                Modifier
-              </Button>
-            }
-          >
-            <ListItemButton component={Link} href="/dashboard/contenu/pied-de-page" sx={{ py: 1.25, pr: 14, borderRadius: 1.5 }}>
-              <ListItemIcon sx={{ minWidth: 36, color: 'text.secondary' }}>
-                <ViewStreamOutlinedIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Pied de page"
-                slotProps={{ primary: { sx: { fontWeight: 500, fontSize: 14 } } }}
-              />
-            </ListItemButton>
-          </ListItem>
+        <List disablePadding aria-label="Modules du pied de page">
+          {FOOTER_MANDATORY_MODULES.map((mod) => (
+            <ListItem
+              key={mod.id}
+              disablePadding
+              secondaryAction={<Chip size="small" variant="outlined" color="success" label="Obligatoire" />}
+            >
+              <ListItemButton
+                component={Link}
+                href="/dashboard/contenu/pied-de-page"
+                sx={{
+                  position: 'relative',
+                  py: 1.25,
+                  pr: 20,
+                  borderRadius: 1.5,
+                  '&:hover .row-click-hint': {
+                    transform: 'translateY(-50%) translateX(0)',
+                    bgcolor: 'primary.light',
+                    borderColor: 'primary.light',
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 36, color: 'text.secondary' }}>
+                  <mod.icon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={mod.label} slotProps={{ primary: { sx: { fontWeight: 500, fontSize: 14 } } }} />
+                <ContentHintChip sx={{ position: 'absolute', top: '50%', right: 108, transform: 'translateY(-50%) translateX(4px)' }} />
+              </ListItemButton>
+            </ListItem>
+          ))}
         </List>
       </Box>
 

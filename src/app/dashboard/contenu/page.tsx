@@ -5,7 +5,7 @@ import { NavigationTree } from '@/components/contenu/NavigationTree';
 import { ModuleCatalog } from '@/components/contenu/ModuleCatalog';
 
 export const metadata: Metadata = {
-  title: 'Contenu',
+  title: 'Gestionnaire des pages',
 };
 
 export default function ContenuPage() {

@@ -14,8 +14,8 @@ export default function FormulaireNotFound() {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Ce formulaire n&apos;existe pas ou a été supprimé.
       </Typography>
-      <Button component={Link} href="/dashboard/gestionnaire" variant="contained">
-        Retour au stockage
+      <Button component={Link} href="/dashboard/formulaires" variant="contained">
+        Retour aux formulaires
       </Button>
     </Box>
   );

@@ -34,7 +34,7 @@ export function GestionnaireHub() {
       >
         <Box>
           <Typography variant="h5" component="h1" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Stockage
+            Fichiers
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
             {totalFiles} fichiers dans {MANAGER_SECTIONS.length} dossiers principaux

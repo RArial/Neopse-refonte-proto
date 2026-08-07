@@ -9,7 +9,7 @@ interface Props {
 
 export default function GestionnaireError({ error, reset }: Props) {
   useEffect(() => {
-    console.error('Stockage error:', error);
+    console.error('Fichiers error:', error);
   }, [error]);
 
   return (
@@ -19,7 +19,7 @@ export default function GestionnaireError({ error, reset }: Props) {
     >
       <h2 className="text-lg font-semibold">Une erreur est survenue</h2>
       <p className="text-sm text-gray-500 max-w-sm">
-        Le stockage n&apos;a pas pu se charger. Réessayez ou contactez le support si le problème persiste.
+        Les fichiers n&apos;ont pas pu se charger. Réessayez ou contactez le support si le problème persiste.
       </p>
       <button
         type="button"

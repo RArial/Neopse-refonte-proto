@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { GestionnaireHub } from '@/components/gestionnaire/GestionnaireHub';
 
 export const metadata: Metadata = {
-  title: 'Stockage',
+  title: 'Fichiers',
 };
 
 export default function GestionnairePage() {

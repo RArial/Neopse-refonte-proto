@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { FormBuilder } from '@/components/formulaires/FormBuilder';
-import { MANAGER_SECTIONS } from '@/types/gestionnaire';
+import { FORMS } from '@/types/formulaires';
 
 export const metadata: Metadata = {
   title: 'Modifier le formulaire',
@@ -13,8 +13,7 @@ interface EditFormulairePageProps {
 
 export default async function EditFormulairePage({ params }: EditFormulairePageProps) {
   const { fileId } = await params;
-  const formulairesSection = MANAGER_SECTIONS.find((section) => section.id === 'formulaires');
-  const file = formulairesSection?.files.find((candidate) => candidate.id === fileId && candidate.kind === 'form');
+  const file = FORMS.find((candidate) => candidate.id === fileId);
 
   if (!file) notFound();
 

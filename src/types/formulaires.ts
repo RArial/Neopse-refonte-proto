@@ -147,3 +147,67 @@ export const DEFAULT_FORM_BUILDER_DATA: FormBuilderData = {
     { kind: 'email', id: 'field-default-3', label: 'Adresse email', required: true },
   ],
 };
+
+export interface FormResponse {
+  id: string;
+  respondentName: string;
+  summary: string;
+  submittedAt: string;
+  isNew: boolean;
+}
+
+export interface FormSummary {
+  id: string;
+  name: string;
+  fieldsCount: number;
+  status: FormBuilderData['status'];
+  dateAdded: string;
+  responses: FormResponse[];
+}
+
+export const FORMS: FormSummary[] = [
+  {
+    id: 'form-1',
+    name: 'Formulaire de contact',
+    fieldsCount: 8,
+    status: 'published',
+    dateAdded: '2026-01-05',
+    responses: [
+      { id: 'resp-1-1', respondentName: 'Julie Marchand', summary: 'Demande d’information sur les horaires de la mairie.', submittedAt: '2026-08-05T09:12:00', isNew: true },
+      { id: 'resp-1-2', respondentName: 'Karim Belaïd', summary: 'Signalement d’un lampadaire défectueux rue des Tilleuls.', submittedAt: '2026-08-04T16:47:00', isNew: true },
+      { id: 'resp-1-3', respondentName: 'Sophie Rambert', summary: 'Question sur la démarche de carte d’identité.', submittedAt: '2026-07-28T11:03:00', isNew: false },
+      { id: 'resp-1-4', respondentName: 'Marc Le Goff', summary: 'Remerciements suite à l’intervention des services techniques.', submittedAt: '2026-07-14T08:30:00', isNew: false },
+    ],
+  },
+  {
+    id: 'form-2',
+    name: 'Inscription newsletter',
+    fieldsCount: 3,
+    status: 'published',
+    dateAdded: '2026-01-20',
+    responses: [
+      { id: 'resp-2-1', respondentName: 'Anaïs Petit', summary: 'anais.petit@example.com', submittedAt: '2026-08-06T18:02:00', isNew: true },
+      { id: 'resp-2-2', respondentName: 'Thomas Nguyen', summary: 'thomas.nguyen@example.com', submittedAt: '2026-06-02T10:15:00', isNew: false },
+    ],
+  },
+  {
+    id: 'form-3',
+    name: 'Inscription événement',
+    fieldsCount: 5,
+    status: 'published',
+    dateAdded: '2026-04-11',
+    responses: [
+      { id: 'resp-3-1', respondentName: 'Élise Fontaine', summary: 'Inscription pour 2 personnes à la fête de l’été.', submittedAt: '2026-06-30T14:22:00', isNew: false },
+      { id: 'resp-3-2', respondentName: 'Nicolas Aubert', summary: 'Inscription pour 4 personnes, régime végétarien.', submittedAt: '2026-06-25T19:08:00', isNew: false },
+      { id: 'resp-3-3', respondentName: 'Camille Dubreuil', summary: 'Inscription pour 1 personne à la fête de l’été.', submittedAt: '2026-06-20T09:55:00', isNew: false },
+    ],
+  },
+  {
+    id: 'form-4',
+    name: 'Enquête de satisfaction',
+    fieldsCount: 10,
+    status: 'draft',
+    dateAdded: '2026-04-18',
+    responses: [],
+  },
+];

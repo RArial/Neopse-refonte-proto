@@ -48,7 +48,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
       >
         <Link href="/dashboard/contenu" style={{ textDecoration: 'none' }}>
           <Typography component="span" variant="body2" color="text.secondary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-            Contenu
+            Gestionnaire des pages
           </Typography>
         </Link>
         <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>

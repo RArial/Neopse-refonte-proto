@@ -11,6 +11,7 @@ export interface NavChildNode {
   typeLabel: string;
   enabled: boolean;
   kind: ContentItemKind;
+  status: ModuleStatus;
   icon?: React.ComponentType<SvgIconProps>;
   /** Modules rattachés à celui-ci via `parentPageId` — un niveau d'arborescence supplémentaire. */
   children?: NavChildNode[];

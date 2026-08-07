@@ -16,8 +16,10 @@ interface ContenuStore {
   discoverModules: CatalogModule[];
   navTree: NavTreeNode[];
   topLevelItems: TopLevelItem[];
-  draftModules: NavChildNode[];
   archivedModules: NavChildNode[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  treeSearchResults: NavChildNode[];
   addModule: (input: AddModuleInput) => string;
   updateModule: (id: string, patch: UpdateModuleInput) => void;
   archiveModule: (id: string) => void;
@@ -39,6 +41,7 @@ function toNavChildNode(added: AddedModule): NavChildNode {
     typeLabel: added.typeLabel,
     enabled: added.enabled,
     kind: added.kind,
+    status: added.status,
     icon: added.icon ?? getCatalogModule(added.catalogModuleId)?.icon,
   };
 }
@@ -98,6 +101,7 @@ export function ContenuProvider({ children }: { children: ReactNode }) {
     GOOGLE_SHORTCUT_ID,
   ]);
   const [unlockedDiscoverIds, setUnlockedDiscoverIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [searchQuery, setSearchQuery] = useState('');
 
   const unlockDiscoverModule = useCallback((id: string) => {
     setUnlockedDiscoverIds((prev) => new Set(prev).add(id));
@@ -121,9 +125,10 @@ export function ContenuProvider({ children }: { children: ReactNode }) {
   const addModule = useCallback((input: AddModuleInput) => {
     const id = input.catalogModuleId ? `${input.catalogModuleId}-${Date.now()}` : `${input.kind}-${Date.now()}`;
     setModules((prev) => [...prev, { ...input, id }]);
-    // Un élément publié directement à la racine (hors de tout onglet et de toute page parente) doit rejoindre
-    // l'ordre de premier niveau pour apparaître dans la structure de navigation, comme le ferait un onglet.
-    if (input.status === 'published' && input.thematiqueId === ROOT_THEMATIQUE_ID && !input.parentPageId) {
+    // Un élément publié ou non publié (mais pas archivé) directement à la racine (hors de tout onglet et de toute
+    // page parente) doit rejoindre l'ordre de premier niveau pour apparaître dans la structure de navigation,
+    // comme le ferait un onglet.
+    if (input.status !== 'archived' && input.thematiqueId === ROOT_THEMATIQUE_ID && !input.parentPageId) {
       setRootOrder((prev) => [...prev, id]);
     }
     return id;
@@ -180,7 +185,7 @@ export function ContenuProvider({ children }: { children: ReactNode }) {
           ? others
           : others.map((mod) => (descendantIds.has(mod.id) ? { ...mod, thematiqueId: newThematiqueId } : mod));
 
-      const belongsToContainer = (mod: AddedModule) => mod.status === 'published' && containerOf(mod) === targetContainerId;
+      const belongsToContainer = (mod: AddedModule) => mod.status !== 'archived' && containerOf(mod) === targetContainerId;
 
       const targetGroup = reparented.filter(belongsToContainer);
       const clampedIndex = Math.max(0, Math.min(targetIndex, targetGroup.length));
@@ -239,14 +244,14 @@ export function ContenuProvider({ children }: { children: ReactNode }) {
 
   const navTree = useMemo(() => {
     return tabs.map((node) => {
-      const tabModules = modules.filter((added) => added.thematiqueId === node.id && added.status === 'published');
+      const tabModules = modules.filter((added) => added.thematiqueId === node.id && added.status !== 'archived');
       if (tabModules.length === 0) return node;
       return { ...node, defaultOpen: true, children: buildModuleTree(tabModules) };
     });
   }, [modules, tabs]);
 
   const rootModuleNodesById = useMemo(() => {
-    const rootModules = modules.filter((added) => added.thematiqueId === ROOT_THEMATIQUE_ID && added.status === 'published');
+    const rootModules = modules.filter((added) => added.thematiqueId === ROOT_THEMATIQUE_ID && added.status !== 'archived');
     return new Map(buildModuleTree(rootModules).map((node) => [node.id, node]));
   }, [modules]);
 
@@ -265,15 +270,16 @@ export function ContenuProvider({ children }: { children: ReactNode }) {
     return items;
   }, [rootOrder, navTree, rootModuleNodesById]);
 
-  const draftModules = useMemo(
-    () => modules.filter((added) => added.status === 'draft').map(toNavChildNode),
-    [modules],
-  );
-
   const archivedModules = useMemo(
     () => modules.filter((added) => added.status === 'archived').map(toNavChildNode),
     [modules],
   );
+
+  const treeSearchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return modules.filter((added) => added.status !== 'archived' && added.label.toLowerCase().includes(q)).map(toNavChildNode);
+  }, [modules, searchQuery]);
 
   const value = useMemo<ContenuStore>(
     () => ({
@@ -282,8 +288,10 @@ export function ContenuProvider({ children }: { children: ReactNode }) {
       discoverModules,
       navTree,
       topLevelItems,
-      draftModules,
       archivedModules,
+      searchQuery,
+      setSearchQuery,
+      treeSearchResults,
       addModule,
       updateModule,
       archiveModule,
@@ -301,8 +309,9 @@ export function ContenuProvider({ children }: { children: ReactNode }) {
       discoverModules,
       navTree,
       topLevelItems,
-      draftModules,
       archivedModules,
+      searchQuery,
+      treeSearchResults,
       addModule,
       updateModule,
       archiveModule,

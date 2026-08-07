@@ -18,8 +18,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { FormInfoPanel } from '@/components/formulaires/FormInfoPanel';
 import { FormBuilderCanvas } from '@/components/formulaires/builder/FormBuilderCanvas';
 import { FormElementPalette } from '@/components/formulaires/builder/FormElementPalette';
-import { createFormElement, DEFAULT_FORM_BUILDER_DATA, type FormBuilderData, type FormElementKind } from '@/types/formulaires';
-import type { ManagedFile } from '@/types/gestionnaire';
+import { createFormElement, DEFAULT_FORM_BUILDER_DATA, type FormBuilderData, type FormElementKind, type FormSummary } from '@/types/formulaires';
 import { readCopyNameParam } from '@/lib/duplicateParams';
 
 const STATUS_CHIP_META: Record<FormBuilderData['status'], { label: string; color: 'success' | 'warning' }> = {
@@ -27,15 +26,15 @@ const STATUS_CHIP_META: Record<FormBuilderData['status'], { label: string; color
   published: { label: 'Publié', color: 'success' },
 };
 
-function buildInitialData(initialFile?: ManagedFile): FormBuilderData {
-  if (initialFile) return { ...DEFAULT_FORM_BUILDER_DATA, name: initialFile.name, status: 'published' };
+function buildInitialData(initialFile?: FormSummary): FormBuilderData {
+  if (initialFile) return { ...DEFAULT_FORM_BUILDER_DATA, name: initialFile.name, status: initialFile.status };
   const copyName = readCopyNameParam();
   return copyName ? { ...DEFAULT_FORM_BUILDER_DATA, name: copyName } : DEFAULT_FORM_BUILDER_DATA;
 }
 
 interface FormBuilderProps {
   mode: 'create' | 'edit';
-  initialFile?: ManagedFile;
+  initialFile?: FormSummary;
 }
 
 export function FormBuilder({ mode, initialFile }: FormBuilderProps) {
@@ -62,7 +61,7 @@ export function FormBuilder({ mode, initialFile }: FormBuilderProps) {
     setNameError(false);
     setData((prev) => ({ ...prev, status: 'published' }));
     setSuccessMessage(mode === 'edit' ? `« ${data.name} » a été mis à jour.` : `« ${data.name} » a été publié.`);
-    window.setTimeout(() => router.push('/dashboard/gestionnaire'), 1400);
+    window.setTimeout(() => router.push('/dashboard/formulaires'), 1400);
   }
 
   const statusChip = STATUS_CHIP_META[data.status];
@@ -90,13 +89,13 @@ export function FormBuilder({ mode, initialFile }: FormBuilderProps) {
         <Box>
           <Button
             component={Link}
-            href="/dashboard/gestionnaire"
+            href="/dashboard/formulaires"
             startIcon={<ArrowBackIcon fontSize="small" />}
             color="inherit"
             size="small"
             sx={{ mb: 1, ml: -1, textTransform: 'none', fontWeight: 500 }}
           >
-            Retour au stockage
+            Retour aux formulaires
           </Button>
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
             <Typography variant="h5" component="h1" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>

@@ -14,14 +14,12 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import SearchIcon from '@mui/icons-material/Search';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useContenuStore } from '@/components/contenu/ContenuProvider';
 import type { CatalogModule } from '@/types/content';
 
@@ -37,21 +35,19 @@ function CatalogTabLabel({ text, count }: { text: string; count: number }) {
 }
 
 export function ModuleCatalog() {
-  const { catalogModules, discoverModules } = useContenuStore();
+  const { catalogModules, discoverModules, searchQuery, setSearchQuery } = useContenuStore();
   const [view, setView] = useState<CatalogView>('included');
-  const [query, setQuery] = useState('');
 
   const modules: CatalogModule[] = view === 'included' ? catalogModules : discoverModules;
 
   const filteredModules = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     if (!q) return modules;
     return modules.filter((mod) => mod.label.toLowerCase().includes(q));
-  }, [query, modules]);
+  }, [searchQuery, modules]);
 
   function handleViewChange(_event: SyntheticEvent, next: CatalogView) {
     setView(next);
-    setQuery('');
   }
 
   return (
@@ -63,25 +59,9 @@ export function ModuleCatalog() {
       >
         <AddCircleOutlinedIcon color="action" fontSize="small" />
         <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 700 }}>
-          Ajouter un module
+          Activer un module
         </Typography>
       </Stack>
-
-      <Box sx={{ px: 2.5, pt: 2 }}>
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Rechercher…"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: <SearchIcon fontSize="small" color="action" sx={{ mr: 1 }} />,
-            },
-            htmlInput: { 'aria-label': 'Rechercher un module' },
-          }}
-        />
-      </Box>
 
       <Tabs
         value={view}
@@ -153,7 +133,7 @@ export function ModuleCatalog() {
                     {mod.label}
                   </Typography>
                   <Tooltip title="Non inclus dans votre forfait actuel">
-                    <LockOutlinedIcon fontSize="small" sx={{ color: 'text.disabled', mr: 0.5 }} />
+                    <ShoppingCartOutlinedIcon fontSize="small" sx={{ color: 'text.disabled', mr: 0.5 }} />
                   </Tooltip>
                   <ChevronRightIcon fontSize="small" sx={{ color: 'text.disabled' }} />
                 </ButtonBase>
@@ -165,9 +145,9 @@ export function ModuleCatalog() {
         {filteredModules.length === 0 && (
           <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Aucun module ne correspond à « {query} ».
+              Aucun module ne correspond à « {searchQuery} ».
             </Typography>
-            <Button variant="text" size="small" onClick={() => setQuery('')}>
+            <Button variant="text" size="small" onClick={() => setSearchQuery('')}>
               Réinitialiser la recherche
             </Button>
           </Box>

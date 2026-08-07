@@ -1,8 +1,6 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -34,7 +32,6 @@ import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutl
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import DriveFileRenameOutlineOutlinedIcon from '@mui/icons-material/DriveFileRenameOutlineOutlined';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -50,7 +47,6 @@ type SortBy = 'name' | 'date';
 const KIND_BADGE: Record<ManagedFile['kind'], { label: string; bgcolor: string; color: string; striped?: boolean }> = {
   image: { label: 'IMG', bgcolor: 'action.hover', color: 'text.disabled', striped: true },
   pdf: { label: 'PDF', bgcolor: 'error.dark', color: 'common.white' },
-  form: { label: 'FORM', bgcolor: 'primary.dark', color: 'common.white' },
 };
 
 function FileThumbnail({ kind }: { kind: ManagedFile['kind'] }) {
@@ -85,7 +81,6 @@ interface FileManagerPanelProps {
 }
 
 export function FileManagerPanel({ section }: FileManagerPanelProps) {
-  const router = useRouter();
   const [folders, setFolders] = useState<ManagedFolder[]>(section.folders);
   const [files, setFiles] = useState<ManagedFile[]>(section.files);
   const [trashedFiles, setTrashedFiles] = useState<ManagedFile[]>([]);
@@ -143,18 +138,8 @@ export function FileManagerPanel({ section }: FileManagerPanelProps) {
     setFileMenu(null);
   }
 
-  function openFile(file: ManagedFile) {
-    if (file.kind === 'form') {
-      router.push(`/dashboard/gestionnaire/formulaires/${file.id}`);
-    }
-  }
-
   function handleUploadClick() {
-    if (section.acceptedFileTypes) {
-      fileInputRef.current?.click();
-    } else {
-      router.push('/dashboard/gestionnaire/formulaires/nouveau');
-    }
+    fileInputRef.current?.click();
   }
 
   function handleFilesSelected(event: React.ChangeEvent<HTMLInputElement>) {
@@ -400,17 +385,6 @@ export function FileManagerPanel({ section }: FileManagerPanelProps) {
                     slotProps={{ input: { 'aria-label': `Sélectionner « ${file.name} »` } }}
                   />
                   <Stack direction="row" spacing={0.5} sx={{ position: 'absolute', top: 4, right: 4 }}>
-                    {file.kind === 'form' && (
-                      <IconButton
-                        component={Link}
-                        href={`/dashboard/gestionnaire/formulaires/${file.id}`}
-                        size="small"
-                        aria-label={`Modifier « ${file.name} »`}
-                        sx={{ bgcolor: 'background.paper', '&:hover': { bgcolor: 'background.paper' } }}
-                      >
-                        <EditOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    )}
                     <IconButton
                       size="small"
                       onClick={(event) => setFileMenu({ id: file.id, anchorEl: event.currentTarget })}
@@ -457,16 +431,6 @@ export function FileManagerPanel({ section }: FileManagerPanelProps) {
                       <TableCell sx={{ fontWeight: 700 }}>{file.name}</TableCell>
                       <TableCell sx={{ color: 'text.secondary' }}>{file.meta}</TableCell>
                       <TableCell align="right">
-                        {file.kind === 'form' && (
-                          <IconButton
-                            component={Link}
-                            href={`/dashboard/gestionnaire/formulaires/${file.id}`}
-                            size="small"
-                            aria-label={`Modifier « ${file.name} »`}
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
-                        )}
                         <IconButton size="small" onClick={(event) => setFileMenu({ id: file.id, anchorEl: event.currentTarget })} aria-label={`Autres actions pour « ${file.name} »`}>
                           <MoreVertIcon fontSize="small" />
                         </IconButton>
@@ -481,19 +445,6 @@ export function FileManagerPanel({ section }: FileManagerPanelProps) {
       </Box>
 
       <Menu anchorEl={fileMenu?.anchorEl} open={fileMenu !== null} onClose={closeFileMenu}>
-        {activeMenuFile?.kind === 'form' && (
-          <MenuItem
-            onClick={() => {
-              closeFileMenu();
-              if (activeMenuFile) openFile(activeMenuFile);
-            }}
-          >
-            <ListItemIcon>
-              <EditOutlinedIcon fontSize="small" />
-            </ListItemIcon>
-            Modifier
-          </MenuItem>
-        )}
         <MenuItem onClick={() => activeMenuFile && downloadFile(activeMenuFile)}>
           <ListItemIcon>
             <DownloadOutlinedIcon fontSize="small" />

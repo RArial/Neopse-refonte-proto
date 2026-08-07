@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icons } from '@/components/ui/Icons';
-import { SIDEBAR_PAGES_CATALOG } from '@/lib/sidebarPagesCatalog';
+import { SIDEBAR_PAGES_CATALOG, SIDEBAR_PAGES_CATEGORIES } from '@/lib/sidebarPagesCatalog';
 import { cn } from '@/lib/utils';
 
 interface PagesFlyoutPanelProps {
@@ -36,6 +36,10 @@ export function PagesFlyoutPanel({ left, onClose }: PagesFlyoutPanelProps) {
   }, [onClose]);
 
   const filtered = SIDEBAR_PAGES_CATALOG.filter((entry) => entry.label.toLowerCase().includes(query.trim().toLowerCase()));
+  const groups = SIDEBAR_PAGES_CATEGORIES.map((category) => ({
+    category,
+    entries: filtered.filter((entry) => entry.category === category.id),
+  })).filter((group) => group.entries.length > 0);
 
   return (
     <div ref={panelRef} className="pages-flyout" style={{ left }} role="menu" aria-label="Modules">
@@ -56,34 +60,45 @@ export function PagesFlyoutPanel({ left, onClose }: PagesFlyoutPanelProps) {
       </div>
 
       <div className="pages-flyout-list">
-        {filtered.length === 0 ? (
+        {groups.length === 0 ? (
           <p className="pages-flyout-empty">Aucun résultat.</p>
         ) : (
-          filtered.map((entry) => {
-            const IconEl = Icons[entry.icon];
-            const isActive = entry.href ? pathname === entry.href : false;
-
-            if (entry.href) {
-              return (
-                <Link
-                  key={entry.id}
-                  href={entry.href}
-                  className={cn('pages-flyout-item', isActive && 'active')}
-                  role="menuitem"
-                  aria-current={isActive ? 'page' : undefined}
-                  onClick={onClose}
-                >
-                  <span className="ico">{IconEl && <IconEl size={16} />}</span>
-                  <span className="lbl">{entry.label}</span>
-                </Link>
-              );
-            }
-
+          groups.map(({ category, entries }) => {
+            const groupTitleId = `pages-flyout-group-${category.id}`;
             return (
-              <button key={entry.id} type="button" className="pages-flyout-item" role="menuitem">
-                <span className="ico">{IconEl && <IconEl size={16} />}</span>
-                <span className="lbl">{entry.label}</span>
-              </button>
+              <div key={category.id} role="group" aria-labelledby={groupTitleId}>
+                <div className="pages-flyout-group-title" id={groupTitleId}>
+                  {category.label}
+                </div>
+
+                {entries.map((entry) => {
+                  const IconEl = Icons[entry.icon];
+                  const isActive = entry.href ? pathname === entry.href : false;
+
+                  if (entry.href) {
+                    return (
+                      <Link
+                        key={entry.id}
+                        href={entry.href}
+                        className={cn('pages-flyout-item', isActive && 'active')}
+                        role="menuitem"
+                        aria-current={isActive ? 'page' : undefined}
+                        onClick={onClose}
+                      >
+                        <span className="ico">{IconEl && <IconEl size={16} />}</span>
+                        <span className="lbl">{entry.label}</span>
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <button key={entry.id} type="button" className="pages-flyout-item" role="menuitem">
+                      <span className="ico">{IconEl && <IconEl size={16} />}</span>
+                      <span className="lbl">{entry.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             );
           })
         )}
