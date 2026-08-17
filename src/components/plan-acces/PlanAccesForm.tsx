@@ -20,6 +20,7 @@ import { CoordinatesMap } from '@/components/plan-acces/CoordinatesMap';
 import { RichTextField } from '@/components/ui/RichTextField';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { DEFAULT_PLAN_ACCES, type PlanAccesData } from '@/types/planAcces';
+import { BackToGestionnaireLink } from '@/components/pages-modules/BackToGestionnaireLink';
 
 export function PlanAccesForm() {
   const [saved, setSaved] = useState<PlanAccesData>(DEFAULT_PLAN_ACCES);
@@ -45,6 +46,7 @@ export function PlanAccesForm() {
 
   return (
     <Box component="section" sx={{ px: { xs: 2, md: 3.5 }, py: { xs: 2, md: 2.5 }, maxWidth: 880, width: '100%', mx: 'auto' }}>
+      <BackToGestionnaireLink />
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}

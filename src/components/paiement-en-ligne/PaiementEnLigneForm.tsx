@@ -20,6 +20,7 @@ import { VignetteUploader } from '@/components/pages-modules/VignetteUploader';
 import { RichTextField } from '@/components/ui/RichTextField';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { DEFAULT_PAIEMENT_EN_LIGNE, type PaiementEnLigneData } from '@/types/paiementEnLigne';
+import { BackToGestionnaireLink } from '@/components/pages-modules/BackToGestionnaireLink';
 
 export function PaiementEnLigneForm() {
   const [saved, setSaved] = useState<PaiementEnLigneData>(DEFAULT_PAIEMENT_EN_LIGNE);
@@ -44,6 +45,7 @@ export function PaiementEnLigneForm() {
 
   return (
     <Box component="section" sx={{ px: { xs: 2, md: 3.5 }, py: { xs: 2, md: 2.5 }, maxWidth: 880, width: '100%', mx: 'auto' }}>
+      <BackToGestionnaireLink />
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}

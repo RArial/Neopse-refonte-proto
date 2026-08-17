@@ -22,6 +22,7 @@ import { VignetteUploader } from '@/components/pages-modules/VignetteUploader';
 import { RichTextField } from '@/components/ui/RichTextField';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { DEFAULT_GUIDE_DEMARCHES, FRENCH_DEPARTMENTS, type GuideDemarchesData } from '@/types/guideDemarches';
+import { BackToGestionnaireLink } from '@/components/pages-modules/BackToGestionnaireLink';
 
 export function GuideDemarchesForm() {
   const [saved, setSaved] = useState<GuideDemarchesData>(DEFAULT_GUIDE_DEMARCHES);
@@ -46,6 +47,7 @@ export function GuideDemarchesForm() {
 
   return (
     <Box component="section" sx={{ px: { xs: 2, md: 3.5 }, py: { xs: 2, md: 2.5 }, maxWidth: 880, width: '100%', mx: 'auto' }}>
+      <BackToGestionnaireLink />
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}

@@ -21,6 +21,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { SAISINES_MOCK, SAISINE_CATEGORIES_SEED, type Saisine } from '@/types/saisineVoieElectronique';
+import { BackToGestionnaireLink } from '@/components/pages-modules/BackToGestionnaireLink';
 
 function categoryLabel(categoryId: string) {
   return SAISINE_CATEGORIES_SEED.find((category) => category.id === categoryId)?.name ?? 'Sans catégorie';
@@ -44,6 +45,7 @@ export function SaisineList() {
 
   return (
     <Box component="section" sx={{ px: { xs: 2, md: 3.5 }, py: { xs: 2, md: 2.5 }, maxWidth: 1200, width: '100%', mx: 'auto' }}>
+      <BackToGestionnaireLink />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'flex-end' }, justifyContent: 'space-between', mb: 2.5 }}>
         <Box>
           <Typography variant="h5" component="h1" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>

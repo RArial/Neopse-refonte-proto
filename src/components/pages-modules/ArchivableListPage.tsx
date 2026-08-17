@@ -33,6 +33,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import RestoreFromTrashOutlinedIcon from '@mui/icons-material/RestoreFromTrashOutlined';
 import SearchIcon from '@mui/icons-material/Search';
+import { BackToGestionnaireLink } from '@/components/pages-modules/BackToGestionnaireLink';
 
 export type ArchivableStatus = 'published' | 'draft' | 'archived';
 
@@ -127,6 +128,7 @@ export function ArchivableListPage({
 
   return (
     <Box component="section" sx={{ px: { xs: 2, md: 3.5 }, py: { xs: 2, md: 2.5 }, maxWidth: 1080, width: '100%', mx: 'auto' }}>
+      <BackToGestionnaireLink />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'flex-end' }, justifyContent: 'space-between', mb: 2.5 }}>
         <Box>
           <Typography variant="h5" component="h1" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>

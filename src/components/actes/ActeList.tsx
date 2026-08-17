@@ -35,6 +35,7 @@ import RestoreFromTrashOutlinedIcon from '@mui/icons-material/RestoreFromTrashOu
 import SearchIcon from '@mui/icons-material/Search';
 import { isScheduledPublication } from '@/lib/publicationSchedule';
 import { ACTE_CATEGORIES_SEED, ACTES_MOCK, type Acte } from '@/types/actes';
+import { BackToGestionnaireLink } from '@/components/pages-modules/BackToGestionnaireLink';
 
 type TabView = 'published' | 'scheduled' | 'draft' | 'archived';
 
@@ -110,6 +111,7 @@ export function ActeList() {
 
   return (
     <Box component="section" sx={{ px: { xs: 2, md: 3.5 }, py: { xs: 2, md: 2.5 }, maxWidth: 1080, width: '100%', mx: 'auto' }}>
+      <BackToGestionnaireLink />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'flex-end' }, justifyContent: 'space-between', mb: 2.5 }}>
         <Box>
           <Typography variant="h5" component="h1" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
