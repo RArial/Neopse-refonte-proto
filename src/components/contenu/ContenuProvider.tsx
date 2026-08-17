@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { CATALOG_MODULES, DISCOVER_MODULES, getCatalogModule } from '@/lib/catalogModules';
+import { getModuleContentRoute } from '@/lib/moduleRoutes';
 import { containerOf } from '@/lib/moduleTree';
 import { GOOGLE_SHORTCUT_ID, NAV_TREE, ROOT_THEMATIQUE_ID, SEED_MODULES } from '@/lib/navTree';
 import type { AddedModule, CatalogModule, ModuleDropContainer, NavChildNode, NavTreeNode, TopLevelItem } from '@/types/content';
@@ -43,6 +44,7 @@ function toNavChildNode(added: AddedModule): NavChildNode {
     kind: added.kind,
     status: added.status,
     icon: added.icon ?? getCatalogModule(added.catalogModuleId)?.icon,
+    contentHref: added.kind === 'module' ? getModuleContentRoute(added.catalogModuleId, added.id) : undefined,
   };
 }
 

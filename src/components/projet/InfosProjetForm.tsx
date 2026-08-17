@@ -48,13 +48,13 @@ const CATEGORIES = [
 ];
 
 const DEFAULT_PROJECT_INFO: ProjectInfo = {
-  structureType: 'Association',
+  structureType: 'Collectivité',
   category: 'Ateliers créatifs adultes',
   identificationNumber: '1996',
-  projectName: 'NeopseUX',
+  projectName: 'Mairie de Vercourt',
   description: '',
-  city: 'Paris 10ème 75010, France',
-  address: '132 rue du faubourg saint denis',
+  city: 'Vercourt',
+  address: '1 place de la Mairie',
   acceptsTerms: true,
   thumbnailUrl: null,
 };

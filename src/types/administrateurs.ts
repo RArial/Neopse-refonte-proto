@@ -26,6 +26,6 @@ export interface Administrator {
 }
 
 export const INITIAL_ADMINS: Administrator[] = [
-  { id: 'admin-1', name: 'Ojama The Coon', handle: '@TheCoon', role: 'gerant', profileIds: [] },
+  { id: 'admin-1', name: 'Camille Berthier', handle: '@cberthier', role: 'gerant', profileIds: [] },
   { id: 'admin-2', name: 'Rémi Arial', handle: '@remiarial', role: 'admin-site', profileIds: [] },
 ];

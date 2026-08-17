@@ -43,7 +43,7 @@ export function PageHeader() {
             '&:hover .chev': { transform: 'translateY(2px)' },
           }}
         >
-          Démo arborescence
+          Mairie de Vercourt
           <Box
             component="span"
             className="chev"

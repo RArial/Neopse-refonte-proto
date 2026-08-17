@@ -10,12 +10,12 @@ export interface Member {
 }
 
 export const MEMBERS_MOCK: Member[] = [
-  { id: 'member-dupont-marie', lastName: 'Dupont', firstName: 'Marie', status: 'published' },
-  { id: 'member-martin-jean', lastName: 'Martin', firstName: 'Jean', status: 'published' },
-  { id: 'member-bernard-sophie', lastName: 'Bernard', firstName: 'Sophie', status: 'published' },
-  { id: 'member-petit-lucas', lastName: 'Petit', firstName: 'Lucas', status: 'draft' },
-  { id: 'member-robert-claire', lastName: 'Robert', firstName: 'Claire', status: 'draft' },
-  { id: 'member-moreau-paul', lastName: 'Moreau', firstName: 'Paul', status: 'archived' },
+  { id: 'member-lachaume-bernard', lastName: 'Lachaume', firstName: 'Bernard', status: 'published' },
+  { id: 'member-grandjean-sylvie', lastName: 'Grandjean', firstName: 'Sylvie', status: 'published' },
+  { id: 'member-benyahia-karim', lastName: 'Benyahia', firstName: 'Karim', status: 'published' },
+  { id: 'member-fontaine-lea', lastName: 'Fontaine', firstName: 'Léa', status: 'draft' },
+  { id: 'member-mercier-thierry', lastName: 'Mercier', firstName: 'Thierry', status: 'draft' },
+  { id: 'member-vasseur-odile', lastName: 'Vasseur', firstName: 'Odile', status: 'archived' },
 ];
 
 export type MemberCategory = Category;

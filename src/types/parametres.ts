@@ -160,7 +160,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   closedMessage: 'Ce site est actuellement en maintenance. Merci de votre compréhension, nous serons bientôt de retour.',
   accessPassword: '',
 
-  siteTitle: 'Mairie de Neopse',
+  siteTitle: 'Mairie de Vercourt',
   searchEngineSubtitle: 'Site officiel de la commune',
   metaDescription: '',
   metaKeywords: '',
@@ -182,7 +182,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   domains: [
     {
       id: 'dom-1',
-      address: 'www.mairie-neopse.fr',
+      address: 'www.mairie-vercourt.fr',
       registrar: 'NEOPSE (Intégré)',
       expiresAt: '2027-03-12',
       status: 'actif',

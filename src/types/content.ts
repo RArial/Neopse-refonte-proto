@@ -13,6 +13,8 @@ export interface NavChildNode {
   kind: ContentItemKind;
   status: ModuleStatus;
   icon?: React.ComponentType<SvgIconProps>;
+  /** Page de gestion de contenu du module — absent pour un lien ou une séparation, qui ne mènent à aucun contenu. */
+  contentHref?: string;
   /** Modules rattachés à celui-ci via `parentPageId` — un niveau d'arborescence supplémentaire. */
   children?: NavChildNode[];
 }

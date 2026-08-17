@@ -336,6 +336,7 @@ function NavChildRow({
         }
       >
         <ListItemButton
+          {...(child.kind === 'module' && child.contentHref ? { component: Link, href: child.contentHref } : {})}
           sx={{
             position: 'relative',
             py: 0.75,
@@ -369,6 +370,11 @@ function NavChildRow({
               <Box
                 {...dragHandle.attributes}
                 {...dragHandle.listeners}
+                // La ligne entière navigue désormais vers la page de contenu du module (cf. `component={Link}` ci-dessus) :
+                // un clic sur la poignée seule (sans glisser) ne doit pas déclencher cette navigation. `stopPropagation`
+                // seul ne suffit pas ici : il empêche le handler de <Link> de s'exécuter mais pas la navigation native
+                // du navigateur associée à l'ancre — `preventDefault` est nécessaire pour bloquer cette dernière.
+                onClick={(event) => event.preventDefault()}
                 aria-label={`Déplacer ${child.label}`}
                 sx={{
                   display: 'flex',

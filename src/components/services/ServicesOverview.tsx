@@ -35,7 +35,7 @@ function ServicesHeader() {
         Outils
       </Typography>
       <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: 14 }}>
-        Retrouvez les différents outils proposés par INEDI pour votre projet Démo arborescence.
+        Retrouvez les différents outils proposés par INEDI pour votre projet Mairie de Vercourt.
       </Typography>
     </Box>
   );

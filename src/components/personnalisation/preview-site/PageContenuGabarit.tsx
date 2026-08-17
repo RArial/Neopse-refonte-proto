@@ -26,8 +26,8 @@ export function PageContenuGabarit() {
 
       <div className="mx-auto max-w-2xl px-6 pb-12">
         <p className="leading-relaxed mb-4">
-          Fondée au bord de la rivière Aisne, la commune de Neopse tire son nom d&apos;un ancien comptoir marchand
-          mentionné dès le XIIe siècle. Aujourd&apos;hui, elle rassemble plus de 8 400 habitants autour d&apos;un
+          Fondée au bord de la rivière Aisne, la commune de Vercourt tire son nom d&apos;un ancien comptoir marchand
+          mentionné dès le XIIe siècle. Aujourd&apos;hui, elle rassemble un peu plus de 3 200 habitants autour d&apos;un
           centre historique préservé et de quartiers résidentiels en plein développement.
         </p>
         <p className="leading-relaxed mb-4">
@@ -48,7 +48,7 @@ export function PageContenuGabarit() {
           l&apos;histoire locale.
         </p>
         <blockquote data-role="general:linkColor" className="border-l-4 pl-4 italic my-6 border-[var(--role-linkColor)] opacity-90">
-          « Neopse a su conjuguer mémoire et modernité, au service de ses habitants. »
+          « Vercourt a su conjuguer mémoire et modernité, au service de ses habitants. »
         </blockquote>
         <p className="leading-relaxed">
           Pour toute question, contactez le service culture et patrimoine via la page{' '}

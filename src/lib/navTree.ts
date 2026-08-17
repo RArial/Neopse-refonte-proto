@@ -30,8 +30,8 @@ const emptyModuleContent = {
 export const SEED_MODULES: AddedModule[] = [
   {
     id: 'actualites-haven',
-    catalogModuleId: '',
-    label: 'Actualités de Haven',
+    catalogModuleId: 'actualites',
+    label: 'Actualités de Vercourt',
     typeLabel: 'Actualités',
     kind: 'module',
     thematiqueId: 'actualites',
@@ -43,8 +43,8 @@ export const SEED_MODULES: AddedModule[] = [
   },
   {
     id: 'agenda-haven',
-    catalogModuleId: '',
-    label: 'Agenda de Haven',
+    catalogModuleId: 'agenda',
+    label: 'Agenda de Vercourt',
     typeLabel: 'Agenda',
     kind: 'module',
     thematiqueId: 'actualites',
@@ -56,8 +56,8 @@ export const SEED_MODULES: AddedModule[] = [
   },
   {
     id: 'flash-haven',
-    catalogModuleId: '',
-    label: 'Flash Infos de Haven',
+    catalogModuleId: 'flash-infos',
+    label: 'Flash Infos de Vercourt',
     typeLabel: 'Flash Infos',
     kind: 'module',
     thematiqueId: 'actualites',
@@ -69,7 +69,7 @@ export const SEED_MODULES: AddedModule[] = [
   },
   {
     id: 'covoiturage',
-    catalogModuleId: '',
+    catalogModuleId: 'covoiturage',
     label: 'Annonces de covoiturage',
     typeLabel: 'Covoiturage',
     kind: 'module',
@@ -82,7 +82,7 @@ export const SEED_MODULES: AddedModule[] = [
   },
   {
     id: 'contacts',
-    catalogModuleId: '',
+    catalogModuleId: 'contacts',
     label: 'Contacts',
     typeLabel: 'Contacts',
     kind: 'module',

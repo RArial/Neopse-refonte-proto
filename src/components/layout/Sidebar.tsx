@@ -81,7 +81,7 @@ export function Sidebar({ activeKey = 'dashboard' }: SidebarProps) {
         <div className="logo" aria-hidden="true">N</div>
         <div className="label" aria-hidden={!visuallyExpanded}>
           <span className="n">Neopse</span>
-          <span className="t">Démo arborescence</span>
+          <span className="t">Mairie de Vercourt</span>
         </div>
       </div>
 

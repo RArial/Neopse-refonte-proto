@@ -10,8 +10,8 @@ export interface AgendaEvent {
 }
 
 export const AGENDA_EVENTS: AgendaEvent[] = [
-  { id: 'affectations-etudiants', name: 'Affectations des étudiants', dateStart: '2026-09-24', publicationDate: '2026-07-01', status: 'published' },
-  { id: 'evenement-entretien', name: 'Evenement entretien', dateStart: '2026-06-29', dateEnd: '2026-07-29', publicationDate: '2026-06-01', status: 'published' },
+  { id: 'forum-associations', name: 'Forum des associations', dateStart: '2026-09-24', publicationDate: '2026-07-01', status: 'published' },
+  { id: 'exposition-peinture-mediatheque', name: 'Exposition de peinture à la médiathèque', dateStart: '2026-06-29', dateEnd: '2026-07-29', publicationDate: '2026-06-01', status: 'published' },
   { id: 'kermesse-ecole', name: "Kermesse de l'école", dateStart: '2026-06-27', publicationDate: '2026-09-01', status: 'published' },
   { id: 'conseil-municipal-avril', name: 'Conseil municipal — avril', dateStart: '2026-04-22', publicationDate: '', status: 'draft' },
   { id: 'vide-grenier-2025', name: 'Vide-grenier de printemps 2025', dateStart: '2025-04-27', publicationDate: '2025-04-01', status: 'archived' },

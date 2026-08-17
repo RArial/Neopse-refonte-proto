@@ -94,12 +94,12 @@ export function createFooterId(prefix: string): string {
 }
 
 export const DEFAULT_FOOTER_CONTENT: FooterContent = {
-  title: 'Mairie de Neopse',
+  title: 'Mairie de Vercourt',
   text: "Toute l'actualité de votre commune, vos démarches en ligne et les services de proximité.",
   linkCategories: [{ id: 'footer-cat-legal', name: 'Informations légales' }],
   links: [
     { id: 'footer-link-mentions', label: 'Mentions légales', url: '/mentions-legales', categoryId: 'footer-cat-legal' },
     { id: 'footer-link-accessibilite', label: 'Accessibilité', url: '/accessibilite', categoryId: 'footer-cat-legal' },
   ],
-  socialLinks: [{ id: 'footer-social-facebook', network: 'facebook', url: 'https://facebook.com/mairie-neopse' }],
+  socialLinks: [{ id: 'footer-social-facebook', network: 'facebook', url: 'https://facebook.com/mairie-vercourt' }],
 };

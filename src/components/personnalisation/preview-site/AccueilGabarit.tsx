@@ -13,7 +13,7 @@ export function AccueilGabarit() {
       <section data-role="general:buttonBg" className="bg-[var(--role-buttonBg)] text-[var(--role-buttonText)]">
         <div className="mx-auto max-w-5xl px-6 py-16">
           <h1 className="font-[var(--font-heading)] text-3xl md:text-4xl font-bold max-w-2xl">
-            Bienvenue sur le site de la Mairie de Neopse
+            Bienvenue sur le site de la Mairie de Vercourt
           </h1>
           <p className="mt-3 max-w-xl text-base opacity-90">
             Toute l&apos;actualité de votre commune, vos démarches en ligne et les services de proximité.

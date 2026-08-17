@@ -12,7 +12,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
       <header data-role="header:headerBg" className="bg-[var(--role-headerBg)] text-[var(--role-headerText)]">
         <div className="mx-auto max-w-5xl px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <span data-role="header:navText" className="font-[var(--font-heading)] text-lg font-bold tracking-tight">
-            Mairie de Neopse
+            Mairie de Vercourt
           </span>
           <nav data-role="header:navText" aria-label="Navigation principale">
             <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-medium">
@@ -36,13 +36,13 @@ export function SiteChrome({ children }: SiteChromeProps) {
         <div className="mx-auto max-w-5xl px-6 py-8 text-sm flex flex-wrap justify-between gap-4">
           <div>
             <p data-role="footer:footerTitle" className="font-[var(--font-heading)] font-semibold text-[var(--role-footerTitle)]">
-              Mairie de Neopse
+              Mairie de Vercourt
             </p>
-            <p className="opacity-80">1 place de la République — 00000 Neopse</p>
+            <p className="opacity-80">1 place de la Mairie — 02760 Vercourt</p>
           </div>
           <div className="opacity-80">
-            <p>Tél. 01 23 45 67 89</p>
-            <p>contact@neopse.fr</p>
+            <p>Tél. 03 23 45 67 89</p>
+            <p>contact@mairie-vercourt.fr</p>
           </div>
         </div>
       </footer>

@@ -33,14 +33,14 @@ interface Project {
 }
 
 const PROJECTS: Project[] = [
-  { id: 'Démo arborescence', icon: 'AccountTree', desc: 'Projet de démonstration' },
-  { id: 'Ville de Neopse',   icon: 'MapPin',       desc: 'Site officiel de la collectivité' },
-  { id: 'Intranet agents',   icon: 'Layers',       desc: 'Espace interne collaborateurs' },
+  { id: 'Mairie de Vercourt',        icon: 'AccountTree', desc: 'Projet de démonstration' },
+  { id: 'Ville de Sainte-Aldegonde', icon: 'MapPin',       desc: 'Site officiel de la collectivité' },
+  { id: 'Intranet agents',           icon: 'Layers',       desc: 'Espace interne collaborateurs' },
 ];
 
 function ProjectDropdown() {
   const [open, setOpen] = useState(false);
-  const [project, setProject] = useState<string>('Démo arborescence');
+  const [project, setProject] = useState<string>('Mairie de Vercourt');
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

@@ -41,17 +41,17 @@ export const SEED_VARIANTS: Variant[] = [
     status: 'published',
     previewSlug: 'neopse-defaut',
     updatedAt: '2026-07-07T14:32:00.000Z',
-    updatedBy: 'Marie Dupont',
+    updatedBy: 'Sylvie Grandjean',
   },
   {
     id: 'variant-proposition-marie',
-    name: 'Proposition Marie',
+    name: 'Proposition Sylvie',
     templateId: 'template2',
     tokens: createDefaultTokens('palette-marie-custom'),
     status: 'saved',
     previewSlug: 'proposition-marie',
     updatedAt: '2026-07-02T10:05:00.000Z',
-    updatedBy: 'Marie Dupont',
+    updatedBy: 'Sylvie Grandjean',
   },
   {
     id: 'variant-palette-automne',
@@ -61,7 +61,7 @@ export const SEED_VARIANTS: Variant[] = [
     status: 'saved',
     previewSlug: 'palette-automne',
     updatedAt: '2026-06-18T16:40:00.000Z',
-    updatedBy: 'Jean Martin',
+    updatedBy: 'Karim Benyahia',
   },
 ];
 
@@ -74,15 +74,15 @@ export const SEED_HISTORY: HistoryEntry[] = [
   {
     id: 'history-1',
     publishedAt: '2026-07-07T14:32:00.000Z',
-    publishedBy: 'Marie Dupont',
-    variantName: 'Proposition Marie',
+    publishedBy: 'Sylvie Grandjean',
+    variantName: 'Proposition Sylvie',
     templateId: 'template2',
     tokens: createDefaultTokens('palette-marie-custom'),
   },
   {
     id: 'history-2',
     publishedAt: '2026-03-12T09:11:00.000Z',
-    publishedBy: 'Jean Martin',
+    publishedBy: 'Karim Benyahia',
     variantName: 'Charte 2024',
     templateId: 'template2',
     tokens: createDefaultTokens('ocean'),

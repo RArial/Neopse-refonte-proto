@@ -14,12 +14,12 @@ export interface StructureData {
 }
 
 export const STRUCTURE_DATA: StructureData = {
-  communeName: 'Mairie de Neopse',
-  address: '132 rue du faubourg Saint-Denis, 75010 Paris',
-  phone: '01 23 45 67 89',
-  contactEmail: 'contact@mairie-neopse.fr',
-  siteUrl: 'www.mairie-neopse.fr',
-  publisherName: 'Le maire de Neopse',
+  communeName: 'Mairie de Vercourt',
+  address: '1 place de la Mairie, 02760 Vercourt',
+  phone: '03 23 45 67 89',
+  contactEmail: 'contact@mairie-vercourt.fr',
+  siteUrl: 'www.mairie-vercourt.fr',
+  publisherName: 'Le maire de Vercourt',
   hostName: '',
   hostAddress: '',
   dpoEmail: '',
