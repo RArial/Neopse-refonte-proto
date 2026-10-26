@@ -37,10 +37,10 @@ export function PickerHeader({ config, step, withCropStep, titleId, onClose }: P
       direction="row"
       spacing={2}
       useFlexGap
-      // Marge droite réservée au bouton fermer, ancré en haut à droite même quand l'en-tête passe à la ligne.
-      sx={{ position: 'relative', alignItems: 'center', pl: 3, pr: 8, py: 1.5, minHeight: 68, borderBottom: '1px solid', borderColor: 'divider', flexWrap: 'wrap', rowGap: 1 }}
+      // En-tête ~56 px. Marge droite réservée au bouton fermer, ancré en haut à droite même quand l'en-tête passe à la ligne.
+      sx={{ position: 'relative', alignItems: 'center', pl: 3, pr: 8, py: 1, minHeight: 56, borderBottom: '1px solid', borderColor: 'divider', flexWrap: 'wrap', rowGap: 1 }}
     >
-      <Typography id={titleId} component="h2" variant="h6" sx={{ fontWeight: 700, fontSize: 20 }}>
+      <Typography id={titleId} component="h2" variant="h6" sx={{ fontWeight: 700, fontSize: 18 }}>
         {title}
       </Typography>
 
@@ -87,7 +87,7 @@ export function PickerHeader({ config, step, withCropStep, titleId, onClose }: P
         </Box>
       )}
 
-      <IconButton onClick={onClose} aria-label="Fermer la médiathèque" sx={{ position: 'absolute', top: 12, right: 12 }}>
+      <IconButton onClick={onClose} aria-label="Fermer la médiathèque" sx={{ position: 'absolute', top: 6, right: 12 }}>
         <CloseIcon />
       </IconButton>
     </Stack>

@@ -8,9 +8,8 @@ export const ACCEPTED_FORMATS_LABEL = 'JPG, PNG';
 // Valeur provisoire, reprise du code actuel : le poids max réel est à confirmer avec les devs.
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-// Dossier par défaut à confirmer avec les devs (question ouverte n°5) ; « Site » validé pour le proto.
-export const DEFAULT_FOLDER_ID = 'site';
-
 export const DEFAULT_SORT: SortState = { key: 'date', direction: 'desc' };
 
 export const MAX_CROP_ZOOM = 4;
+
+export const IMPORT_DONE_BANNER_MS = 4000;

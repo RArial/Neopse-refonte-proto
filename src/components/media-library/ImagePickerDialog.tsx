@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useMemo, useReducer, useRef, useState, type DragEvent } from 'react';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -14,6 +13,7 @@ import { CropStep } from '@/components/media-library/CropStep';
 import { FolderTree } from '@/components/media-library/FolderTree';
 import { ImageGrid, imageInputId } from '@/components/media-library/ImageGrid';
 import { ImageListView } from '@/components/media-library/ImageListView';
+import { ImportBanner } from '@/components/media-library/ImportBanner';
 import { useMediaLibrary } from '@/components/media-library/MediaLibraryProvider';
 import { PickerFooter } from '@/components/media-library/PickerFooter';
 import { PickerHeader } from '@/components/media-library/PickerHeader';
@@ -22,16 +22,19 @@ import { SelectedImagePanel } from '@/components/media-library/SelectedImagePane
 import { SelectionOrderStrip } from '@/components/media-library/SelectionOrderStrip';
 import { UploadCard } from '@/components/media-library/UploadCard';
 import { useSimulatedUploads } from '@/hooks/useSimulatedUploads';
-import { INITIAL_CROP_STATE, cropStateFromArea, getCropArea } from '@/lib/mediaLibrary/crop';
+import { IMPORT_DONE_BANNER_MS } from '@/lib/mediaLibrary/constants';
+import { INITIAL_CROP_STATE, cropStateFromArea, getCropArea, type CropState } from '@/lib/mediaLibrary/crop';
 import { pluralize } from '@/lib/mediaLibrary/format';
-import { createInitialPickerState, pickerReducer, type UploadBatch } from '@/lib/mediaLibrary/pickerReducer';
+import { createInitialPickerState, pickerReducer } from '@/lib/mediaLibrary/pickerReducer';
+import { buildSections } from '@/lib/mediaLibrary/sections';
 import { sortImages } from '@/lib/mediaLibrary/sort';
 import { withStrongPrimary } from '@/lib/theme';
-import type { ImagePickerConfig, MediaImage, PickedImage } from '@/types/mediaLibrary';
+import type { ImagePickerConfig, ImagePickerOptions, MediaImage, PickedImage, UploadItem } from '@/types/mediaLibrary';
 
 interface ImagePickerDialogProps {
   open: boolean;
   config: ImagePickerConfig;
+  options: ImagePickerOptions;
   onClose: (result: PickedImage[] | null) => void;
 }
 
@@ -39,33 +42,22 @@ function normalizeForSearch(value: string): string {
   return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 }
 
-function primaryLabel(config: ImagePickerConfig, withCropStep: boolean, selectedCount: number): string {
-  if (config.mode === 'multiple') return selectedCount > 0 ? `Ajouter ${pluralize(selectedCount, 'image', 'images')}` : 'Ajouter des images';
-  return withCropStep ? 'Recadrer cette image' : 'Utiliser cette image';
+function primaryLabel(config: ImagePickerConfig, selectedCount: number): string {
+  if (config.mode === 'single') return 'Utiliser cette image';
+  return selectedCount > 0 ? `Ajouter ${pluralize(selectedCount, 'image', 'images')}` : 'Ajouter des images';
 }
 
-function ImportBanner({ batch, folderName }: { batch: UploadBatch | null; folderName: string }) {
-  const running = batch !== null && batch.finished < batch.total;
-  return (
-    <Box aria-live="polite" sx={{ px: 2.5, pt: batch ? 1.5 : 0 }}>
-      {batch && running && (
-        <Alert severity="info" icon={<CloudUploadOutlinedIcon />} variant="outlined">
-          Import dans <strong>{folderName}</strong> · {batch.finished} sur {batch.total} terminée{batch.finished > 1 ? 's' : ''}
-        </Alert>
-      )}
-      {batch && !running && batch.succeeded > 0 && (
-        <Alert severity="success" variant="outlined">
-          Import terminé : {pluralize(batch.succeeded, 'image ajoutée', 'images ajoutées')} dans <strong>{folderName}</strong>.
-        </Alert>
-      )}
-    </Box>
-  );
-}
-
-export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogProps) {
-  const { folders, images, addImage, updateAltText } = useMediaLibrary();
-  const [state, dispatch] = useReducer(pickerReducer, config.mode, createInitialPickerState);
-  const uploads = useSimulatedUploads({ images, dispatch, addImage });
+export function ImagePickerDialog({ open, config, options, onClose }: ImagePickerDialogProps) {
+  const { folders, images, updateAltText } = useMediaLibrary();
+  const [state, dispatch] = useReducer(pickerReducer, undefined, () => {
+    const current = images.find((image) => image.id === config.currentImageId);
+    const ratio = config.ratio;
+    const initialCrop =
+      options.startInCrop && config.mode === 'single' && ratio && current
+        ? { imageId: current.id, state: config.currentCrop ? cropStateFromArea(config.currentCrop, current, ratio) : INITIAL_CROP_STATE }
+        : undefined;
+    return createInitialPickerState({ mode: config.mode, initialCrop });
+  });
   const theme = useTheme();
   const isNarrow = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -76,11 +68,19 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
   const [dragging, setDragging] = useState(false);
   const focusSelectedOnReturn = useRef(false);
 
-  const withCropStep = config.mode === 'single' && config.ratio !== undefined;
+  const uploads = useSimulatedUploads(config.folder, {
+    onQueued: (items) => {
+      scrollRef.current?.scrollTo({ top: 0 });
+      dispatch({ type: 'queueUploads', items });
+    },
+    onProgress: (uploadId, progress) => dispatch({ type: 'uploadProgress', uploadId, progress }),
+    onSucceeded: (uploadId, image) => dispatch({ type: 'uploadSucceeded', uploadId, imageId: image.id }),
+    onFailed: (uploadId, reason) => dispatch({ type: 'uploadFailed', uploadId, reason }),
+  });
+
   const imagesById = useMemo(() => new Map(images.map((image) => [image.id, image])), [images]);
   const foldersById = useMemo(() => new Map(folders.map((folder) => [folder.id, folder])), [folders]);
-  const folderName = foldersById.get(state.folderId)?.name ?? '';
-  const batchFolderName = (state.batch && foldersById.get(state.batch.folderId)?.name) ?? folderName;
+  const filterName = state.folderId ? (foldersById.get(state.folderId)?.name ?? null) : null;
 
   const counts = useMemo(() => {
     const result: Record<string, number> = {};
@@ -90,23 +90,36 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
     return result;
   }, [images]);
 
-  const folderImages = useMemo(() => images.filter((image) => image.folderId === state.folderId), [images, state.folderId]);
-
-  const visibleImages = useMemo(() => {
+  const sortedImages = useMemo(() => {
+    const inFolder = state.folderId === null ? images : images.filter((image) => image.folderId === state.folderId);
     const query = normalizeForSearch(state.search.trim());
-    const matching = query ? folderImages.filter((image) => normalizeForSearch(image.name).includes(query)) : folderImages;
-    const sorted = sortImages(matching, state.sort);
-    // Les images importées restent en tête quel que soit le tri : on les voit sans les chercher.
-    const fresh = sorted.filter((image) => state.newImageIds.includes(image.id));
-    const others = sorted.filter((image) => !state.newImageIds.includes(image.id));
-    return [...fresh, ...others];
-  }, [folderImages, state.search, state.sort, state.newImageIds]);
+    const matching = query ? inFolder.filter((image) => normalizeForSearch(image.name).includes(query)) : inFolder;
+    return sortImages(matching, state.sort);
+  }, [images, state.folderId, state.search, state.sort]);
 
-  const folderUploads = state.uploads.filter((item) => item.folderId === state.folderId);
+  const sections = useMemo(() => buildSections(sortedImages, state.newImageIds, state.sort), [sortedImages, state.newImageIds, state.sort]);
+  const visibleImages = useMemo(() => sections.flatMap((section) => section.images), [sections]);
+
   const selectedImages = state.selectedIds.map((id) => imagesById.get(id)).filter((image): image is MediaImage => image !== undefined);
   const activeImage = state.activeId ? (imagesById.get(state.activeId) ?? null) : null;
   const panelImage = config.mode === 'single' ? (selectedImages[0] ?? null) : activeImage;
   const showPanel = config.mode === 'single' || config.altText === 'ask';
+  const cropImage = state.crop ? imagesById.get(state.crop.imageId) : undefined;
+  const isCropping = state.step === 'crop' && state.crop !== null && config.ratio !== undefined && cropImage !== undefined;
+
+  // Recadrage automatique par défaut ; un cadrage ajusté à la main, ou celui déjà en place, a priorité.
+  function cropStateFor(image: MediaImage): CropState {
+    if (state.crop?.imageId === image.id) return state.crop.state;
+    if (image.id === config.currentImageId && config.currentCrop && config.ratio) return cropStateFromArea(config.currentCrop, image, config.ratio);
+    return INITIAL_CROP_STATE;
+  }
+
+  const batchDone = state.batch !== null && state.batch.finished >= state.batch.total;
+  useEffect(() => {
+    if (!batchDone) return;
+    const timer = window.setTimeout(() => dispatch({ type: 'clearBatch' }), IMPORT_DONE_BANNER_MS);
+    return () => window.clearTimeout(timer);
+  }, [batchDone]);
 
   useEffect(() => {
     if (state.step !== 'choose' || !focusSelectedOnReturn.current) return;
@@ -114,12 +127,6 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
     const selectedId = state.selectedIds[0];
     if (selectedId) document.getElementById(imageInputId(idPrefix, selectedId))?.focus();
   }, [state.step, state.selectedIds, idPrefix]);
-
-  function handleImport(files: File[]) {
-    if (files.length === 0) return;
-    scrollRef.current?.scrollTo({ top: 0 });
-    uploads.importFiles(files, state.folderId);
-  }
 
   function hasFiles(event: DragEvent) {
     return Array.from(event.dataTransfer.types).includes('Files');
@@ -149,23 +156,31 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
     event.preventDefault();
     dragDepth.current = 0;
     setDragging(false);
-    handleImport(Array.from(event.dataTransfer.files));
+    uploads.importFiles(Array.from(event.dataTransfer.files));
   }
 
-  function startCrop() {
-    const image = selectedImages[0];
-    if (!image || !config.ratio) return;
-    const restored = image.id === config.currentImageId && config.currentCrop;
-    dispatch({ type: 'startCrop', crop: restored ? cropStateFromArea(restored, image, config.ratio) : INITIAL_CROP_STATE });
+  function discardUpload(item: UploadItem) {
+    uploads.releaseUpload(item);
+    dispatch({ type: 'removeUpload', uploadId: item.id });
+  }
+
+  function keepExisting(item: UploadItem, existing: MediaImage) {
+    uploads.releaseUpload(item);
+    dispatch({ type: 'useExisting', uploadId: item.id, imageId: existing.id });
+  }
+
+  function forceUpload(item: UploadItem) {
+    dispatch({ type: 'forceUpload', uploadId: item.id });
+    uploads.forceUpload(item);
   }
 
   function confirm() {
-    if (state.step === 'crop' && state.crop && config.ratio && selectedImages[0]) {
-      onClose([{ image: selectedImages[0], crop: getCropArea(state.crop, selectedImages[0], config.ratio) }]);
+    if (isCropping && state.crop && config.ratio && cropImage) {
+      onClose([{ image: cropImage, crop: getCropArea(state.crop.state, cropImage, config.ratio) }]);
       return;
     }
-    if (withCropStep) return startCrop();
-    onClose(selectedImages.map((image) => ({ image })));
+    const ratio = config.ratio;
+    onClose(selectedImages.map((image) => ({ image, crop: ratio && config.mode === 'single' ? getCropArea(cropStateFor(image), image, ratio) : undefined })));
   }
 
   function backToChoose() {
@@ -173,7 +188,7 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
     dispatch({ type: 'backToChoose' });
   }
 
-  const uploadCards = folderUploads.map((item) => {
+  const uploadCards = state.uploads.map((item) => {
     const duplicateOf = item.duplicateOfId ? imagesById.get(item.duplicateOfId) : undefined;
     return (
       <UploadCard
@@ -181,15 +196,16 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
         item={item}
         duplicateOf={duplicateOf}
         duplicateFolder={duplicateOf ? foldersById.get(duplicateOf.folderId) : undefined}
-        onDiscard={uploads.discardUpload}
-        onUseExisting={uploads.keepExistingImage}
-        onForceUpload={uploads.forceUpload}
+        onDiscard={discardUpload}
+        onUseExisting={keepExisting}
+        onForceUpload={forceUpload}
       />
     );
   });
 
-  const groupLabel = `Images du dossier ${folderName}`;
+  const groupLabel = filterName ? `Images du dossier ${filterName}` : 'Toutes les images';
   const toggle = (imageId: string) => dispatch({ type: 'toggleImage', imageId });
+  const panelCrop = config.ratio && panelImage && config.mode === 'single' ? getCropArea(cropStateFor(panelImage), panelImage, config.ratio) : undefined;
 
   const panel = showPanel && (
     <SelectedImagePanel
@@ -205,27 +221,30 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
           ? "Cliquez sur une image pour la choisir. Son aperçu et ses informations s'afficheront ici."
           : 'Cochez des images : vous pourrez compléter leur texte alternatif ici.'
       }
+      crop={panelCrop}
+      onAdjustCrop={panelImage ? () => dispatch({ type: 'startCrop', crop: { imageId: panelImage.id, state: cropStateFor(panelImage) } }) : undefined}
       onAltTextChange={updateAltText}
     />
   );
 
-  const hasContent = visibleImages.length > 0 || folderUploads.length > 0;
+  const hasContent = visibleImages.length > 0 || uploadCards.length > 0;
+  const selectAllLabel = state.search ? 'Tout sélectionner dans les résultats' : filterName ? `Tout sélectionner dans « ${filterName} »` : 'Tout sélectionner';
 
   const results = !hasContent ? (
     <Stack spacing={1.5} sx={{ alignItems: 'center', textAlign: 'center', py: 6, px: 2 }}>
       {state.search ? (
         <>
           <Typography variant="body1">
-            Aucune image ne correspond à « {state.search} » dans « {folderName} ».
+            Aucune image ne correspond à « {state.search} »{filterName ? ` dans « ${filterName} »` : ''}.
           </Typography>
-          <Button variant="outlined" onClick={() => dispatch({ type: 'setSearch', search: '' })}>
+          <Button size="small" variant="outlined" onClick={() => dispatch({ type: 'setSearch', search: '' })}>
             Effacer la recherche
           </Button>
         </>
       ) : (
         <>
           <Typography variant="body1" sx={{ fontWeight: 600 }}>
-            Le dossier « {folderName} » est vide.
+            {filterName ? `Le dossier « ${filterName} » est vide.` : 'La médiathèque est vide.'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Glissez des images ici ou utilisez le bouton « Importer des images ».
@@ -235,8 +254,9 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
     </Stack>
   ) : state.view === 'grid' ? (
     <ImageGrid
-      images={visibleImages}
+      sections={sections}
       uploadCards={uploadCards}
+      columns={isMobile ? 2 : isNarrow ? 3 : 5}
       mode={config.mode}
       groupLabel={groupLabel}
       idPrefix={idPrefix}
@@ -247,9 +267,7 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
     />
   ) : (
     <Stack spacing={2}>
-      {uploadCards.length > 0 && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(156px, 1fr))', gap: 2 }}>{uploadCards}</Box>
-      )}
+      {uploadCards.length > 0 && <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${isMobile ? 2 : isNarrow ? 3 : 5}, minmax(0, 1fr))`, gap: 1.5 }}>{uploadCards}</Box>}
       {visibleImages.length > 0 && (
         <ImageListView
           images={visibleImages}
@@ -268,7 +286,6 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
   );
 
   const selectedCount = state.selectedIds.length;
-  const isCropping = state.step === 'crop' && state.crop !== null && config.ratio !== undefined && selectedImages[0] !== undefined;
 
   return (
     <ThemeProvider theme={withStrongPrimary}>
@@ -283,19 +300,19 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
         slotProps={{
           // Le piège à focus de la Dialog prend le focus à l'ouverture : on le rend ensuite à la recherche.
           transition: { onEntered: () => document.getElementById(`${idPrefix}-search`)?.focus() },
-          paper: { sx: { height: isMobile ? '100%' : 'min(860px, calc(100% - 64px))', display: 'flex', flexDirection: 'column', overflow: 'hidden' } },
+          paper: { sx: { height: isMobile ? '100%' : 'min(820px, calc(100% - 64px))', display: 'flex', flexDirection: 'column', overflow: 'hidden' } },
         }}
       >
-        <PickerHeader config={config} step={state.step} withCropStep={withCropStep} titleId={titleId} onClose={() => onClose(null)} />
+        <PickerHeader config={config} step={state.step} withCropStep={isCropping} titleId={titleId} onClose={() => onClose(null)} />
 
-        {isCropping && config.ratio && state.crop ? (
+        {isCropping && config.ratio && state.crop && cropImage ? (
           <Box sx={{ flex: 1, minHeight: 0 }}>
             <CropStep
               idPrefix={idPrefix}
-              image={selectedImages[0]}
+              image={cropImage}
               ratio={config.ratio}
-              crop={state.crop}
-              onChange={(crop) => dispatch({ type: 'updateCrop', crop })}
+              crop={state.crop.state}
+              onChange={(crop) => dispatch({ type: 'updateCrop', state: crop })}
               isNarrow={isNarrow}
             />
           </Box>
@@ -303,14 +320,14 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
           <>
             <PickerToolbar
               idPrefix={idPrefix}
-              folderName={folderName}
+              filterName={filterName}
               search={state.search}
               onSearch={(search) => dispatch({ type: 'setSearch', search })}
               sort={state.sort}
               onSort={(sort) => dispatch({ type: 'setSort', sort })}
               view={state.view}
               onView={(view) => dispatch({ type: 'setView', view })}
-              onImport={handleImport}
+              onImport={uploads.importFiles}
               compactFolders={isNarrow ? { folders, folderId: state.folderId, onSelect: (folderId) => dispatch({ type: 'setFolder', folderId }) } : undefined}
             />
 
@@ -319,12 +336,18 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
                 flex: 1,
                 minHeight: 0,
                 display: 'grid',
-                gridTemplateColumns: isNarrow ? '1fr' : `220px 1fr${showPanel ? ' 300px' : ''}`,
+                gridTemplateColumns: isNarrow ? '1fr' : `200px 1fr${showPanel ? ' 260px' : ''}`,
               }}
             >
               {!isNarrow && (
                 <Box sx={{ borderRight: '1px solid', borderColor: 'divider', overflowY: 'auto', p: 1 }}>
-                  <FolderTree folders={folders} counts={counts} folderId={state.folderId} onSelect={(folderId) => dispatch({ type: 'setFolder', folderId })} />
+                  <FolderTree
+                    folders={folders}
+                    counts={counts}
+                    totalCount={images.length}
+                    folderId={state.folderId}
+                    onSelect={(folderId) => dispatch({ type: 'setFolder', folderId })}
+                  />
                 </Box>
               )}
 
@@ -346,7 +369,7 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
                       disabled={visibleImages.length === 0}
                       onClick={() => dispatch({ type: 'selectAll', imageIds: visibleImages.map((image) => image.id) })}
                     >
-                      {state.search ? 'Tout sélectionner dans les résultats' : `Tout sélectionner dans « ${folderName} »`}
+                      {selectAllLabel}
                     </Button>
                     {selectedCount > 0 && (
                       <Button variant="text" size="small" color="inherit" onClick={() => dispatch({ type: 'deselectAll' })}>
@@ -356,20 +379,10 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
                   </Stack>
                 )}
 
-                <ImportBanner batch={state.batch} folderName={batchFolderName} />
+                <ImportBanner batch={state.batch} destination={config.folder} />
 
-                <Box ref={scrollRef} id={`${idPrefix}-results`} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', p: 2.5 }}>
+                <Box ref={scrollRef} id={`${idPrefix}-results`} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 2.5, py: 1.5 }}>
                   {isNarrow && panel && <Box sx={{ mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>{panel}</Box>}
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{ alignItems: 'center', mb: 2, px: 1.5, py: 1, border: '1px dashed', borderColor: 'divider', borderRadius: 2, color: 'text.secondary' }}
-                  >
-                    <CloudUploadOutlinedIcon fontSize="small" aria-hidden="true" />
-                    <Typography variant="body2">
-                      Glissez des images ici pour les importer dans <strong>{folderName}</strong>
-                    </Typography>
-                  </Stack>
                   {results}
                 </Box>
 
@@ -403,7 +416,7 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
                     <Stack spacing={1} sx={{ alignItems: 'center', color: 'primary.main' }}>
                       <CloudUploadOutlinedIcon fontSize="large" />
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Déposez vos images pour les importer dans « {folderName} »
+                        Déposez vos images : elles iront dans « {config.folder} »
                       </Typography>
                     </Stack>
                   </Box>
@@ -416,8 +429,8 @@ export function ImagePickerDialog({ open, config, onClose }: ImagePickerDialogPr
         )}
 
         <PickerFooter
-          primaryLabel={isCropping ? 'Valider le recadrage' : primaryLabel(config, withCropStep, selectedCount)}
-          primaryDisabled={selectedCount === 0}
+          primaryLabel={isCropping ? 'Valider le recadrage' : primaryLabel(config, selectedCount)}
+          primaryDisabled={!isCropping && selectedCount === 0}
           onPrimary={confirm}
           onCancel={() => onClose(null)}
           onBack={isCropping ? backToChoose : undefined}

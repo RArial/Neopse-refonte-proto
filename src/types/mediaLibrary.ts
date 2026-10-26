@@ -45,6 +45,8 @@ export interface ImagePickerConfig {
   mode: ImagePickerMode;
   /** Libellé du champ appelant, ex. « Vignette de l'actualité ». */
   context: string;
+  /** Dossier de destination des imports (sous « Site »), créé s'il n'existe pas. Ex. « Actualités ». */
+  folder: string;
   /** Absent = pas d'étape de recadrage. */
   ratio?: AspectRatio;
   /** Ex. « 1200 × 900 px » ; affiché seulement si renseigné. */
@@ -53,6 +55,11 @@ export interface ImagePickerConfig {
   currentImageId?: string;
   /** Recadrage en place, restauré si l'image actuelle est re-choisie. */
   currentCrop?: CropArea;
+}
+
+export interface ImagePickerOptions {
+  /** Ouvre directement l'étape de recadrage sur l'image actuelle (« Modifier le cadrage »). */
+  startInCrop?: boolean;
 }
 
 export interface PickedImage {

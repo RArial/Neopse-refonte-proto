@@ -1,11 +1,13 @@
 import type { MediaFolder, MediaImage } from '@/types/mediaLibrary';
 
+// « Site » est la seule racine : un dossier par module dessous, plus « Apparence ».
+export const ROOT_FOLDER_ID = 'site';
+
 export const SEED_FOLDERS: MediaFolder[] = [
-  { id: 'site', name: 'Site', parentId: null },
-  { id: 'actualites', name: 'Actualités', parentId: 'site' },
-  { id: 'evenements', name: 'Événements', parentId: 'site' },
-  { id: 'test', name: 'test', parentId: 'site' },
-  { id: 'logos', name: 'Logos et visuels', parentId: null },
+  { id: ROOT_FOLDER_ID, name: 'Site', parentId: null },
+  { id: 'actualites', name: 'Actualités', parentId: ROOT_FOLDER_ID },
+  { id: 'agenda', name: 'Agenda', parentId: ROOT_FOLDER_ID },
+  { id: 'apparence', name: 'Apparence', parentId: ROOT_FOLDER_ID },
 ];
 
 interface Scene {
@@ -60,11 +62,11 @@ const SPECS: SeedSpec[] = [
   { name: 'rentree-scolaire-cantine.jpg', folderId: 'actualites', width: 1600, height: 1200, size: 905_221, daysAgo: 3 },
   { name: 'travaux-route-departementale.jpg', folderId: 'actualites', width: 1920, height: 1280, size: 1_105_009, daysAgo: 12 },
   { name: 'ceremonie-11-novembre.jpg', folderId: 'actualites', width: 1600, height: 1067, size: 1_002_118, daysAgo: 40 },
-  { name: 'affiche-concert-ete.png', folderId: 'evenements', width: 1240, height: 1754, size: 2_310_442, daysAgo: 7 },
-  { name: 'brocante-printemps.jpg', folderId: 'evenements', width: 1600, height: 1200, size: 801_776, daysAgo: 25 },
-  { name: 'essai-import.jpg', folderId: 'test', width: 800, height: 600, size: 120_554, daysAgo: 1 },
-  { name: 'logo-commune.png', folderId: 'logos', width: 800, height: 800, size: 64_210, daysAgo: 120, altText: 'Logo de la commune' },
-  { name: 'bandeau-accueil.jpg', folderId: 'logos', width: 2560, height: 640, size: 1_780_334, daysAgo: 90 },
+  { name: 'affiche-concert-ete.png', folderId: 'agenda', width: 1240, height: 1754, size: 2_310_442, daysAgo: 7 },
+  { name: 'brocante-printemps.jpg', folderId: 'agenda', width: 1600, height: 1200, size: 801_776, daysAgo: 25 },
+  { name: 'essai-import.jpg', folderId: 'site', width: 800, height: 600, size: 120_554, daysAgo: 1 },
+  { name: 'logo-commune.png', folderId: 'apparence', width: 800, height: 800, size: 64_210, daysAgo: 120, altText: 'Logo de la commune' },
+  { name: 'bandeau-accueil.jpg', folderId: 'apparence', width: 2560, height: 640, size: 1_780_334, daysAgo: 90 },
 ];
 
 const DAY_MS = 24 * 60 * 60 * 1000;

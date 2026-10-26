@@ -23,10 +23,10 @@ export function PickerFooter({ primaryLabel, primaryDisabled, onPrimary, onCance
       direction="row"
       spacing={1.5}
       useFlexGap
-      sx={{ alignItems: 'center', px: 3, py: 1.5, borderTop: '1px solid', borderColor: 'divider', flexWrap: 'wrap', rowGap: 1 }}
+      sx={{ alignItems: 'center', px: 3, py: 1, borderTop: '1px solid', borderColor: 'divider', flexWrap: 'wrap', rowGap: 1 }}
     >
       {onBack ? (
-        <Button variant="text" startIcon={<ArrowBackIcon />} onClick={onBack}>
+        <Button size="small" variant="text" startIcon={<ArrowBackIcon />} onClick={onBack}>
           Changer d&apos;image
         </Button>
       ) : (
@@ -35,10 +35,10 @@ export function PickerFooter({ primaryLabel, primaryDisabled, onPrimary, onCance
         </Typography>
       )}
       <Box sx={{ flex: 1 }} />
-      <Button variant="outlined" color="inherit" onClick={onCancel}>
+      <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>
         Annuler
       </Button>
-      <Button variant="contained" onClick={onPrimary} disabled={primaryDisabled}>
+      <Button size="small" variant="contained" onClick={onPrimary} disabled={primaryDisabled}>
         {primaryLabel}
       </Button>
     </Stack>

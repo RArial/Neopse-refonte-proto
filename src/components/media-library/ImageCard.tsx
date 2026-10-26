@@ -54,11 +54,11 @@ export function ImageCard({ image, inputId, mode, groupName, order, isCurrent, i
         className="sr-only"
       />
 
-      <Box sx={{ position: 'relative', aspectRatio: '4 / 3', bgcolor: 'action.hover' }}>
-        <MediaThumb src={image.url} sizes="200px" />
+      <Box sx={{ position: 'relative', height: 110, bgcolor: 'action.hover' }}>
+        <MediaThumb src={image.url} sizes="160px" />
 
         {(isCurrent || isNew) && (
-          <Box sx={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+          <Box sx={{ position: 'absolute', top: 6, left: 6, right: 40, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             {isCurrent && <Chip label="Actuelle" size="small" color="secondary" />}
             {isNew && <Chip label="Nouvelle" size="small" color="primary" />}
           </Box>
@@ -68,10 +68,10 @@ export function ImageCard({ image, inputId, mode, groupName, order, isCurrent, i
           aria-hidden="true"
           sx={{
             position: 'absolute',
-            top: 8,
-            right: 8,
-            width: 28,
-            height: 28,
+            top: 6,
+            right: 6,
+            width: 26,
+            height: 26,
             display: 'grid',
             placeItems: 'center',
             borderRadius: mode === 'single' ? '50%' : 1,
@@ -87,7 +87,7 @@ export function ImageCard({ image, inputId, mode, groupName, order, isCurrent, i
         </Box>
       </Box>
 
-      <Box sx={{ px: 1.25, py: 1 }}>
+      <Box sx={{ px: 1, py: 0.75 }}>
         <Typography
           variant="body2"
           title={image.name}
@@ -103,7 +103,7 @@ export function ImageCard({ image, inputId, mode, groupName, order, isCurrent, i
         >
           {image.name}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
           {formatDimensions(image.width, image.height)}
         </Typography>
         {selected && mode === 'multiple' && <span className="sr-only">, sélectionnée en position {order}</span>}

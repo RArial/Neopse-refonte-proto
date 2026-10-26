@@ -1,4 +1,4 @@
-import { DEFAULT_FOLDER_ID, DEFAULT_SORT } from '@/lib/mediaLibrary/constants';
+import { DEFAULT_SORT } from '@/lib/mediaLibrary/constants';
 import type { CropState } from '@/lib/mediaLibrary/crop';
 import type { ImagePickerMode, SortState, UploadItem } from '@/types/mediaLibrary';
 
@@ -6,17 +6,23 @@ export type PickerStep = 'choose' | 'crop';
 export type PickerView = 'grid' | 'list';
 
 export interface UploadBatch {
-  folderId: string;
   /** Fichiers partis à l'import (hors refus immédiats et doublons en attente). */
   total: number;
   finished: number;
   succeeded: number;
 }
 
+/** Cadrage ajusté à la main ; ne vaut que pour l'image sur laquelle il a été fait. */
+export interface AdjustedCrop {
+  imageId: string;
+  state: CropState;
+}
+
 export interface PickerState {
   mode: ImagePickerMode;
   step: PickerStep;
-  folderId: string;
+  /** Filtre de dossier ; null = « Toutes les images ». */
+  folderId: string | null;
   search: string;
   sort: SortState;
   view: PickerView;
@@ -28,11 +34,11 @@ export interface PickerState {
   /** Importées pendant cette ouverture : badge « Nouvelle » et placées en tête. */
   newImageIds: string[];
   batch: UploadBatch | null;
-  crop: CropState | null;
+  crop: AdjustedCrop | null;
 }
 
 export type PickerAction =
-  | { type: 'setFolder'; folderId: string }
+  | { type: 'setFolder'; folderId: string | null }
   | { type: 'setSearch'; search: string }
   | { type: 'setSort'; sort: SortState }
   | { type: 'setView'; view: PickerView }
@@ -45,26 +51,33 @@ export type PickerAction =
   | { type: 'uploadSucceeded'; uploadId: string; imageId: string }
   | { type: 'uploadFailed'; uploadId: string; reason: string }
   | { type: 'removeUpload'; uploadId: string }
-  | { type: 'useExisting'; uploadId: string; imageId: string; folderId: string }
+  | { type: 'useExisting'; uploadId: string; imageId: string }
   | { type: 'forceUpload'; uploadId: string }
-  | { type: 'startCrop'; crop: CropState }
-  | { type: 'updateCrop'; crop: CropState }
+  | { type: 'clearBatch' }
+  | { type: 'startCrop'; crop: AdjustedCrop }
+  | { type: 'updateCrop'; state: CropState }
   | { type: 'backToChoose' };
 
-export function createInitialPickerState(mode: ImagePickerMode): PickerState {
+export interface PickerInit {
+  mode: ImagePickerMode;
+  /** « Modifier le cadrage » depuis le champ : on arrive directement sur l'étape 2. */
+  initialCrop?: AdjustedCrop;
+}
+
+export function createInitialPickerState({ mode, initialCrop }: PickerInit): PickerState {
   return {
     mode,
-    step: 'choose',
-    folderId: DEFAULT_FOLDER_ID,
+    step: initialCrop ? 'crop' : 'choose',
+    folderId: null,
     search: '',
     sort: DEFAULT_SORT,
     view: 'grid',
-    selectedIds: [],
-    activeId: null,
+    selectedIds: initialCrop ? [initialCrop.imageId] : [],
+    activeId: initialCrop?.imageId ?? null,
     uploads: [],
     newImageIds: [],
     batch: null,
-    crop: null,
+    crop: initialCrop ?? null,
   };
 }
 
@@ -78,14 +91,14 @@ function isUploading(item: UploadItem): boolean {
   return item.status === 'uploading';
 }
 
-function startUploads(state: PickerState, count: number, folderId: string): UploadBatch | null {
+function startUploads(state: PickerState, count: number): UploadBatch | null {
   if (count === 0) return state.batch;
   const batchRunning = state.uploads.some(isUploading);
   if (batchRunning && state.batch) return { ...state.batch, total: state.batch.total + count };
-  return { folderId, total: count, finished: 0, succeeded: 0 };
+  return { total: count, finished: 0, succeeded: 0 };
 }
 
-/** Termine un fichier du lot ; à la fin du lot, la recherche est vidée pour montrer le dossier de destination. */
+/** Termine un fichier du lot ; à la fin du lot, la recherche est vidée pour que les nouvelles images soient visibles. */
 function finishUpload(state: PickerState, uploads: UploadItem[], succeeded: boolean): Partial<PickerState> {
   const batch = state.batch && {
     ...state.batch,
@@ -93,7 +106,7 @@ function finishUpload(state: PickerState, uploads: UploadItem[], succeeded: bool
     succeeded: state.batch.succeeded + (succeeded ? 1 : 0),
   };
   const batchDone = !uploads.some(isUploading);
-  return { uploads, batch, ...(batchDone && { search: '', folderId: batch?.folderId ?? state.folderId }) };
+  return { uploads, batch, ...(batchDone && { search: '' }) };
 }
 
 export function pickerReducer(state: PickerState, action: PickerAction): PickerState {
@@ -124,8 +137,10 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
       return { ...state, activeId: action.imageId };
     case 'queueUploads': {
       const uploadingCount = action.items.filter(isUploading).length;
-      const batch = startUploads(state, uploadingCount, action.items[0]?.folderId ?? state.folderId);
-      return { ...state, uploads: [...action.items, ...state.uploads], batch };
+      const destination = action.items[0]?.folderId;
+      // Un filtre sur un autre dossier masquerait les images importées : on repasse sur « Toutes les images ».
+      const folderId = state.folderId === null || state.folderId === destination ? state.folderId : null;
+      return { ...state, folderId, uploads: [...action.items, ...state.uploads], batch: startUploads(state, uploadingCount) };
     }
     case 'uploadProgress':
       return {
@@ -154,22 +169,21 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
         ...state,
         ...addToSelection(state, action.imageId),
         uploads: state.uploads.filter((item) => item.id !== action.uploadId),
-        folderId: action.folderId,
+        folderId: null,
         search: '',
       };
     case 'forceUpload': {
-      const target = state.uploads.find((item) => item.id === action.uploadId);
-      if (!target) return state;
-      const batch = startUploads(state, 1, target.folderId);
       const uploads = state.uploads.map((item) =>
         item.id === action.uploadId ? { ...item, status: 'uploading' as const, progress: 0, duplicateOfId: undefined } : item,
       );
-      return { ...state, uploads, batch };
+      return { ...state, uploads, batch: startUploads(state, 1) };
     }
+    case 'clearBatch':
+      return { ...state, batch: null };
     case 'startCrop':
       return { ...state, step: 'crop', crop: action.crop };
     case 'updateCrop':
-      return { ...state, crop: action.crop };
+      return state.crop ? { ...state, crop: { ...state.crop, state: action.state } } : state;
     case 'backToChoose':
       return { ...state, step: 'choose' };
   }

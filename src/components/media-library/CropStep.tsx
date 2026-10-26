@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -13,6 +13,7 @@ import RotateRightIcon from '@mui/icons-material/RotateRight';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { CroppedImage, OrientedImage } from '@/components/media-library/CroppedImage';
+import { useElementSize } from '@/hooks/useElementSize';
 import { MAX_CROP_ZOOM } from '@/lib/mediaLibrary/constants';
 import {
   INITIAL_CROP_STATE,
@@ -39,26 +40,6 @@ const STAGE_PADDING = 24;
 const KEY_STEP = 0.01;
 const KEY_STEP_LARGE = 0.05;
 const ZOOM_STEP = 0.1;
-
-interface Size {
-  width: number;
-  height: number;
-}
-
-function useElementSize<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
-  useLayoutEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-  return [ref, size] as const;
-}
 
 export function CropStep({ idPrefix, image, ratio, crop, onChange, isNarrow }: CropStepProps) {
   const [stageRef, stageSize] = useElementSize<HTMLDivElement>();
@@ -147,7 +128,7 @@ export function CropStep({ idPrefix, image, ratio, crop, onChange, isNarrow }: C
   const helpId = `${idPrefix}-crop-help`;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : '1fr 300px', gridTemplateRows: isNarrow ? 'minmax(260px, 1fr) auto' : '1fr', height: '100%', minHeight: 0 }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : '1fr 260px', gridTemplateRows: isNarrow ? 'minmax(260px, 1fr) auto' : '1fr', height: '100%', minHeight: 0 }}>
       <Box
         ref={stageRef}
         sx={{ position: 'relative', minHeight: 0, overflow: 'hidden', bgcolor: 'grey.900', display: 'grid', placeItems: 'center' }}
@@ -222,13 +203,13 @@ export function CropStep({ idPrefix, image, ratio, crop, onChange, isNarrow }: C
         </Box>
 
         <Stack spacing={1}>
-          <Button variant="outlined" startIcon={<RotateRightIcon />} onClick={() => update({ ...crop, rotation: nextQuarterTurn(crop.rotation), centerX: 0.5, centerY: 0.5 })}>
+          <Button size="small" variant="outlined" startIcon={<RotateRightIcon />} onClick={() => update({ ...crop, rotation: nextQuarterTurn(crop.rotation), centerX: 0.5, centerY: 0.5 })}>
             Pivoter de 90°
           </Button>
-          <Button variant="outlined" startIcon={<FlipIcon />} onClick={() => update({ ...crop, flipped: !crop.flipped, centerX: 1 - crop.centerX })} aria-pressed={crop.flipped}>
+          <Button size="small" variant="outlined" startIcon={<FlipIcon />} onClick={() => update({ ...crop, flipped: !crop.flipped, centerX: 1 - crop.centerX })} aria-pressed={crop.flipped}>
             Retourner
           </Button>
-          <Button variant="text" startIcon={<RestartAltIcon />} onClick={() => onChange(INITIAL_CROP_STATE)}>
+          <Button size="small" variant="text" startIcon={<RestartAltIcon />} onClick={() => onChange(INITIAL_CROP_STATE)}>
             Réinitialiser
           </Button>
         </Stack>

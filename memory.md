@@ -90,6 +90,16 @@ Brief : `docs/modale-mediatheque.md` (+ `docs/neopse-modale-image-reponses.pdf`)
 - Recherche limitée au dossier affiché. Clic sur le fond de la modale ne ferme pas (Échap oui).
 - Valeurs provisoires : 5 Mo max, JPG/PNG, dossier par défaut « Site ».
 
+### Révision 2 (même jour, après revue) — brief mis à jour en conséquence
+- **Import direct depuis le champ** (cas principal) : `FieldDropZone` + `useFieldUploads` ; erreurs/doublons affichés dans le champ (`FieldUploadStatus`) ; la modale ne s'ouvre que via « ou choisir parmi les images du site ».
+- **Destination automatique** : `config.folder` ; `ensureFolder()` crée le dossier sous « Site » (seule racine : Actualités, Agenda, Apparence…). Les images existantes ne bougent jamais.
+- **Modale** : ouverture sur « Toutes les images », dossiers = filtres, recherche globale, grille 5 colonnes / vignettes 110 px, intertitres par mois (tri chronologique) + « Importées à l'instant », bandeau d'import unique qui s'efface après 4 s.
+- **Recadrage automatique** : bouton toujours « Utiliser cette image » ; cadre max centré en surimpression dans le panneau + « Ajuster le cadrage » ; « Valider le recadrage » insère et ferme (décision validée) ; « Modifier le cadrage » depuis le champ ouvre directement l'étape 2 (`openImagePicker(config, { startInCrop: true })`).
+- `withStrongPrimary` appliqué aussi à la page de démo (boutons pleins hors modale) — validé, à revoir lors de la bascule globale du primaire.
+- « Importer des images » dans la modale : `outlined` (correction après revue, le seul bouton plein est le CTA du pied). Dans le champ, « Importer une image » reste plein.
+- Tests Playwright : avertissement d'hydratation `caret-color` = artefact Playwright (capture avant hydratation), pas un bug du code.
+- La ligne d'infos du panneau passe à la ligne entre les segments (body2 dans 260 px) : jugé acceptable.
+
 ### Prochaines étapes
 - Faire valider la démo ; trancher la bascule globale du primaire vers `#00696B`.
 - Réponses devs attendues : WebP, poids max, stockage du recadrage, référencement par id/nom, dossier par défaut.

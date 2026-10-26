@@ -20,9 +20,12 @@ import type { PickerView } from '@/lib/mediaLibrary/pickerReducer';
 import { GRID_SORT_OPTIONS, sortToValue } from '@/lib/mediaLibrary/sort';
 import type { MediaFolder, SortState } from '@/types/mediaLibrary';
 
+const ALL_FOLDERS_VALUE = '__all__';
+
 interface PickerToolbarProps {
   idPrefix: string;
-  folderName: string;
+  /** Dossier filtré ; null = toutes les images. */
+  filterName: string | null;
   search: string;
   onSearch: (search: string) => void;
   sort: SortState;
@@ -31,10 +34,10 @@ interface PickerToolbarProps {
   onView: (view: PickerView) => void;
   onImport: (files: File[]) => void;
   /** Sélecteur de dossier affiché à la place de l'arborescence sur petit écran. */
-  compactFolders?: { folders: MediaFolder[]; folderId: string; onSelect: (folderId: string) => void };
+  compactFolders?: { folders: MediaFolder[]; folderId: string | null; onSelect: (folderId: string | null) => void };
 }
 
-export function PickerToolbar({ idPrefix, folderName, search, onSearch, sort, onSort, view, onView, onImport, compactFolders }: PickerToolbarProps) {
+export function PickerToolbar({ idPrefix, filterName, search, onSearch, sort, onSort, view, onView, onImport, compactFolders }: PickerToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleFiles(event: ChangeEvent<HTMLInputElement>) {
@@ -48,17 +51,18 @@ export function PickerToolbar({ idPrefix, folderName, search, onSearch, sort, on
       direction="row"
       spacing={1.5}
       useFlexGap
-      sx={{ alignItems: 'center', px: 3, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', flexWrap: 'wrap', rowGap: 1.5 }}
+      sx={{ alignItems: 'center', px: 3, py: 1, minHeight: 56, borderBottom: '1px solid', borderColor: 'divider', flexWrap: 'wrap', rowGap: 1 }}
     >
       {compactFolders && (
         <TextField
           select
           size="small"
           label="Dossier"
-          value={compactFolders.folderId}
-          onChange={(event) => compactFolders.onSelect(event.target.value)}
+          value={compactFolders.folderId ?? ALL_FOLDERS_VALUE}
+          onChange={(event) => compactFolders.onSelect(event.target.value === ALL_FOLDERS_VALUE ? null : event.target.value)}
           sx={{ minWidth: 160 }}
         >
+          <MenuItem value={ALL_FOLDERS_VALUE}>Toutes les images</MenuItem>
           {compactFolders.folders.map((folder) => (
             <MenuItem key={folder.id} value={folder.id}>
               {folder.name}
@@ -72,11 +76,12 @@ export function PickerToolbar({ idPrefix, folderName, search, onSearch, sort, on
         size="small"
         type="search"
         label="Rechercher par nom"
-        placeholder={`Dans « ${folderName} »`}
+        placeholder={filterName ? `Dans « ${filterName} »` : 'Dans toutes les images'}
         value={search}
         onChange={(event) => onSearch(event.target.value)}
-        sx={{ flex: '1 1 220px', maxWidth: 360 }}
+        sx={{ flex: '1 1 200px', maxWidth: 320 }}
         slotProps={{
+          inputLabel: { shrink: true },
           input: {
             startAdornment: (
               <InputAdornment position="start">
@@ -105,7 +110,7 @@ export function PickerToolbar({ idPrefix, folderName, search, onSearch, sort, on
             const option = GRID_SORT_OPTIONS.find((item) => item.value === event.target.value);
             if (option) onSort(option.sort);
           }}
-          sx={{ minWidth: 200 }}
+          sx={{ minWidth: 190 }}
         >
           {GRID_SORT_OPTIONS.map((option) => (
             <MenuItem key={option.value} value={option.value}>
@@ -116,17 +121,17 @@ export function PickerToolbar({ idPrefix, folderName, search, onSearch, sort, on
       )}
 
       <ToggleButtonGroup exclusive size="small" value={view} onChange={(_, next: PickerView | null) => next && onView(next)} aria-label="Affichage">
-        <ToggleButton value="grid" aria-label="Afficher en grille" sx={{ minWidth: 44, minHeight: 40 }}>
+        <ToggleButton value="grid" aria-label="Afficher en grille" sx={{ minWidth: 40, minHeight: 40 }}>
           <GridViewOutlinedIcon fontSize="small" />
         </ToggleButton>
-        <ToggleButton value="list" aria-label="Afficher en liste" sx={{ minWidth: 44, minHeight: 40 }}>
+        <ToggleButton value="list" aria-label="Afficher en liste" sx={{ minWidth: 40, minHeight: 40 }}>
           <ViewListOutlinedIcon fontSize="small" />
         </ToggleButton>
       </ToggleButtonGroup>
 
       <Box sx={{ flex: 1 }} />
 
-      <Button variant="outlined" startIcon={<FileUploadOutlinedIcon />} onClick={() => fileInputRef.current?.click()}>
+      <Button size="small" variant="outlined" startIcon={<FileUploadOutlinedIcon />} onClick={() => fileInputRef.current?.click()}>
         Importer des images
       </Button>
       <input ref={fileInputRef} type="file" accept={ACCEPT_ATTRIBUTE} multiple hidden onChange={handleFiles} tabIndex={-1} aria-hidden="true" />

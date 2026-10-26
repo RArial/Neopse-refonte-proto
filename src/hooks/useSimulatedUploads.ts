@@ -1,17 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useRef, type Dispatch } from 'react';
-import type { NewMediaImage } from '@/components/media-library/MediaLibraryProvider';
-import type { PickerAction } from '@/lib/mediaLibrary/pickerReducer';
+import { useCallback, useEffect, useRef } from 'react';
+import { useMediaLibrary } from '@/components/media-library/MediaLibraryProvider';
 import { findDuplicate, getRejectionReason } from '@/lib/mediaLibrary/validation';
 import type { MediaImage, UploadItem } from '@/types/mediaLibrary';
 
 const TICK_MS = 160;
 
-interface UseSimulatedUploadsOptions {
-  images: MediaImage[];
-  dispatch: Dispatch<PickerAction>;
-  addImage: (image: NewMediaImage) => MediaImage;
+/** Chaque appelant (modale, champ) range l'état des imports à sa façon. */
+export interface UploadHandlers {
+  onQueued: (items: UploadItem[]) => void;
+  onProgress: (uploadId: string, progress: number) => void;
+  onSucceeded: (uploadId: string, image: MediaImage) => void;
+  onFailed: (uploadId: string, reason: string) => void;
 }
 
 function randomUploadId(): string {
@@ -27,11 +28,20 @@ function readDimensions(url: string): Promise<{ width: number; height: number }>
   });
 }
 
-/** Proto sans backend : la progression est simulée, le fichier reste en mémoire (object URL). */
-export function useSimulatedUploads({ images, dispatch, addImage }: UseSimulatedUploadsOptions) {
+/**
+ * Proto sans backend : la progression est simulée, le fichier reste en mémoire (object URL).
+ * Les fichiers vont dans le dossier `folder` (créé au besoin), quel que soit le dossier affiché.
+ */
+export function useSimulatedUploads(folder: string, handlers: UploadHandlers) {
+  const { images, addImage, ensureFolder } = useMediaLibrary();
   const timers = useRef(new Set<number>());
-  // Aperçus pas encore devenus des images de la médiathèque : à libérer si la modale se ferme.
+  // Aperçus pas encore devenus des images de la médiathèque : à libérer au démontage.
   const pendingPreviews = useRef(new Set<string>());
+  // Les timers appellent les gestionnaires bien après le rendu qui les a lancés.
+  const latestHandlers = useRef(handlers);
+  useEffect(() => {
+    latestHandlers.current = handlers;
+  });
 
   useEffect(() => {
     const activeTimers = timers.current;
@@ -48,7 +58,7 @@ export function useSimulatedUploads({ images, dispatch, addImage }: UseSimulated
       const dimensions = readDimensions(item.previewUrl);
       const timer = window.setInterval(() => {
         progress = Math.min(100, progress + 12 + Math.round(Math.random() * 18));
-        dispatch({ type: 'uploadProgress', uploadId: item.id, progress });
+        latestHandlers.current.onProgress(item.id, progress);
         if (progress < 100) return;
         window.clearInterval(timer);
         timers.current.delete(timer);
@@ -63,20 +73,21 @@ export function useSimulatedUploads({ images, dispatch, addImage }: UseSimulated
               height,
               size: item.file.size,
             });
-            dispatch({ type: 'uploadSucceeded', uploadId: item.id, imageId: image.id });
+            latestHandlers.current.onSucceeded(item.id, image);
           })
           .catch(() => {
-            dispatch({ type: 'uploadFailed', uploadId: item.id, reason: "Ce fichier n'a pas pu être lu comme une image. Vérifiez qu'il n'est pas endommagé." });
+            latestHandlers.current.onFailed(item.id, "Ce fichier n'a pas pu être lu comme une image. Vérifiez qu'il n'est pas endommagé.");
           });
       }, TICK_MS);
       timers.current.add(timer);
     },
-    [addImage, dispatch],
+    [addImage],
   );
 
   const importFiles = useCallback(
-    (files: File[], folderId: string) => {
+    (files: File[]) => {
       if (files.length === 0) return;
+      const folderId = ensureFolder(folder);
       const items: UploadItem[] = files.map((file) => {
         const previewUrl = URL.createObjectURL(file);
         pendingPreviews.current.add(previewUrl);
@@ -93,37 +104,17 @@ export function useSimulatedUploads({ images, dispatch, addImage }: UseSimulated
           duplicateOfId: duplicate?.id,
         };
       });
-      dispatch({ type: 'queueUploads', items });
+      latestHandlers.current.onQueued(items);
       items.filter((item) => item.status === 'uploading').forEach(runUpload);
     },
-    [dispatch, images, runUpload],
+    [ensureFolder, folder, images, runUpload],
   );
 
-  const discardUpload = useCallback(
-    (item: UploadItem) => {
-      URL.revokeObjectURL(item.previewUrl);
-      pendingPreviews.current.delete(item.previewUrl);
-      dispatch({ type: 'removeUpload', uploadId: item.id });
-    },
-    [dispatch],
-  );
+  /** Libère l'aperçu d'un fichier abandonné (refus retiré, ou doublon résolu par l'image existante). */
+  const releaseUpload = useCallback((item: UploadItem) => {
+    URL.revokeObjectURL(item.previewUrl);
+    pendingPreviews.current.delete(item.previewUrl);
+  }, []);
 
-  const keepExistingImage = useCallback(
-    (item: UploadItem, existing: MediaImage) => {
-      URL.revokeObjectURL(item.previewUrl);
-      pendingPreviews.current.delete(item.previewUrl);
-      dispatch({ type: 'useExisting', uploadId: item.id, imageId: existing.id, folderId: existing.folderId });
-    },
-    [dispatch],
-  );
-
-  const forceUpload = useCallback(
-    (item: UploadItem) => {
-      dispatch({ type: 'forceUpload', uploadId: item.id });
-      runUpload(item);
-    },
-    [dispatch, runUpload],
-  );
-
-  return { importFiles, discardUpload, keepExistingImage, forceUpload };
+  return { importFiles, releaseUpload, forceUpload: runUpload };
 }

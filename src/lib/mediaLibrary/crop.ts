@@ -54,6 +54,11 @@ export function normalizeCropState(state: CropState, imageSize: Size, ratio: Asp
 
 export const INITIAL_CROP_STATE: CropState = { rotation: 0, flipped: false, zoom: 1, centerX: 0.5, centerY: 0.5 };
 
+/** Recadrage automatique : plus grande zone possible au ratio imposé, centrée. */
+export function autoCropArea(imageSize: Size, ratio: AspectRatio): CropArea {
+  return getCropArea(INITIAL_CROP_STATE, imageSize, ratio);
+}
+
 export function cropStateFromArea(area: CropArea, imageSize: Size, ratio: AspectRatio): CropState {
   const max = maxFrame(rotatedSize(imageSize, area.rotation), ratio);
   return {

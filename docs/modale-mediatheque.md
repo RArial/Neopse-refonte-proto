@@ -50,7 +50,7 @@ type ImagePickerConfig = {
 - Si un ratio est imposé, le recadrage automatique s'applique (voir Recadrage) ; le champ propose ensuite « Modifier le cadrage ».
 - Si `altText: 'ask'`, le champ « Texte alternatif » apparaît sous l'image, dans le champ.
 - Erreurs (format refusé, poids max) et doublons s'affichent **dans le champ**, avec la même logique et les mêmes libellés que dans la modale (« Retirer » ; « Utiliser l'existante » / « Importer quand même »).
-- La modale ne s'ouvre que via « ou choisir parmi les images du site » (et « Changer d'image » quand le champ est rempli).
+- La modale ne s'ouvre que via « ou choisir parmi les images du site » (et « Changer d'image » quand le champ est rempli). Dans le champ, « Importer une image » est le bouton principal (plein).
 
 ## Structure de la modale
 
@@ -59,7 +59,7 @@ Dialog MUI, hauteur fixe. **En-tête, barre d'outils et pied ne défilent pas ; 
 Densité alignée sur l'existant Neopse : champs et boutons en `size="small"`, textes secondaires en `body2`, en-tête et barre d'outils d'environ 56 px chacun.
 
 1. **En-tête** : titre (« Choisir une image » / « Choisir des images »), puce de contexte, puce de format (ratio + recommandation si renseignée), bouton fermer.
-2. **Barre d'outils** : recherche par nom (tous dossiers), tri, bascule grille/liste, bouton **« Importer des images » en bouton principal plein** (`contained`).
+2. **Barre d'outils** : recherche par nom (tous dossiers), tri, bascule grille/liste, bouton « Importer des images » en bouton secondaire (`outlined`) : le seul bouton plein de la modale est le bouton principal du pied.
 3. **Corps** : arborescence à gauche, avec en tête **« Toutes les images »** ; les dossiers servent de filtres. Grille ou liste au centre : **grille à 5 colonnes, vignettes d'environ 110 px de haut**, noms sur 2 lignes max. En mode `single`, panneau « Image sélectionnée » à droite, **environ 260 px**.
 4. **Pied** : formats acceptés et poids max (`[TAILLE MAX]`, valeur à confirmer), « Annuler », bouton principal.
 
