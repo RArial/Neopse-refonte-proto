@@ -60,6 +60,8 @@ export function MediaLibraryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const ensureFolder = useCallback((name: string) => {
+    const root = foldersRef.current.find((folder) => folder.id === ROOT_FOLDER_ID);
+    if (root && root.name === name) return root.id;
     const existing = foldersRef.current.find((folder) => folder.parentId === ROOT_FOLDER_ID && folder.name === name);
     if (existing) return existing.id;
     const folder: MediaFolder = { id: randomId('folder'), name, parentId: ROOT_FOLDER_ID };

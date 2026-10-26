@@ -254,7 +254,7 @@ export function MemberForm({ mode, initialMember }: MemberFormProps) {
                 placeholder="Présentez ce membre…"
               />
 
-              <VignetteUploader value={data.photoUrl} onChange={(photoUrl) => handleChange({ photoUrl })} itemLabel="photo" itemGender="feminine" />
+              <VignetteUploader folder="Trombinoscope" value={data.photoUrl} onChange={(photoUrl) => handleChange({ photoUrl })} itemLabel="photo" />
             </Stack>
           </SommaireLinkedSection>
 

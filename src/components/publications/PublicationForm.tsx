@@ -277,7 +277,7 @@ export function PublicationForm({ mode, initialPublication }: PublicationFormPro
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
+            <VignetteUploader folder="Publication" value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
           </SommaireLinkedSection>
 
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', pt: 1 }}>

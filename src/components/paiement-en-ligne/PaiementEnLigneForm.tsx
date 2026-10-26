@@ -116,7 +116,7 @@ export function PaiementEnLigneForm() {
 
         <SettingsSection icon="Grid" title="Widget démarches administratives" description="Vignette et bouton affichés dans le widget" collapsible={false}>
           <Stack spacing={2.5}>
-            <VignetteUploader value={data.widgetThumbnailUrl} onChange={(widgetThumbnailUrl) => handleChange({ widgetThumbnailUrl })} itemLabel="vignette" />
+            <VignetteUploader folder="Paiement en ligne" value={data.widgetThumbnailUrl} onChange={(widgetThumbnailUrl) => handleChange({ widgetThumbnailUrl })} itemLabel="vignette" />
             <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
               <Typography variant="body2">Affichage du bouton dans le widget</Typography>
               <Switch

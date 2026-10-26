@@ -45,12 +45,13 @@ type ImagePickerConfig = {
 
 ## Import depuis le champ (cas principal)
 
-- Un champ image vide affiche une zone de dépôt « Glissez une image ici ou [Importer une image] » (« des images » en mode `multiple`), et en dessous un lien « ou choisir parmi les images du site ».
-- « Importer une image » ouvre **directement** le sélecteur de fichiers (`accept` filtré, `multiple` en mode `multiple`), sans passer par la modale. L'image importée va dans le dossier `folder` et se place dans le champ.
+- Un champ image vide affiche **une seule variante** de zone de dépôt, entièrement cliquable (vrai `<button>` lié à l'input file, focus clavier visible, état hover) : « Glissez une image ou *cliquez pour importer* » (« cliquez pour importer » en style lien ; « des images » en mode `multiple`), avec le rappel des formats et du poids max. Pas de bouton à l'intérieur, pas de mention du dossier de destination. Seule la hauteur varie selon l'emplacement (`size: 'compact' | 'default'`).
+- En dessous, un lien « ou choisir une image existante » (« des images existantes » en mode `multiple`).
+- Un clic sur la zone ouvre **directement** le sélecteur de fichiers (`accept` filtré, `multiple` en mode `multiple`), sans passer par la modale. L'image importée va dans le dossier `folder` et se place dans le champ.
 - Si un ratio est imposé, le recadrage automatique s'applique (voir Recadrage) ; le champ propose ensuite « Modifier le cadrage ».
 - Si `altText: 'ask'`, le champ « Texte alternatif » apparaît sous l'image, dans le champ.
 - Erreurs (format refusé, poids max) et doublons s'affichent **dans le champ**, avec la même logique et les mêmes libellés que dans la modale (« Retirer » ; « Utiliser l'existante » / « Importer quand même »).
-- La modale ne s'ouvre que via « ou choisir parmi les images du site » (et « Changer d'image » quand le champ est rempli). Dans le champ, « Importer une image » est le bouton principal (plein).
+- La modale ne s'ouvre que via « ou choisir une image existante » (et « Changer d'image » quand le champ est rempli).
 
 ## Structure de la modale
 
@@ -127,6 +128,23 @@ Page de démo `/demo/mediatheque` uniquement — **ne pas toucher aux écrans ex
 | Diaporama | multiple | — | ask | Agenda |
 | Fond d'en-tête (apparence) | single | — | decorative | Apparence |
 
+## Intégration au prototype (révision 3)
+
+Après validation de la démo, la médiathèque est branchée sur tous les champs image du prototype. Les formulaires continuent de stocker une URL ; les champs à format imposé gardent en plus le recadrage (`thumbnailCrop`).
+
+| Champs | mode | ratio | altText | folder |
+|---|---|---|---|---|
+| Vignettes Actualités, Agenda, Éditos | single | 4:3 (provisoire) | decorative | module |
+| Vignettes des autres modules (`VignetteUploader`) | single | — | decorative | module |
+| Photo du trombinoscope | single | — | decorative | Trombinoscope |
+| Logos (Apparence) | single | — | ask | Apparence |
+| Fonds graphiques (Apparence) | single | — | decorative | Apparence |
+| Bloc « Images » du contenu (Actualités, Éditos) | single | — | ask | module |
+| Bloc « Diaporama images », `DiaporamaField` | multiple | — | ask | module |
+| Vignette d'onglet thématique, vignette du projet | single | — | decorative | Contenu / Site |
+
+`altText: 'ask'` n'est jamais bloquant : avertissement si vide, validation toujours possible. Le bloc « Images » passe en image unique ; plusieurs images passent par « Diaporama images ».
+
 ## Contraintes visuelles et accessibilité
 
 - MUI (v9 dans le proto), thème `theme.ts` comme source unique ; pas de styles en dur hors thème.
@@ -136,7 +154,7 @@ Page de démo `/demo/mediatheque` uniquement — **ne pas toucher aux écrans ex
 
 ## Hors périmètre — ne pas toucher
 
-- Écrans existants du back-office (branchement après validation de la démo).
+- Favicon (formats spécifiques), avatar du profil (image personnelle), pièces jointes (fichiers) : gardent leur import actuel.
 - Recette de la maquette (aperçu non mis à jour, accordéons, réglages de position du fond).
 - Harmonisation entre les parcours Actualités / Agenda, et des libellés du site en général.
 - Indicateur d'espace utilisé.
@@ -153,7 +171,7 @@ Page de démo `/demo/mediatheque` uniquement — **ne pas toucher aux écrans ex
 
 ## Critères de validation du proto
 
-- Les quatre champs de démo permettent un import direct (sans modale) et ouvrent la même modale via « ou choisir parmi les images du site ».
+- Les quatre champs de démo permettent un import direct (sans modale) et ouvrent la même modale via « ou choisir une image existante ».
 - Un import direct dans un champ à ratio imposé place l'image recadrée automatiquement, avec « Modifier le cadrage ».
 - Importer une image en mode `single` dans la modale la rend visible et sélectionnée sans défilement ni recherche, dans le dossier du module.
 - Un WebP glissé et un doublon affichent leur état sur leur carte (modale) ou dans le champ, sans fenêtre secondaire.

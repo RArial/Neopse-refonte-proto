@@ -19,6 +19,7 @@ export default async function EditProfessionnelTourismePage({ params }: EditProf
 
   return (
     <DirectoryProfessionalForm
+      mediaFolder="Annuaire du tourisme"
       mode="edit"
       initialItem={professionnel}
       title="Modifier un professionnel touristique"

@@ -148,6 +148,7 @@ export function SaisinePageSettingsForm() {
       >
         <Stack spacing={2.5}>
           <VignetteUploader
+            folder="Saisine par voie électronique"
             value={data.widgetThumbnailUrl}
             onChange={(widgetThumbnailUrl) => handleChange({ widgetThumbnailUrl })}
             itemLabel="vignette"

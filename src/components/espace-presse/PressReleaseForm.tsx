@@ -51,7 +51,7 @@ export function PressReleaseForm() {
       </FormSection>
 
       <FormSection title="Visuel presse" infoTooltip="Image ou capture jointe au communiqué.">
-        <VignetteUploader value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
+        <VignetteUploader folder="Espace presse" value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
       </FormSection>
 
       <FormSection title="Publication du communiqué">

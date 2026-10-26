@@ -234,10 +234,10 @@ export function PaletteSection() {
               <VignetteUploader
                 value={draftTokens.logos.principalDesktop}
                 onChange={(url) => setLogo('principalDesktop', url)}
+                folder="Apparence"
                 itemLabel="logo"
-                itemGender="masculine"
-                minHeight={120}
-                buttonsAlign="flex-start"
+                altText="ask"
+                size="compact"
                 sx={{ mt: 1.5 }}
               />
             </Subsection>
@@ -245,10 +245,10 @@ export function PaletteSection() {
               <VignetteUploader
                 value={draftTokens.logos.principalMobile}
                 onChange={(url) => setLogo('principalMobile', url)}
+                folder="Apparence"
                 itemLabel="logo"
-                itemGender="masculine"
-                minHeight={120}
-                buttonsAlign="flex-start"
+                altText="ask"
+                size="compact"
                 sx={{ mt: 1.5 }}
               />
             </Subsection>
@@ -256,10 +256,10 @@ export function PaletteSection() {
               <VignetteUploader
                 value={draftTokens.logos.secondary}
                 onChange={(url) => setLogo('secondary', url)}
+                folder="Apparence"
                 itemLabel="logo"
-                itemGender="masculine"
-                minHeight={120}
-                buttonsAlign="flex-start"
+                altText="ask"
+                size="compact"
                 sx={{ mt: 1.5 }}
               />
             </Subsection>

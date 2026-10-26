@@ -1,25 +1,20 @@
 'use client';
 
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
 import Alert from '@mui/material/Alert';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import { useContenuStore } from '@/components/contenu/ContenuProvider';
+import { ImageField } from '@/components/media-library/field/ImageField';
 
 const ongletFormSchema = z.object({
   label: z
@@ -32,25 +27,11 @@ const ongletFormSchema = z.object({
 export function OngletForm() {
   const router = useRouter();
   const { addTab } = useContenuStore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [label, setLabel] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | undefined>();
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  function handleThumbnailChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setThumbnailUrl(typeof reader.result === 'string' ? reader.result : null);
-    reader.readAsDataURL(file);
-  }
-
-  function handleRemoveThumbnail() {
-    setThumbnailUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -94,40 +75,12 @@ export function OngletForm() {
             <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
               Vignette de l&apos;onglet (facultatif)
             </Typography>
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-              <Avatar
-                variant="rounded"
-                src={thumbnailUrl ?? undefined}
-                sx={{ width: 64, height: 64, bgcolor: 'action.hover', color: 'text.secondary' }}
-              >
-                <AccountTreeOutlinedIcon />
-              </Avatar>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<UploadFileOutlinedIcon />}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {thumbnailUrl ? "Changer l'image" : 'Choisir une image'}
-                </Button>
-                {thumbnailUrl && (
-                  <Tooltip title="Retirer la vignette">
-                    <IconButton size="small" aria-label="Retirer la vignette" onClick={handleRemoveThumbnail}>
-                      <CloseOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  aria-label="Choisir une vignette pour l'onglet"
-                  onChange={handleThumbnailChange}
-                />
-              </Stack>
-            </Stack>
+            <ImageField
+              config={{ context: "Vignette de l'onglet", folder: 'Contenu', altText: 'decorative' }}
+              value={thumbnailUrl ? { url: thumbnailUrl } : null}
+              onChange={(next) => setThumbnailUrl(next?.url ?? null)}
+              size="compact"
+            />
           </Box>
         </Stack>
       </Box>

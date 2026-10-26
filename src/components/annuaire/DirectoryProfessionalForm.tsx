@@ -42,6 +42,8 @@ interface DirectoryProfessionalFormProps {
   nounLabel: string;
   backHref: string;
   backLabel: string;
+  /** Dossier de la médiathèque de cet annuaire (le formulaire sert à plusieurs annuaires). */
+  mediaFolder: string;
   mode?: 'create' | 'edit';
   initialItem?: ArchivableItem;
 }
@@ -65,7 +67,7 @@ function buildInitialData(initialItem?: ArchivableItem): DirectoryFormData {
   return copyName ? { ...DEFAULT_DIRECTORY_FORM, name: copyName } : DEFAULT_DIRECTORY_FORM;
 }
 
-export function DirectoryProfessionalForm({ title, nounLabel, backHref, backLabel, mode = 'create', initialItem }: DirectoryProfessionalFormProps) {
+export function DirectoryProfessionalForm({ title, nounLabel, backHref, backLabel, mediaFolder, mode = 'create', initialItem }: DirectoryProfessionalFormProps) {
   const router = useRouter();
   const [initialData] = useState<DirectoryFormData>(() => buildInitialData(initialItem));
   const [data, setData] = useState<DirectoryFormData>(initialData);
@@ -222,7 +224,7 @@ export function DirectoryProfessionalForm({ title, nounLabel, backHref, backLabe
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
+            <VignetteUploader folder={mediaFolder} value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
           </SommaireLinkedSection>
 
           <SommaireLinkedSection
@@ -337,6 +339,7 @@ export function DirectoryProfessionalForm({ title, nounLabel, backHref, backLabe
             registerSection={registerSection}
           >
             <DiaporamaField
+              folder={mediaFolder}
               diaporamaType={data.diaporamaType}
               images={data.images}
               onChangeType={(diaporamaType) => handleChange({ diaporamaType })}

@@ -186,7 +186,7 @@ export function JobListingForm({ mode = 'create', initialItem }: JobListingFormP
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
+            <VignetteUploader folder="Annonces d'emploi" value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
           </SommaireLinkedSection>
 
           <SommaireLinkedSection

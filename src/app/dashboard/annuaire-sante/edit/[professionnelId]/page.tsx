@@ -19,6 +19,7 @@ export default async function EditProfessionnelSantePage({ params }: EditProfess
 
   return (
     <DirectoryProfessionalForm
+      mediaFolder="Annuaire de la santé"
       mode="edit"
       initialItem={professionnel}
       title="Modifier un professionnel de santé"

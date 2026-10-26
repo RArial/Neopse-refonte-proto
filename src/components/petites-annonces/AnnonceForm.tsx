@@ -326,7 +326,7 @@ export function AnnonceForm({ mode, initialAnnonce }: AnnonceFormProps) {
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
+            <VignetteUploader folder="Petites annonces" value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
           </SommaireLinkedSection>
 
           <SommaireLinkedSection
@@ -400,6 +400,7 @@ export function AnnonceForm({ mode, initialAnnonce }: AnnonceFormProps) {
             registerSection={registerSection}
           >
             <DiaporamaField
+              folder="Petites annonces"
               diaporamaType={data.diaporamaType}
               images={data.images}
               onChangeType={(diaporamaType) => handleChange({ diaporamaType })}

@@ -100,10 +100,21 @@ Brief : `docs/modale-mediatheque.md` (+ `docs/neopse-modale-image-reponses.pdf`)
 - Tests Playwright : avertissement d'hydratation `caret-color` = artefact Playwright (capture avant hydratation), pas un bug du code.
 - La ligne d'infos du panneau passe à la ligne entre les segments (body2 dans 260 px) : jugé acceptable.
 
+### Révision 3 (même jour) — médiathèque branchée sur tout le prototype
+- Champs génériques dans `src/components/media-library/field/` (`ImageField`, `ImageListField`) : valeur = URL (+ `crop`), affichent aussi une URL hors médiathèque (données de démo).
+- `MediaLibraryProvider` monté dans `src/app/dashboard/layout.tsx` (une seule modale pour l'app).
+- `VignetteUploader` réécrit au-dessus de `ImageField` (prop `folder` obligatoire, `altText`, `ratio`, `crop`) ; 21 usages mis à jour. `DirectoryProfessionalForm` reçoit `mediaFolder` (sert 3 annuaires).
+- `DiaporamaField` (6 formulaires) : prop `folder`, import via `ImageListField`, type de diaporama + aperçu conservés.
+- Vignettes Actualités/Agenda/Éditos en 4:3 (`THUMBNAIL_RATIO`, provisoire) + `thumbnailCrop` dans les types.
+- Blocs de contenu : « Images » = image unique (texte alternatif demandé), « Diaporama images » = multiple.
+- Logos : `altText: 'ask'` (avertissement non bloquant). Hors périmètre validé : favicon, avatar, pièces jointes.
+- Sous-texte de la zone de dépôt passé en `caption`.
+- Zone de dépôt, variante unique : tout le cadre est un `<button>` (focus visible, hover), « Glissez une image ou *cliquez pour importer* », rappel formats/poids, plus de bouton interne ni de mention du dossier ; `size: 'compact' | 'default'` (logos, fonds, onglet en compact) ; lien « ou choisir une image existante ». Bordure `grey.600` pour le contraste 3:1 du contour.
+
 ### Prochaines étapes
 - Faire valider la démo ; trancher la bascule globale du primaire vers `#00696B`.
 - Réponses devs attendues : WebP, poids max, stockage du recadrage, référencement par id/nom, dossier par défaut.
-- Brancher la modale sur les vrais champs (vignettes, blocs Images/Diaporama, fonds de personnalisation) une fois validée.
+- Recette de la médiathèque sur l'ensemble des écrans du prototype (branchement fait en révision 3).
 
 ---
 

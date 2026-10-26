@@ -58,11 +58,11 @@ export function BackgroundField({ slot, colorKey }: BackgroundFieldProps) {
 
           {graphic.kind === 'image' ? (
             <VignetteUploader
+              folder="Apparence"
               value={graphic.imageUrl}
               onChange={(url) => setBackgroundImage(slot, url)}
               itemLabel="visuel de fond"
-              itemGender="masculine"
-              minHeight={140}
+              size="compact"
             />
           ) : (
             <Box>

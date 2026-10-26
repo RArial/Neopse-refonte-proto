@@ -24,3 +24,10 @@ export function formatRatio(ratio: AspectRatio): string {
 export function pluralize(count: number, singular: string, plural: string): string {
   return `${count} ${count > 1 ? plural : singular}`;
 }
+
+/** Nom affichable d'une image hors médiathèque (données de démo) : dernier segment de l'URL. */
+export function fileNameFromUrl(url: string): string {
+  if (url.startsWith('data:') || url.startsWith('blob:')) return 'Image sans nom';
+  const segment = url.split('?')[0].split('/').pop();
+  return segment ? decodeURIComponent(segment) : 'Image sans nom';
+}

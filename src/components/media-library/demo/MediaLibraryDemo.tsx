@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { ThemeProvider } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { ImagePickerField, type ImageFieldValue } from '@/components/media-library/demo/ImagePickerField';
-import { SlideshowField } from '@/components/media-library/demo/SlideshowField';
+import { ImageField, type ImageFieldValue } from '@/components/media-library/field/ImageField';
+import { ImageListField } from '@/components/media-library/field/ImageListField';
 import { MediaLibraryProvider } from '@/components/media-library/MediaLibraryProvider';
-import { withStrongPrimary } from '@/lib/theme';
 
 interface DemoCardProps {
   title: string;
@@ -46,52 +44,49 @@ export function MediaLibraryDemo() {
   const [headerBackground, setHeaderBackground] = useState<ImageFieldValue | null>(null);
 
   return (
-    // Variante contrastée du primaire : la démo montre des boutons pleins hors de la modale.
-    <ThemeProvider theme={withStrongPrimary}>
-      <MediaLibraryProvider>
-        <Box component="main" id="main-content" sx={{ flex: 1, bgcolor: 'background.default', px: { xs: 2, md: 4 }, py: { xs: 3, md: 5 } }}>
-          <Box sx={{ maxWidth: 1120, mx: 'auto' }}>
-            <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              Médiathèque : une modale, quatre champs
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2, maxWidth: 720 }}>
-              Chaque champ ouvre la même modale, configurée selon son besoin : une ou plusieurs images, recadrage imposé ou non, texte
-              alternatif demandé ou non.
-            </Typography>
-            <Alert severity="info" variant="outlined" sx={{ mb: 4, maxWidth: 720 }}>
-              Prototype sans serveur : les images importées restent en mémoire jusqu&apos;au rechargement de la page et sont rangées
-              automatiquement dans le dossier du module. Pour voir un doublon, importez deux fois le même fichier ; pour voir un refus,
-              glissez une image WebP.
-            </Alert>
+    <MediaLibraryProvider>
+      <Box component="main" id="main-content" sx={{ flex: 1, bgcolor: 'background.default', px: { xs: 2, md: 4 }, py: { xs: 3, md: 5 } }}>
+        <Box sx={{ maxWidth: 1120, mx: 'auto' }}>
+          <Typography component="h1" variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+            Médiathèque : une modale, quatre champs
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2, maxWidth: 720 }}>
+            Chaque champ ouvre la même modale, configurée selon son besoin : une ou plusieurs images, recadrage imposé ou non, texte
+            alternatif demandé ou non.
+          </Typography>
+          <Alert severity="info" variant="outlined" sx={{ mb: 4, maxWidth: 720 }}>
+            Prototype sans serveur : les images importées restent en mémoire jusqu&apos;au rechargement de la page et sont rangées
+            automatiquement dans le dossier du module. Pour voir un doublon, importez deux fois le même fichier ; pour voir un refus,
+            glissez une image WebP.
+          </Alert>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-              <DemoCard title="Vignette de l'actualité" where="Actualités › Nouvelle actualité" traits={['Une image', 'Recadrage 4:3', 'Décorative', 'Rangée dans Actualités']}>
-                <ImagePickerField
-                  config={{ context: "Vignette de l'actualité", folder: 'Actualités', ratio: { width: 4, height: 3 }, recommendation: '1200 × 900 px', altText: 'decorative' }}
-                  value={thumbnail}
-                  onChange={setThumbnail}
-                />
-              </DemoCard>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+            <DemoCard title="Vignette de l'actualité" where="Actualités › Nouvelle actualité" traits={['Une image', 'Recadrage 4:3', 'Décorative', 'Rangée dans Actualités']}>
+              <ImageField
+                config={{ context: "Vignette de l'actualité", folder: 'Actualités', ratio: { width: 4, height: 3 }, recommendation: '1200 × 900 px', altText: 'decorative' }}
+                value={thumbnail}
+                onChange={setThumbnail}
+              />
+            </DemoCard>
 
-              <DemoCard title="Bloc Images" where="Contenu d'une actualité" traits={['Une image', 'Sans recadrage', 'Texte alternatif demandé', 'Rangée dans Actualités']}>
-                <ImagePickerField config={{ context: 'Bloc Images', folder: 'Actualités', altText: 'ask' }} value={contentImage} onChange={setContentImage} />
-              </DemoCard>
+            <DemoCard title="Bloc Images" where="Contenu d'une actualité" traits={['Une image', 'Sans recadrage', 'Texte alternatif demandé', 'Rangée dans Actualités']}>
+              <ImageField config={{ context: 'Bloc Images', folder: 'Actualités', altText: 'ask' }} value={contentImage} onChange={setContentImage} />
+            </DemoCard>
 
-              <DemoCard title="Diaporama" where="Contenu d'un événement" traits={['Plusieurs images', 'Sans recadrage', 'Texte alternatif demandé', 'Rangée dans Agenda']}>
-                <SlideshowField config={{ context: 'Diaporama', folder: 'Agenda', altText: 'ask' }} imageIds={slides} onChange={setSlides} />
-              </DemoCard>
+            <DemoCard title="Diaporama" where="Contenu d'un événement" traits={['Plusieurs images', 'Sans recadrage', 'Texte alternatif demandé', 'Rangée dans Agenda']}>
+              <ImageListField config={{ context: 'Diaporama', folder: 'Agenda', altText: 'ask' }} urls={slides} onChange={setSlides} />
+            </DemoCard>
 
-              <DemoCard title="Fond d'en-tête" where="Personnalisation › Apparence" traits={['Une image', 'Sans recadrage', 'Décorative', 'Rangée dans Apparence']}>
-                <ImagePickerField
-                  config={{ context: "Fond d'en-tête", folder: 'Apparence', altText: 'decorative' }}
-                  value={headerBackground}
-                  onChange={setHeaderBackground}
-                />
-              </DemoCard>
-            </Box>
+            <DemoCard title="Fond d'en-tête" where="Personnalisation › Apparence" traits={['Une image', 'Sans recadrage', 'Décorative', 'Rangée dans Apparence']}>
+              <ImageField
+                config={{ context: "Fond d'en-tête", folder: 'Apparence', altText: 'decorative' }}
+                value={headerBackground}
+                onChange={setHeaderBackground}
+              />
+            </DemoCard>
           </Box>
         </Box>
-      </MediaLibraryProvider>
-    </ThemeProvider>
+      </Box>
+    </MediaLibraryProvider>
   );
 }

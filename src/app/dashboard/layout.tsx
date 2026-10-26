@@ -3,6 +3,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { Tweaks } from '@/components/dashboard/Tweaks';
 import { LegalPagesProvider } from '@/components/contenu/legal/LegalPagesProvider';
+import { MediaLibraryProvider } from '@/components/media-library/MediaLibraryProvider';
 import { NotificationsProvider } from '@/components/notifications/NotificationsProvider';
 import '@/styles/dashboard.css';
 
@@ -18,16 +19,18 @@ export default function DashboardLayout({
   return (
     <NotificationsProvider>
       <LegalPagesProvider>
-        <div className="app">
-          <Sidebar activeKey="dashboard" />
-          <div className="main">
-            <Topbar />
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
+        <MediaLibraryProvider>
+          <div className="app">
+            <Sidebar activeKey="dashboard" />
+            <div className="main">
+              <Topbar />
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
+            </div>
+            <Tweaks />
           </div>
-          <Tweaks />
-        </div>
+        </MediaLibraryProvider>
       </LegalPagesProvider>
     </NotificationsProvider>
   );

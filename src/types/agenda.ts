@@ -1,3 +1,5 @@
+import type { CropArea } from '@/types/mediaLibrary';
+
 export type EventStatus = 'published' | 'draft' | 'archived';
 
 export interface AgendaEvent {
@@ -42,6 +44,8 @@ export interface EventFormData {
 
   // Vignette
   thumbnailUrl: string | null;
+  /** Recadrage 4:3 en coordonnées sur l'original (la vignette garde l'URL de l'image entière). */
+  thumbnailCrop?: CropArea;
   showThumbnailOnWidget: boolean;
 
   // Dates et horaires

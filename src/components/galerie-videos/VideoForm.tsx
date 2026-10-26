@@ -198,7 +198,7 @@ export function VideoForm({ mode, initialVideo }: VideoFormProps) {
         )}
 
         <FormSection title="Vignette de la vidéo">
-          <VignetteUploader value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
+          <VignetteUploader folder="Galerie de vidéos" value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
         </FormSection>
 
         <FormSection title="Affichage">

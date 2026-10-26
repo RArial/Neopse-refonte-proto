@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, type ChangeEvent } from 'react';
-import Image from 'next/image';
+import { useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -21,7 +20,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { SettingsSection } from '@/components/parametres/SettingsSection';
-import { Icons } from '@/components/ui/Icons';
+import { ImageField } from '@/components/media-library/field/ImageField';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
 interface ProjectInfo {
@@ -63,7 +62,6 @@ export function InfosProjetForm() {
   const [saved, setSaved] = useState<ProjectInfo>(DEFAULT_PROJECT_INFO);
   const [info, setInfo] = useState<ProjectInfo>(DEFAULT_PROJECT_INFO);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isDirty = useMemo(() => JSON.stringify(info) !== JSON.stringify(saved), [info, saved]);
   const { isDialogOpen, confirmLeave, cancelLeave } = useUnsavedChangesGuard(isDirty);
@@ -75,13 +73,6 @@ export function InfosProjetForm() {
   function handleSave() {
     setSaved(info);
     setSuccessMessage('Les informations du projet ont bien été enregistrées.');
-  }
-
-  function handleThumbnailChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setInfo((prev) => ({ ...prev, thumbnailUrl: url }));
   }
 
   return (
@@ -222,47 +213,11 @@ export function InfosProjetForm() {
               <Typography variant="subtitle2" component="h3" sx={{ fontWeight: 700 }}>
                 Vignette du projet
               </Typography>
-              <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-                <Box
-                  sx={{
-                    width: 96,
-                    height: 96,
-                    borderRadius: 2,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    display: 'grid',
-                    placeItems: 'center',
-                    overflow: 'hidden',
-                    flexShrink: 0,
-                    bgcolor: 'action.hover',
-                    position: 'relative',
-                  }}
-                >
-                  {info.thumbnailUrl ? (
-                    <Image src={info.thumbnailUrl} alt="Vignette du projet" fill unoptimized style={{ objectFit: 'cover' }} />
-                  ) : (
-                    <Box sx={{ color: 'text.disabled' }} aria-hidden="true">
-                      <Icons.Image size={28} />
-                    </Box>
-                  )}
-                </Box>
-                <Stack spacing={0.75}>
-                  <Button component="label" variant="contained" size="small" startIcon={<Icons.Folder size={16} />} sx={{ alignSelf: 'flex-start' }}>
-                    Ajouter une vignette
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      hidden
-                      onChange={handleThumbnailChange}
-                      aria-label="Choisir une vignette pour le projet"
-                    />
-                  </Button>
-                  <Typography variant="caption" color="text.secondary">
-                    Format JPG, PNG ou WebP, ratio carré recommandé.
-                  </Typography>
-                </Stack>
-              </Stack>
+              <ImageField
+                config={{ context: 'Vignette du projet', folder: 'Site', altText: 'decorative' }}
+                value={info.thumbnailUrl ? { url: info.thumbnailUrl } : null}
+                onChange={(next) => setInfo((prev) => ({ ...prev, thumbnailUrl: next?.url ?? null }))}
+              />
             </Stack>
 
             <FormControlLabel

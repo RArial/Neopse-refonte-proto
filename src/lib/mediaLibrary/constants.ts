@@ -13,3 +13,6 @@ export const DEFAULT_SORT: SortState = { key: 'date', direction: 'desc' };
 export const MAX_CROP_ZOOM = 4;
 
 export const IMPORT_DONE_BANNER_MS = 4000;
+
+// Valeur provisoire validée pour le proto (Actualités, Agenda, Éditos) ; le vrai ratio dépendra de la maquette du site.
+export const THUMBNAIL_RATIO = { width: 4, height: 3 } as const;

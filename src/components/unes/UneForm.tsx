@@ -175,7 +175,7 @@ export function UneForm({ mode, initialUne }: UneFormProps) {
         </FormSection>
 
         <FormSection title="Vignette de la une">
-          <VignetteUploader value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
+          <VignetteUploader folder="Unes" value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
         </FormSection>
 
         <FormSection title="Affichage">

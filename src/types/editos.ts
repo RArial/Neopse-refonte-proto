@@ -9,6 +9,7 @@ import {
   defaultStructureContent,
   type StructureRow,
 } from '@/types/contentBuilder';
+import type { CropArea } from '@/types/mediaLibrary';
 
 export type EditoStatus = 'published' | 'scheduled' | 'draft' | 'archived';
 
@@ -135,6 +136,8 @@ export interface EditoFormData {
   name: string;
   chapo: string;
   thumbnailUrl: string | null;
+  /** Recadrage 4:3 en coordonnées sur l'original (la vignette garde l'URL de l'image entière). */
+  thumbnailCrop?: CropArea;
   status: EditoStatus;
   publicationDate: string;
   deactivationDate: string;

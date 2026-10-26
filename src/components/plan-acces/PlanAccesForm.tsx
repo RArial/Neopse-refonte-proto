@@ -125,6 +125,7 @@ export function PlanAccesForm() {
 
         <SettingsSection icon="Image" title="Diaporama d'images" description="Images illustrant l'accès à votre structure" collapsible={false}>
           <DiaporamaField
+            folder="Plan d'accès"
             diaporamaType={data.diaporamaType}
             images={data.images}
             onChangeType={(diaporamaType) => handleChange({ diaporamaType })}

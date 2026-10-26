@@ -157,6 +157,7 @@ export function PhotoDiaporamaForm({ mode, initialDiaporama }: PhotoDiaporamaFor
 
         <FormSection title="Photos du diaporama">
           <DiaporamaField
+            folder="Galeries photos"
             diaporamaType={data.diaporamaType}
             images={data.images}
             onChangeType={(diaporamaType) => handleChange({ diaporamaType })}

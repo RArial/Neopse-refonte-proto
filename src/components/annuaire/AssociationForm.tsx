@@ -224,7 +224,7 @@ export function AssociationForm({ mode = 'create', initialItem }: AssociationFor
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
+            <VignetteUploader folder="Annuaire des associations" value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
           </SommaireLinkedSection>
 
           <SommaireLinkedSection

@@ -257,7 +257,7 @@ export function MarcheForm({ mode, initialMarche }: MarcheFormProps) {
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
+            <VignetteUploader folder="Marchés" value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
           </SommaireLinkedSection>
 
           <SommaireLinkedSection
@@ -307,6 +307,7 @@ export function MarcheForm({ mode, initialMarche }: MarcheFormProps) {
             registerSection={registerSection}
           >
             <DiaporamaField
+              folder="Marchés"
               diaporamaType={data.diaporamaType}
               images={data.images}
               onChangeType={(diaporamaType) => handleChange({ diaporamaType })}

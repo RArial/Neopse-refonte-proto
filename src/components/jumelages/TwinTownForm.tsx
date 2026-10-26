@@ -61,7 +61,7 @@ export function TwinTownForm() {
       </FormSection>
 
       <FormSection title="Vignette du jumelage" infoTooltip="Image représentant la ville ou l'événement de jumelage.">
-        <VignetteUploader value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
+        <VignetteUploader folder="Jumelages" value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
       </FormSection>
 
       <FormSection title="Affichage du jumelage">

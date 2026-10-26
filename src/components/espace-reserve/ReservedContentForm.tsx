@@ -276,7 +276,7 @@ export function ReservedContentForm({ mode, initialContent }: ReservedContentFor
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
+            <VignetteUploader folder="Espace réservé" value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
           </SommaireLinkedSection>
 
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', pt: 1 }}>
@@ -298,6 +298,7 @@ export function ReservedContentForm({ mode, initialContent }: ReservedContentFor
             registerSection={registerSection}
           >
             <DiaporamaField
+              folder="Espace réservé"
               diaporamaType={data.diaporamaType}
               images={data.images}
               onChangeType={(diaporamaType) => handleChange({ diaporamaType })}

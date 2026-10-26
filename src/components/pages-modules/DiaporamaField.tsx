@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -11,12 +11,13 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import CloseIcon from '@mui/icons-material/Close';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { ImageListField } from '@/components/media-library/field/ImageListField';
+import { useMediaLibrary } from '@/components/media-library/MediaLibraryProvider';
+import { fileNameFromUrl } from '@/lib/mediaLibrary/format';
 
 export type DiaporamaType = 'aucune' | 'galerie' | 'diaporama-externe';
 
@@ -31,6 +32,8 @@ function randomId(prefix: string) {
 }
 
 interface DiaporamaFieldProps {
+  /** Dossier de la médiathèque où ranger les imports, en général le nom du module. */
+  folder: string;
   diaporamaType: DiaporamaType;
   images: DiaporamaImage[];
   onChangeType: (diaporamaType: DiaporamaType) => void;
@@ -38,21 +41,22 @@ interface DiaporamaFieldProps {
   onNotify: (message: string) => void;
 }
 
-export function DiaporamaField({ diaporamaType, images, onChangeType, onChangeImages, onNotify }: DiaporamaFieldProps) {
+export function DiaporamaField({ folder, diaporamaType, images, onChangeType, onChangeImages, onNotify }: DiaporamaFieldProps) {
+  const { images: library } = useMediaLibrary();
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  // Plusieurs imports peuvent aboutir avant le rendu suivant : on applique les mises à jour sur la dernière liste connue.
+  const latestImages = useRef(images);
+  useEffect(() => {
+    latestImages.current = images;
+  });
 
-  function handleImagesSelected(event: ChangeEvent<HTMLInputElement>) {
-    const selected = event.target.files;
-    if (!selected || selected.length === 0) return;
-    const added = Array.from(selected)
-      .filter((file) => file.type.startsWith('image/'))
-      .map((file) => ({ id: randomId('image'), name: file.name, url: URL.createObjectURL(file) }));
-    onChangeImages([...images, ...added]);
-    event.target.value = '';
-  }
-
-  function removeImage(id: string) {
-    onChangeImages(images.filter((image) => image.id !== id));
+  function updateUrls(update: (urls: string[]) => string[]) {
+    const byUrl = new Map(latestImages.current.map((image) => [image.url, image]));
+    const next = update(latestImages.current.map((image) => image.url)).map(
+      (url) => byUrl.get(url) ?? { id: randomId('image'), name: library.find((image) => image.url === url)?.name ?? fileNameFromUrl(url), url },
+    );
+    latestImages.current = next;
+    onChangeImages(next);
   }
 
   function openPreview() {
@@ -77,34 +81,13 @@ export function DiaporamaField({ diaporamaType, images, onChangeType, onChangeIm
         <MenuItem value="diaporama-externe">Diaporama externe</MenuItem>
       </TextField>
 
-      <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
-        <Button type="button" component="label" variant="contained" color="success" startIcon={<AddPhotoAlternateOutlinedIcon fontSize="small" />}>
-          Ajouter une image
-          <input type="file" accept="image/*" multiple hidden onChange={handleImagesSelected} />
-        </Button>
-        <Button type="button" variant="outlined" color="inherit" startIcon={<VisibilityOutlinedIcon fontSize="small" />} onClick={openPreview}>
+      <ImageListField config={{ context: 'Diaporama', folder, altText: 'ask' }} urls={images.map((image) => image.url)} onChange={updateUrls} />
+
+      <Box>
+        <Button type="button" size="small" variant="outlined" color="inherit" startIcon={<VisibilityOutlinedIcon fontSize="small" />} onClick={openPreview}>
           Prévisualiser mon diaporama
         </Button>
-      </Stack>
-
-      {images.length > 0 && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 1.5 }}>
-          {images.map((image) => (
-            <Box key={image.id} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image.url} alt={image.name} style={{ width: '100%', height: 90, objectFit: 'cover', display: 'block' }} />
-              <IconButton
-                size="small"
-                onClick={() => removeImage(image.id)}
-                aria-label={`Retirer l'image ${image.name}`}
-                sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'background.paper', '&:hover': { bgcolor: 'background.paper' } }}
-              >
-                <DeleteOutlineIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          ))}
-        </Box>
-      )}
+      </Box>
 
       <Dialog open={previewIndex !== null} onClose={() => setPreviewIndex(null)} maxWidth="md" fullWidth aria-labelledby="diaporama-preview-title">
         <DialogTitle id="diaporama-preview-title" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}>

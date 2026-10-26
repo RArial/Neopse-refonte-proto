@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -11,6 +11,8 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import { ImageField } from '@/components/media-library/field/ImageField';
+import { ImageListField } from '@/components/media-library/field/ImageListField';
 import { AttachmentsField } from '@/components/pages-modules/AttachmentsField';
 import { Icons } from '@/components/ui/Icons';
 import { FORMS } from '@/types/formulaires';
@@ -23,57 +25,24 @@ interface ContentBlockCardProps {
   onDelete: () => void;
 }
 
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const CONTENT_FOLDER = 'Éditos';
 
-function MultiImageUploadBody({ imageUrls, onChange }: { imageUrls: string[]; onChange: (patch: ContentBlockPatch) => void }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function handleFiles(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = '';
-    const urls = files.filter((file) => file.type.startsWith('image/') && file.size <= MAX_IMAGE_SIZE_BYTES).map((file) => URL.createObjectURL(file));
-    if (urls.length > 0) onChange({ imageUrls: [...imageUrls, ...urls] });
-  }
+/** Diaporama du contenu : plusieurs imports peuvent aboutir avant le rendu suivant, d'où la liste tenue à jour dans une ref. */
+function DiaporamaBlockBody({ imageUrls, onChange }: { imageUrls: string[]; onChange: (patch: ContentBlockPatch) => void }) {
+  const latestUrls = useRef(imageUrls);
+  useEffect(() => {
+    latestUrls.current = imageUrls;
+  });
 
   return (
-    <Box>
-      <Box
-        component="button"
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-          width: '100%',
-          minHeight: 140,
-          border: '1.5px dashed',
-          borderColor: 'divider',
-          borderRadius: 2,
-          bgcolor: 'action.hover',
-          color: 'text.secondary',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-          p: 0,
-          '&:hover': { borderColor: 'primary.main' },
-        }}
-        aria-label="Glissez une image ou cliquez pour parcourir"
-      >
-        <Icons.Image size={24} />
-        <Typography variant="body2">Glissez une image ou cliquez pour parcourir</Typography>
-      </Box>
-      <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleFiles} aria-hidden="true" tabIndex={-1} />
-      {imageUrls.length > 0 && (
-        <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap' }}>
-          {imageUrls.map((url) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={url} src={url} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }} />
-          ))}
-        </Stack>
-      )}
-    </Box>
+    <ImageListField
+      config={{ context: 'Diaporama images', folder: CONTENT_FOLDER, altText: 'ask' }}
+      urls={imageUrls}
+      onChange={(update) => {
+        latestUrls.current = update(latestUrls.current);
+        onChange({ imageUrls: latestUrls.current });
+      }}
+    />
   );
 }
 
@@ -127,9 +96,16 @@ export function ContentBlockCard({ block, onChange, onDuplicate, onDelete }: Con
           </Stack>
         )}
 
-        {(block.kind === 'images' || block.kind === 'diaporama') && (
-          <MultiImageUploadBody imageUrls={block.imageUrls} onChange={onChange} />
+        {/* Bloc « Images » : une image, avec son texte alternatif ; plusieurs images passent par « Diaporama images ». */}
+        {block.kind === 'images' && (
+          <ImageField
+            config={{ context: 'Bloc Images', folder: CONTENT_FOLDER, altText: 'ask' }}
+            value={block.imageUrls[0] ? { url: block.imageUrls[0] } : null}
+            onChange={(next) => onChange({ imageUrls: next ? [next.url] : [] })}
+          />
         )}
+
+        {block.kind === 'diaporama' && <DiaporamaBlockBody imageUrls={block.imageUrls} onChange={onChange} />}
 
         {block.kind === 'attachments' && (
           <AttachmentsField attachments={block.attachments} onChange={(attachments) => onChange({ attachments })} />

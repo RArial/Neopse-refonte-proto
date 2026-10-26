@@ -273,7 +273,7 @@ export function CarpoolingForm({ mode, initialCarpooling }: CarpoolingFormProps)
             onToggle={(value) => toggleSection('vignette', value)}
             registerSection={registerSection}
           >
-            <VignetteUploader value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
+            <VignetteUploader folder="Annonces de covoiturage" value={data.thumbnailUrl} onChange={(thumbnailUrl) => handleChange({ thumbnailUrl })} itemLabel="vignette" />
           </SommaireLinkedSection>
 
           <SommaireLinkedSection

@@ -102,6 +102,7 @@ import {
   defaultStructureContent,
   type StructureRow,
 } from '@/types/contentBuilder';
+import type { CropArea } from '@/types/mediaLibrary';
 
 export interface ContentTemplate {
   id: string;
@@ -152,6 +153,8 @@ export interface NewsFormData {
   name: string;
   chapo: string;
   thumbnailUrl: string | null;
+  /** Recadrage 4:3 en coordonnées sur l'original (la vignette garde l'URL de l'image entière). */
+  thumbnailCrop?: CropArea;
   status: NewsStatus;
   publicationDate: string;
   content: StructureRow[];

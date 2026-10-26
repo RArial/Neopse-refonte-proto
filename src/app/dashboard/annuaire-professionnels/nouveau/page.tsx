@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 export default function NouveauProfessionnelPage() {
   return (
     <DirectoryProfessionalForm
+      mediaFolder="Annuaire des professionnels"
       title="Nouveau professionnel"
       nounLabel="professionnel"
       backHref="/dashboard/annuaire-professionnels"

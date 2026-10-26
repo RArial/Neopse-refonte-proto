@@ -52,7 +52,7 @@ export function LabelForm() {
       </FormSection>
 
       <FormSection title="Logo du label" infoTooltip="Visuel officiel du label ou de la certification.">
-        <VignetteUploader value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
+        <VignetteUploader folder="Labels" value={data.thumbnailUrl} onChange={(url) => handleChange({ thumbnailUrl: url })} />
       </FormSection>
 
       <FormSection title="Affichage du label">
