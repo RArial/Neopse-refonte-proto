@@ -8,7 +8,7 @@
 ## État du projet
 
 **Phase actuelle :** Initialisation / Setup — ✅ terminée
-**Dernière session :** 2026-06-15
+**Dernière session :** 2026-10-26 (modale médiathèque image)
 **Statut :** Projet prêt, aucune page métier encore créée
 **Prochain objectif :** Identifier les pages à refaire, créer le layout Sidebar + Topbar
 
@@ -69,6 +69,31 @@ src/
 
 - `npx tsc --noEmit` : ✅ zéro erreur
 - `npm run lint` : ✅ zéro erreur
+
+---
+
+## Session 2026-10-26 — Modale médiathèque image (proto)
+
+Brief : `docs/modale-mediatheque.md` (+ `docs/neopse-modale-image-reponses.pdf`). Démo : `/demo/mediatheque`.
+
+### Ce qui a été fait
+- Une seule modale `ImagePickerDialog`, configurée par le champ appelant (`ImagePickerConfig` : mode single/multiple, ratio, recommandation, altText ask/decorative, image actuelle + recadrage actuel).
+- `MediaLibraryProvider` (en mémoire, images de démo SVG générées) expose `openImagePicker(config) → Promise<PickedImage[] | null>` et monte une seule instance de modale (remontée à chaque ouverture → état propre).
+- Logique pure dans `src/lib/mediaLibrary/` (reducer, tri, validation, crop, seed) ; import simulé dans `src/hooks/useSimulatedUploads.ts`.
+- Import : bouton + glisser-déposer, destination = dossier affiché, état par carte (progression, refus, doublon nom+poids), sélection auto, recherche vidée en fin de lot, nouvelles images épinglées en tête.
+- Recadrage = étape 2 de la même modale, cadre maximal centré, souris + clavier (flèches, Maj, +/−), molette sur l'image, pivoter/retourner/réinitialiser, aperçu. Stocké en coordonnées (`CropArea`), rendu en CSS.
+- Page de démo avec les 4 champs du brief. Aucun écran existant n'a été branché (décision validée).
+
+### Décisions
+- **Contraste** : `primary.main` NON modifié. Nouveau token `palette.primaryStrong` (`#00696b` clair, teal[300] + texte foncé en sombre) appliqué à la modale via `withStrongPrimary` (ThemeProvider imbriqué). Bascule globale à décider plus tard.
+- Mode multiple + `altText: 'ask'` : le panneau de droite affiche l'image active de la sélection (clic dans la bande d'ordre) pour saisir le texte alternatif — interprétation du brief, qui ne prévoit le panneau qu'en single.
+- Recherche limitée au dossier affiché. Clic sur le fond de la modale ne ferme pas (Échap oui).
+- Valeurs provisoires : 5 Mo max, JPG/PNG, dossier par défaut « Site ».
+
+### Prochaines étapes
+- Faire valider la démo ; trancher la bascule globale du primaire vers `#00696B`.
+- Réponses devs attendues : WebP, poids max, stockage du recadrage, référencement par id/nom, dossier par défaut.
+- Brancher la modale sur les vrais champs (vignettes, blocs Images/Diaporama, fonds de personnalisation) une fois validée.
 
 ---
 

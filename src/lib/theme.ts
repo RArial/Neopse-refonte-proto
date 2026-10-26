@@ -1,7 +1,16 @@
 "use client";
 
-import { createTheme, type ThemeOptions } from "@mui/material/styles";
+import { createTheme, type PaletteColor, type Theme, type ThemeOptions } from "@mui/material/styles";
 import { frFR } from "@mui/material/locale";
+
+declare module "@mui/material/styles" {
+  interface Palette {
+    primaryStrong: PaletteColor;
+  }
+  interface PaletteOptions {
+    primaryStrong?: PaletteColor;
+  }
+}
 
 // ─────────────────────────────────────────────────────────────
 // Primitives de marque Neopse (échelles brutes, issues de Figma)
@@ -28,6 +37,22 @@ const BRAND = {
   success: "#2e7d5b",     // green.500
   info: teal[500],        // teal (feedback.info)
 } as const;
+
+// Variante contrastée du primaire : texte blanc sur teal[500] = 2,87:1, sous le seuil RGAA.
+// Utilisée pour l'instant dans la seule médiathèque ; la bascule globale de `primary` reste à décider.
+const PRIMARY_STRONG_LIGHT: PaletteColor = {
+  main: "#00696b", // 6,5:1 avec du blanc
+  dark: teal[800],
+  light: teal[200],
+  contrastText: "#ffffff",
+};
+// En sombre, #00696b sur le fond papier tombe à ~2,3:1 : on inverse (teal clair, texte foncé).
+const PRIMARY_STRONG_DARK: PaletteColor = {
+  main: teal[300],
+  dark: teal[400],
+  light: teal[200],
+  contrastText: blue[900],
+};
 
 // Options partagées entre le thème clair et le thème sombre — seule la palette diffère.
 const baseOptions: Omit<ThemeOptions, "palette"> = {
@@ -101,6 +126,7 @@ export const theme = createTheme(
         default: "#f6fbfa", // surface "app" Neopse
         paper: "#ffffff",
       },
+      primaryStrong: PRIMARY_STRONG_LIGHT,
       grey: neutral,
       divider: "rgba(0, 0, 0, 0.12)",
     },
@@ -135,8 +161,15 @@ export const darkTheme = createTheme(
         default: "#111827",
         paper: "#1f2937",
       },
+      primaryStrong: PRIMARY_STRONG_DARK,
       grey: neutral,
     },
   },
   frFR
 );
+
+// À passer à un ThemeProvider imbriqué : les composants MUI du sous-arbre (boutons, radios,
+// curseurs, focus) prennent la variante contrastée sans surcharge composant par composant.
+export function withStrongPrimary(outer: Theme): Theme {
+  return { ...outer, palette: { ...outer.palette, primary: outer.palette.primaryStrong } };
+}
