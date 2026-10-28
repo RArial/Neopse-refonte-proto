@@ -1,132 +1,107 @@
 'use client';
 
+import { useDndContext, useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import { ROWS_END_ID, rowDndId, type DndData } from '@/components/actualites/builder/dnd';
 import { StructureRowCard } from '@/components/actualites/builder/StructureRowCard';
-import { createBlock, type ContentBlockKind, type ContentBlockPatch, type StructureRow } from '@/types/actualites';
-
-function randomId(prefix: string) {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
-export interface SelectedTarget {
-  rowIndex: number;
-  columnIndex: number;
-}
+import { duplicateBlock, duplicateRow, moveRowBy, removeBlock, removeRow, updateBlock, type ColumnRef } from '@/lib/actualites/content';
+import type { StructureRow } from '@/types/actualites';
 
 interface ContentBuilderProps {
   content: StructureRow[];
-  onChange: (content: StructureRow[]) => void;
-  selectedTarget: SelectedTarget | null;
-  onSelectTarget: (target: SelectedTarget) => void;
+  /** Mise à jour fonctionnelle : appliquée au contenu le plus récent. */
+  onChange: (update: (content: StructureRow[]) => StructureRow[]) => void;
+  selectedColumn: ColumnRef | null;
+  onSelectColumn: (column: ColumnRef) => void;
 }
 
-export function ContentBuilder({ content, onChange, selectedTarget, onSelectTarget }: ContentBuilderProps) {
-  function moveRow(index: number, direction: 'up' | 'down') {
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= content.length) return;
-    const next = [...content];
-    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
-    onChange(next);
-  }
+/** Zone de dépôt « à la fin » : l'état vide, ou un liseré sous la dernière structure pendant un glisser. */
+function RowsEndDropZone({ empty }: { empty: boolean }) {
+  const { setNodeRef, isOver } = useDroppable({ id: ROWS_END_ID, data: { type: 'rows-end' } });
+  const { active } = useDndContext();
+  const activeType = (active?.data.current as DndData | undefined)?.type;
+  const draggingStructure = activeType === 'row' || activeType === 'palette-layout';
 
-  function duplicateRow(index: number) {
-    const row = content[index];
-    const copy: StructureRow = {
-      ...row,
-      id: randomId('row'),
-      columns: row.columns.map((blocks) => blocks.map((block) => ({ ...block, id: randomId('block') }))),
-    };
-    const next = [...content];
-    next.splice(index + 1, 0, copy);
-    onChange(next);
-  }
-
-  function deleteRow(index: number) {
-    onChange(content.filter((_, i) => i !== index));
-  }
-
-  function addBlock(rowIndex: number, columnIndex: number, kind: ContentBlockKind) {
-    const next = content.map((row, i) => {
-      if (i !== rowIndex) return row;
-      const columns = row.columns.map((blocks, ci) => (ci === columnIndex ? [...blocks, createBlock(kind)] : blocks));
-      return { ...row, columns };
-    });
-    onChange(next);
-  }
-
-  function updateBlock(rowIndex: number, columnIndex: number, blockId: string, patch: ContentBlockPatch) {
-    const next = content.map((row, i) => {
-      if (i !== rowIndex) return row;
-      const columns = row.columns.map((blocks, ci) =>
-        ci === columnIndex ? blocks.map((block) => (block.id === blockId ? { ...block, ...patch } : block)) : blocks,
-      );
-      return { ...row, columns };
-    });
-    onChange(next);
-  }
-
-  function duplicateBlock(rowIndex: number, columnIndex: number, blockId: string) {
-    const next = content.map((row, i) => {
-      if (i !== rowIndex) return row;
-      const columns = row.columns.map((blocks, ci) => {
-        if (ci !== columnIndex) return blocks;
-        const index = blocks.findIndex((block) => block.id === blockId);
-        if (index === -1) return blocks;
-        const copy = { ...blocks[index], id: randomId('block') };
-        const inserted = [...blocks];
-        inserted.splice(index + 1, 0, copy);
-        return inserted;
-      });
-      return { ...row, columns };
-    });
-    onChange(next);
-  }
-
-  function deleteBlock(rowIndex: number, columnIndex: number, blockId: string) {
-    const next = content.map((row, i) => {
-      if (i !== rowIndex) return row;
-      const columns = row.columns.map((blocks, ci) => (ci === columnIndex ? blocks.filter((block) => block.id !== blockId) : blocks));
-      return { ...row, columns };
-    });
-    onChange(next);
+  if (empty) {
+    return (
+      <Stack
+        ref={setNodeRef}
+        spacing={1}
+        sx={(theme) => ({
+          alignItems: 'center',
+          textAlign: 'center',
+          py: 7,
+          px: 2,
+          borderRadius: 2,
+          border: '2px dashed',
+          borderColor: isOver ? 'primary.main' : 'grey.500',
+          bgcolor: isOver ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
+          color: 'text.secondary',
+        })}
+      >
+        <DescriptionOutlinedIcon fontSize="large" aria-hidden="true" />
+        <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+          Aucun contenu pour le moment
+        </Typography>
+        <Typography variant="body2">Glissez un bloc de structure ici, ou cliquez-en un dans le panneau à droite.</Typography>
+      </Stack>
+    );
   }
 
   return (
-    <Box>
-      <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 0.5 }}>
+    <Box
+      ref={setNodeRef}
+      aria-hidden="true"
+      sx={{
+        height: draggingStructure ? 56 : 8,
+        borderRadius: 2,
+        border: draggingStructure ? '2px dashed' : 'none',
+        borderColor: isOver ? 'primary.main' : 'grey.400',
+        transition: 'height 150ms ease',
+        '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+      }}
+    />
+  );
+}
+
+export function ContentBuilder({ content, onChange, selectedColumn, onSelectColumn }: ContentBuilderProps) {
+  return (
+    <Box component="section" aria-labelledby="news-content-title" sx={{ minWidth: 0 }}>
+      <Typography id="news-content-title" variant="h6" component="h2" sx={{ fontWeight: 700, mb: 0.5 }}>
         Contenu de l&apos;actualité
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-        Composez la page avec des blocs de structure, puis remplissez chaque colonne avec des informations.
+        Composez la page avec des blocs de structure, puis remplissez chaque colonne avec des informations
       </Typography>
 
       {content.length === 0 ? (
-        <Box sx={{ border: '1.5px dashed', borderColor: 'divider', borderRadius: 2, py: 6, textAlign: 'center' }}>
-          <Typography variant="body2" color="text.secondary">
-            Ajoutez un premier bloc de structure depuis le panneau « Blocs » à droite.
-          </Typography>
-        </Box>
+        <RowsEndDropZone empty />
       ) : (
         <Stack spacing={2}>
-          {content.map((row, index) => (
-            <StructureRowCard
-              key={row.id}
-              row={row}
-              canMoveUp={index > 0}
-              canMoveDown={index < content.length - 1}
-              onMove={(direction) => moveRow(index, direction)}
-              onDuplicate={() => duplicateRow(index)}
-              onDelete={() => deleteRow(index)}
-              onAddBlock={(columnIndex, kind) => addBlock(index, columnIndex, kind)}
-              onUpdateBlock={(columnIndex, blockId, patch) => updateBlock(index, columnIndex, blockId, patch)}
-              onDuplicateBlock={(columnIndex, blockId) => duplicateBlock(index, columnIndex, blockId)}
-              onDeleteBlock={(columnIndex, blockId) => deleteBlock(index, columnIndex, blockId)}
-              selectedColumnIndex={selectedTarget?.rowIndex === index ? selectedTarget.columnIndex : null}
-              onSelectColumn={(columnIndex) => onSelectTarget({ rowIndex: index, columnIndex })}
-            />
-          ))}
+          <SortableContext items={content.map((row) => rowDndId(row.id))} strategy={verticalListSortingStrategy}>
+            {content.map((row, index) => (
+              <StructureRowCard
+                key={row.id}
+                row={row}
+                canMoveUp={index > 0}
+                canMoveDown={index < content.length - 1}
+                onMove={(delta) => onChange((current) => moveRowBy(current, row.id, delta))}
+                onDuplicate={() => onChange((current) => duplicateRow(current, row.id))}
+                onDelete={() => onChange((current) => removeRow(current, row.id))}
+                onUpdateBlock={(blockId, patch) => onChange((current) => updateBlock(current, blockId, patch))}
+                onDuplicateBlock={(blockId) => onChange((current) => duplicateBlock(current, blockId))}
+                onDeleteBlock={(blockId) => onChange((current) => removeBlock(current, blockId))}
+                selectedColumnIndex={selectedColumn?.rowId === row.id ? selectedColumn.columnIndex : null}
+                onSelectColumn={(columnIndex) => onSelectColumn({ rowId: row.id, columnIndex })}
+              />
+            ))}
+          </SortableContext>
+          <RowsEndDropZone empty={false} />
         </Stack>
       )}
     </Box>

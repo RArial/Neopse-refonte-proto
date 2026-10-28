@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { NewsForm } from '@/components/actualites/NewsForm';
+import { NewsCreateRoute } from '@/components/actualites/NewsRoutes';
 
 export const metadata: Metadata = {
   title: 'Nouvelle actualité',
 };
 
 export default function NouvelleActualitePage() {
-  return <NewsForm mode="create" />;
+  return <NewsCreateRoute />;
 }

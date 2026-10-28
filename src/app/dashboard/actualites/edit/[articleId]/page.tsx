@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { NewsForm } from '@/components/actualites/NewsForm';
-import { NEWS_ARTICLES } from '@/types/actualites';
+import { NewsEditRoute } from '@/components/actualites/NewsRoutes';
 
 export const metadata: Metadata = {
   title: 'Modifier une actualité',
@@ -13,9 +11,6 @@ interface EditActualitePageProps {
 
 export default async function EditActualitePage({ params }: EditActualitePageProps) {
   const { articleId } = await params;
-  const article = NEWS_ARTICLES.find((candidate) => candidate.id === articleId);
-
-  if (!article) notFound();
-
-  return <NewsForm mode="edit" initialArticle={article} />;
+  // Les actualités vivent côté client (session) : la recherche se fait dans NewsEditRoute.
+  return <NewsEditRoute articleId={articleId} />;
 }

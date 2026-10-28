@@ -1,91 +1,33 @@
-export type NewsStatus = 'published' | 'scheduled' | 'draft' | 'archived';
+/** Statut affiché, toujours dérivé (voir `deriveNewsStatus`) : il n'est jamais stocké. */
+export type NewsStatus = 'published' | 'scheduled' | 'inactive';
 
-export type NewsThumbnailColor = 'brown' | 'red' | 'green' | null;
+export interface NewsThumbnail {
+  url: string;
+  /** Recadrage en coordonnées sur l'original (la vignette garde l'URL de l'image entière). */
+  crop?: CropArea;
+}
 
 export interface NewsArticle {
   id: string;
+  /** Requis, 100 caractères max. */
   title: string;
-  thumbnailColor: NewsThumbnailColor;
-  publicationDate: string;
-  scheduledDate: string | null;
-  status: NewsStatus;
+  /** Chapô, 150 caractères max. */
+  lead: string;
+  /** 5 favoris max par projet. */
   favorite: boolean;
+  thumbnail?: NewsThumbnail;
+  /** Date ISO (AAAA-MM-JJ). */
+  publishedAt: string;
+  /** Date ISO, postérieure à `publishedAt`. */
+  deactivatedAt?: string;
+  /** Toggle « Statut » du formulaire. */
+  active: boolean;
+  content: StructureRow[];
 }
 
-export const NEWS_ARTICLES: NewsArticle[] = [
-  {
-    id: 'travaux-rue-republique',
-    title: 'Travaux rue de la République — circulation modifiée',
-    thumbnailColor: 'brown',
-    publicationDate: '2026-06-28',
-    scheduledDate: null,
-    status: 'published',
-    favorite: true,
-  },
-  {
-    id: 'inscriptions-scolaires',
-    title: 'Inscriptions scolaires 2026-2027 : mode d’emploi',
-    thumbnailColor: null,
-    publicationDate: '2026-06-15',
-    scheduledDate: null,
-    status: 'published',
-    favorite: false,
-  },
-  {
-    id: 'fete-de-la-musique',
-    title: 'Fête de la musique — le programme complet',
-    thumbnailColor: 'red',
-    publicationDate: '2026-06-10',
-    scheduledDate: null,
-    status: 'published',
-    favorite: true,
-  },
-  {
-    id: 'newsletter-juin',
-    title: 'Newsletter municipale de juin',
-    thumbnailColor: null,
-    publicationDate: '2026-06-02',
-    scheduledDate: null,
-    status: 'published',
-    favorite: false,
-  },
-  {
-    id: 'canicule-reflexes',
-    title: 'Canicule : les bons réflexes à adopter',
-    thumbnailColor: null,
-    publicationDate: '2026-05-13',
-    scheduledDate: null,
-    status: 'draft',
-    favorite: false,
-  },
-  {
-    id: 'marche-producteurs',
-    title: 'Un marché des producteurs chaque samedi matin',
-    thumbnailColor: 'green',
-    publicationDate: '2026-05-04',
-    scheduledDate: null,
-    status: 'published',
-    favorite: false,
-  },
-  {
-    id: 'conseil-municipal-avril',
-    title: 'Conseil municipal du 28 avril — compte rendu',
-    thumbnailColor: null,
-    publicationDate: '2026-04-30',
-    scheduledDate: '2026-07-15',
-    status: 'scheduled',
-    favorite: false,
-  },
-  {
-    id: 'arrete-arrosage',
-    title: 'Restrictions d’arrosage — arrêté municipal',
-    thumbnailColor: null,
-    publicationDate: '2026-04-18',
-    scheduledDate: null,
-    status: 'draft',
-    favorite: false,
-  },
-];
+export const MAX_FAVORITE_NEWS = 5;
+export const NEWS_TITLE_MAX = 100;
+export const NEWS_LEAD_MAX = 150;
 
 // ─────────────────────────────────────────────────────────────
 // Éditeur — contenu structuré en blocs (types génériques partagés)
@@ -99,7 +41,6 @@ import {
   createTextBlock,
   createVideoBlock,
   createDiaporamaBlock,
-  defaultStructureContent,
   type StructureRow,
 } from '@/types/contentBuilder';
 import type { CropArea } from '@/types/mediaLibrary';
@@ -121,27 +62,27 @@ export const NEWS_TEMPLATES: ContentTemplate[] = [
   },
   {
     id: 'template-texte-image-1',
-    label: 'Actualité Texte + Image (1)',
+    label: 'Texte + Image (1)',
     content: [{ id: 'template-ti1-row-1', layout: '2-50-50', columns: [[{ ...createTextBlock(), heading: 'Titre' }], [createImagesBlock()]] }],
   },
   {
     id: 'template-texte-image-2',
-    label: 'Actualité Texte + Image (2)',
+    label: 'Texte + Image (2)',
     content: [{ id: 'template-ti2-row-1', layout: '2-67-33', columns: [[{ ...createTextBlock(), heading: 'Titre' }], [createImagesBlock()]] }],
   },
   {
     id: 'template-texte-video',
-    label: 'Actualité Texte + Vidéo',
+    label: 'Texte + Vidéo',
     content: [{ id: 'template-tv-row-1', layout: '2-50-50', columns: [[{ ...createTextBlock(), heading: 'Titre' }], [createVideoBlock()]] }],
   },
   {
     id: 'template-texte-diaporama',
-    label: 'Actualité Texte + Diaporama',
+    label: 'Texte + Diaporama',
     content: [{ id: 'template-td-row-1', layout: '2-50-50', columns: [[{ ...createTextBlock(), heading: 'Titre' }], [createDiaporamaBlock()]] }],
   },
   {
     id: 'template-texte-3-images',
-    label: 'Actualité Texte + 3 images',
+    label: 'Texte + 3 images',
     content: [
       { id: 'template-t3i-row-1', layout: '1', columns: [[{ ...createTextBlock(), heading: 'Titre' }]] },
       { id: 'template-t3i-row-2', layout: '3', columns: [[createImagesBlock()], [createImagesBlock()], [createImagesBlock()]] },
@@ -149,22 +90,5 @@ export const NEWS_TEMPLATES: ContentTemplate[] = [
   },
 ];
 
-export interface NewsFormData {
-  name: string;
-  chapo: string;
-  thumbnailUrl: string | null;
-  /** Recadrage 4:3 en coordonnées sur l'original (la vignette garde l'URL de l'image entière). */
-  thumbnailCrop?: CropArea;
-  status: NewsStatus;
-  publicationDate: string;
-  content: StructureRow[];
-}
-
-export const DEFAULT_NEWS_FORM: NewsFormData = {
-  name: '',
-  chapo: '',
-  thumbnailUrl: null,
-  status: 'draft',
-  publicationDate: '',
-  content: defaultStructureContent(),
-};
+/** Données éditées dans le formulaire : l'article sans son identifiant. */
+export type NewsFormData = Omit<NewsArticle, 'id'>;

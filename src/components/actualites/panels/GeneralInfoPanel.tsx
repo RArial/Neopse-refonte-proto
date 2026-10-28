@@ -1,53 +1,77 @@
 'use client';
 
-import InputAdornment from '@mui/material/InputAdornment';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import Typography from '@mui/material/Typography';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { HelpTip } from '@/components/actualites/panels/HelpTip';
 import { PanelShell } from '@/components/ui/PanelShell';
-import type { NewsFormData } from '@/types/actualites';
+import { NEWS_LEAD_MAX, NEWS_TITLE_MAX, type NewsFormData } from '@/types/actualites';
 
-interface PanelProps {
+export const NEWS_TITLE_FIELD_ID = 'news-title';
+
+interface GeneralInfoPanelProps {
   data: NewsFormData;
   onChange: (patch: Partial<NewsFormData>) => void;
-  nameError?: boolean;
+  titleError?: string;
+  onToggleFavorite: () => void;
 }
 
-export function GeneralInfoPanel({ data, onChange, nameError }: PanelProps) {
+export function GeneralInfoPanel({ data, onChange, titleError, onToggleFavorite }: GeneralInfoPanelProps) {
   return (
     <PanelShell icon="FileText" title="Informations générales">
       <Stack spacing={2.5}>
         <TextField
+          id={NEWS_TITLE_FIELD_ID}
+          variant="standard"
           label="Nom de l'actualité"
-          value={data.name}
-          onChange={(event) => onChange({ name: event.target.value.slice(0, 100) })}
+          placeholder="Ex. Travaux rue de la République"
+          value={data.title}
+          onChange={(event) => onChange({ title: event.target.value.slice(0, NEWS_TITLE_MAX) })}
           required
           fullWidth
-          error={nameError}
-          helperText={nameError ? "Le nom de l'actualité est obligatoire." : `${data.name.length} / 100`}
-          slotProps={{ formHelperText: { role: nameError ? 'alert' : undefined } }}
+          error={Boolean(titleError)}
+          helperText={titleError ?? `${data.title.length} / ${NEWS_TITLE_MAX}`}
+          slotProps={{ inputLabel: { shrink: true }, formHelperText: { role: titleError ? 'alert' : undefined, sx: { textAlign: titleError ? 'left' : 'right' } } }}
         />
-        <TextField
-          label="Chapô"
-          value={data.chapo}
-          onChange={(event) => onChange({ chapo: event.target.value.slice(0, 150) })}
-          multiline
-          minRows={2}
-          fullWidth
-          helperText={`${data.chapo.length} / 150`}
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end" sx={{ alignSelf: 'flex-start', mt: 1 }}>
-                  <Tooltip title="Résumé court affiché sur la liste et les widgets">
-                    <InfoOutlinedIcon fontSize="small" color="action" />
-                  </Tooltip>
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+
+        <Box>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', mb: 0.5 }}>
+            <Typography component="label" htmlFor="news-lead" variant="body2" sx={{ fontWeight: 600 }}>
+              Chapô
+            </Typography>
+            <HelpTip text="Court résumé affiché dans les listes d'actualités" />
+          </Stack>
+          <TextField
+            id="news-lead"
+            placeholder="Résumé court affiché sur la liste et les widgets"
+            value={data.lead}
+            onChange={(event) => onChange({ lead: event.target.value.slice(0, NEWS_LEAD_MAX) })}
+            multiline
+            minRows={3}
+            fullWidth
+            helperText={`${data.lead.length} / ${NEWS_LEAD_MAX}`}
+            slotProps={{ formHelperText: { sx: { textAlign: 'right' } } }}
+            sx={{ '& textarea': { resize: 'vertical' } }}
+          />
+        </Box>
+
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            Mettre en favori
+          </Typography>
+          <HelpTip text="Max. 5 favoris par projet" />
+          <Box sx={{ flex: 1 }} />
+          <Tooltip title={data.favorite ? 'Retirer des favoris' : 'Mettre en favori'}>
+            <IconButton onClick={onToggleFavorite} aria-pressed={data.favorite} aria-label="Mettre en favori">
+              {data.favorite ? <StarIcon sx={{ color: 'warning.main' }} /> : <StarBorderIcon />}
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </Stack>
     </PanelShell>
   );

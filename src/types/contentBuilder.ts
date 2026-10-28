@@ -38,18 +38,44 @@ export interface ImagesBlockData {
   kind: 'images';
   id: string;
   imageUrls: string[];
+  caption?: string;
+  /** Largeur d'affichage en % de la colonne (défaut 100). */
+  widthPercent?: number;
+  linkUrl?: string;
+  linkNewTab?: boolean;
 }
+
+export type DiaporamaDisplay =
+  | 'one-cropped'
+  | 'three-cropped'
+  | 'three-uncropped'
+  | 'three-cropped-autoplay'
+  | 'one-cropped-fade'
+  | 'one-uncropped-thumbnails';
+
+export const DIAPORAMA_DISPLAY_OPTIONS: { value: DiaporamaDisplay; label: string }[] = [
+  { value: 'one-cropped', label: '1 diapositive recadrée par écran' },
+  { value: 'three-cropped', label: '3 diapositives recadrées par écran' },
+  { value: 'three-uncropped', label: '3 diapositives non recadrées par écran' },
+  { value: 'three-cropped-autoplay', label: '3 diapositives recadrées par écran avec défilement automatique' },
+  { value: 'one-cropped-fade', label: '1 diapositive recadrée par écran avec fondu enchaîné' },
+  { value: 'one-uncropped-thumbnails', label: "1 diapositive non recadrée par écran avec vignettes d'aperçu" },
+];
+
+export const DEFAULT_DIAPORAMA_DISPLAY: DiaporamaDisplay = 'three-cropped';
 
 export interface DiaporamaBlockData {
   kind: 'diaporama';
   id: string;
   imageUrls: string[];
+  display?: DiaporamaDisplay;
 }
 
 export interface AttachmentsBlockData {
   kind: 'attachments';
   id: string;
   attachments: Attachment[];
+  title?: string;
 }
 
 export interface VideoBlockData {
@@ -68,6 +94,8 @@ export interface FormBlockData {
   kind: 'form';
   id: string;
   formId: string;
+  /** Adresses des destinataires cochés. */
+  recipients?: string[];
 }
 
 export type ContentBlockData =
@@ -85,10 +113,17 @@ export interface ContentBlockPatch {
   heading?: string;
   body?: string;
   imageUrls?: string[];
+  caption?: string;
+  widthPercent?: number;
+  linkUrl?: string;
+  linkNewTab?: boolean;
+  display?: DiaporamaDisplay;
   attachments?: Attachment[];
+  title?: string;
   url?: string;
   code?: string;
   formId?: string;
+  recipients?: string[];
 }
 
 /** Libellé et icône (voir `src/components/ui/Icons.tsx`) de chaque type de bloc, partagés entre le

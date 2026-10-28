@@ -118,6 +118,22 @@ Brief : `docs/modale-mediatheque.md` (+ `docs/neopse-modale-image-reponses.pdf`)
 
 ---
 
+## Session 2026-10-26 (suite) — Module Actualités aligné sur l'existant Neopse
+
+### Ce qui a été fait
+- Modèle : `NewsArticle` (title, lead, favorite, thumbnail {url, crop}, publishedAt, deactivatedAt, active, content). Statut **dérivé** (`deriveNewsStatus`) : inactive / programmée / publiée. Plus d'« Archivée » ni de « Brouillons ».
+- Store `NewsProvider` (layout `dashboard/actualites`) : actualités + templates utilisateur + toasts, persistés en `sessionStorage` (l'aperçu en nouvel onglet les relit ; object URL retirées après rechargement).
+- Liste : onglets Toutes/Publiées/Programmées/Inactives/Favorites (`?filter=`), recherche à Entrée titre+contenu (`?search=`), cases + tout sélectionner, badge de statut avec menu (publier, inactive, programmer), favoris max 5, boutons icônes Modifier/Dupliquer/Supprimer, barre d'actions groupées, modales de suppression.
+- Édition : en-tête sticky (titre en direct, BROUILLON/ACTIF/INACTIF, Aperçu désactivé avant 1re sauvegarde), panneau repliable en rail, empilement < 1100 px, validation + focus du 1er champ en erreur, `history.replaceState` vers `/edit/[id]` à la 1re sauvegarde, garde de sortie.
+- Constructeur : démarre vide, dnd-kit (structures, contenus entre colonnes, palette → contenu), clic sur une colonne = sélection + onglet Informations, 7 types de contenu, éditeur riche Tiptap complet (`NewsRichTextEditor`), templates (Mes templates / Neopse, confirmation de remplacement).
+- Aperçu `/preview/actualites/[id]` : rendu du texte via le schéma Tiptap (pas de HTML brut), bloc HTML non interprété.
+- Dépendances ajoutées : `@tiptap/extension-text-style`, `-text-align`, `-subscript`, `-superscript` (3.27.1).
+
+### Décisions
+- Vignette, bloc Images et Diaporama gardent la médiathèque validée (pas l'ancien parcours « Je valide ma sélection » / « Modifier la vignette »).
+- Nouvelle actualité : inactive par défaut ; « Publier » force active ; « Mettre en inactive » ne touche jamais la date.
+- Les Éditos gardent leur propre constructeur (non modifié).
+
 ## Prochaines étapes
 
 - [ ] Identifier les pages/vues à refaire en priorité (demander à Quentin)
